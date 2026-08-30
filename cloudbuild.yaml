@@ -1,0 +1,31 @@
+# Builds the Dockerfile on Cloud Build and pushes to Artifact Registry.
+#
+# This exists rather than a plain `gcloud builds submit --tag` because that form cannot pass
+# --build-arg, and the VITE_* values must reach `npm run build` or the client bundle ships
+# with no Firebase config.
+#
+# Driven by scripts/deploy.sh — you should not need to run it by hand.
+
+substitutions:
+  _IMAGE: ""
+  _VITE_FIREBASE_API_KEY: ""
+  _VITE_FIREBASE_AUTH_DOMAIN: ""
+  _VITE_FIREBASE_PROJECT_ID: ""
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg=VITE_FIREBASE_API_KEY=${_VITE_FIREBASE_API_KEY}
+      - --build-arg=VITE_FIREBASE_AUTH_DOMAIN=${_VITE_FIREBASE_AUTH_DOMAIN}
+      - --build-arg=VITE_FIREBASE_PROJECT_ID=${_VITE_FIREBASE_PROJECT_ID}
+      - --tag=${_IMAGE}
+      - .
+
+images:
+  - ${_IMAGE}
+
+options:
+  # Without this, a build submitted by a user account fails on log-bucket permissions.
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8

@@ -1,13 +1,20 @@
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../lib/useAuth.ts";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
+export function meta() {
+  return [{ title: "enaible" }];
 }
 
+/** Entry point: straight to the consultation if signed in, otherwise to sign-in. */
 export default function Home() {
-  return <Welcome />;
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+    navigate(user ? "/dashboard/chat" : "/login", { replace: true });
+  }, [user, loading, navigate]);
+
+  return <main className="grid min-h-dvh place-items-center bg-slate-50" />;
 }

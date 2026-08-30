@@ -1,4 +1,19 @@
-.react-router
-build
+# Never ship env files. Server config comes from Cloud Run env vars, the VITE_* values
+# come in as --build-arg, and credentials come from the runtime service account via ADC.
+.env
+.env.*
+
 node_modules
+build
+.react-router
+
+.git
+.gitignore
+.agents
+.claude
+docs
+scripts
 README.md
+
+# NOTE: do not add a blanket *.md rule. app/agents/prompts/*.md are imported with ?raw and
+# are compiled into the server bundle — excluding them breaks the build.

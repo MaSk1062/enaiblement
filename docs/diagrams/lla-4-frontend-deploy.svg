@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1460 830" width="1460" height="830" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+  </marker>
+  <marker id="dotmark" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+    <circle cx="5" cy="5" r="3.5" fill="#475569"/>
+  </marker>
+</defs>
+<rect width="1460" height="830" fill="#ffffff"/>
+<text x="48" y="46" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="21" font-weight="750" fill="#0f172a" text-anchor="start" opacity="1.0">LLA-4 — Frontend route/component tree &amp; deployment topology</text>
+<text x="48" y="69" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12" font-weight="450" fill="#64748b" text-anchor="start" opacity="1.0">React Router v8 framework mode: loaders/actions run on the same server that hosts the API, so the client never holds a service credential.</text>
+<line x1="48" y1="84" x2="1412" y2="84" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="60" y="120" width="700" height="400" rx="14" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 5" opacity="0.75"/>
+<rect x="76" y="109" width="103.8" height="22" rx="11" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+<text x="127.9" y="124" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11.5" font-weight="700" fill="#64748b" text-anchor="middle" opacity="1.0">app/routes.ts</text>
+<rect x="84" y="150" width="640" height="36" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.3"/>
+<text x="98" y="172" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#4c1d95" text-anchor="start" opacity="1.0">root.tsx</text>
+<text x="710" y="172" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">shell · theme · auth context</text>
+<rect x="118" y="196" width="606" height="36" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="132" y="218" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#1e3a8a" text-anchor="start" opacity="1.0">login.tsx</text>
+<text x="710" y="218" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">Firebase SSO popup → ID token cookie</text>
+<path d="M 102 186 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="118" y="242" width="606" height="36" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="132" y="264" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#1e3a8a" text-anchor="start" opacity="1.0">onboarding.tsx</text>
+<text x="710" y="264" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">3-step profile form → users/{uid}</text>
+<path d="M 102 232 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="118" y="288" width="606" height="36" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.3"/>
+<text x="132" y="310" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#4c1d95" text-anchor="start" opacity="1.0">dashboard.tsx</text>
+<text x="710" y="310" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">layout · session loader · nav</text>
+<path d="M 102 278 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="152" y="334" width="572" height="36" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="166" y="356" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#1e3a8a" text-anchor="start" opacity="1.0">dashboard.chat.tsx</text>
+<text x="710" y="356" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">message list + composer + agent badge</text>
+<path d="M 136 324 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="152" y="380" width="572" height="36" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="166" y="402" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#1e3a8a" text-anchor="start" opacity="1.0">dashboard.canvas.tsx</text>
+<text x="710" y="402" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">use-case kanban + stack visualiser</text>
+<path d="M 136 370 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="152" y="426" width="572" height="36" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="166" y="448" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#1e3a8a" text-anchor="start" opacity="1.0">dashboard.roadmap.tsx</text>
+<text x="710" y="448" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">3-phase gantt + change plan</text>
+<path d="M 136 416 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="118" y="472" width="606" height="36" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="132" y="494" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="11.5" font-weight="650" fill="#1e3a8a" text-anchor="start" opacity="1.0">api.*.ts</text>
+<text x="710" y="494" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.5" font-weight="450" fill="#64748b" text-anchor="end" opacity="1.0">resource routes · no UI export</text>
+<path d="M 102 462 v 26 h 14" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+<rect x="792" y="120" width="620" height="400" rx="14" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 5" opacity="0.75"/>
+<rect x="808" y="109" width="143.39999999999998" height="22" rx="11" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+<text x="879.7" y="124" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11.5" font-weight="700" fill="#64748b" text-anchor="middle" opacity="1.0">Shared client state</text>
+<rect x="816" y="150" width="572" height="66" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+<text x="1102.0" y="179.28" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13.5" font-weight="650" fill="#1e3a8a" text-anchor="middle" opacity="1.0">SessionProvider  (React context)</text>
+<text x="1102.0" y="197.505" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">holds AgentState; every API response replaces it wholesale</text>
+<rect x="816" y="232" width="274" height="90" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+<text x="953.0" y="266.78" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13.5" font-weight="650" fill="#1e3a8a" text-anchor="middle" opacity="1.0">useChat()</text>
+<text x="953.0" y="284.28499999999997" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">optimistic user bubble</text>
+<text x="953.0" y="298.28499999999997" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">typing indicator per agent</text>
+<rect x="1114" y="232" width="274" height="90" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+<text x="1251.0" y="266.78" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13.5" font-weight="650" fill="#1e3a8a" text-anchor="middle" opacity="1.0">useStrategy()</text>
+<text x="1251.0" y="284.28499999999997" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">derives canvas + gantt</text>
+<text x="1251.0" y="298.28499999999997" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">from the same AgentState</text>
+<rect x="816" y="338" width="572" height="66" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+<text x="1102.0" y="367.28" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13.5" font-weight="650" fill="#1e3a8a" text-anchor="middle" opacity="1.0">Why one state object</text>
+<text x="1102.0" y="385.505" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">canvas and roadmap update the instant a turn lands — no second fetch, no drift</text>
+<rect x="816" y="420" width="572" height="76" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+<text x="1102.0" y="454.28" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13.5" font-weight="650" fill="#1e3a8a" text-anchor="middle" opacity="1.0">Export</text>
+<text x="1102.0" y="472.505" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#1e3a8a" text-anchor="middle" opacity="0.82">client-side html → /api/export → server renders PDF &amp; PPTX from AgentState</text>
+<rect x="60" y="560" width="1352" height="210" rx="14" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 5" opacity="0.75"/>
+<rect x="76" y="549" width="143.39999999999998" height="22" rx="11" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+<text x="147.7" y="564" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11.5" font-weight="700" fill="#64748b" text-anchor="middle" opacity="1.0">Deployment topology</text>
+<rect x="84" y="596" width="244" height="92" rx="10" fill="#fdf2f8" stroke="#be185d" stroke-width="1.6"/>
+<text x="206.0" y="638.5" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="650" fill="#831843" text-anchor="middle" opacity="1.0">GitHub</text>
+<text x="206.0" y="655.455" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#831843" text-anchor="middle" opacity="0.82">push to main</text>
+<rect x="352" y="596" width="244" height="92" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="474.0" y="638.5" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="650" fill="#334155" text-anchor="middle" opacity="1.0">Cloud Build</text>
+<text x="474.0" y="655.455" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#334155" text-anchor="middle" opacity="0.82">docker build · npm ci</text>
+<path d="M 328 642 L 352 642" fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="620" y="596" width="244" height="92" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="742.0" y="638.5" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="650" fill="#334155" text-anchor="middle" opacity="1.0">Artifact Registry</text>
+<text x="742.0" y="655.455" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#334155" text-anchor="middle" opacity="0.82">enaible:sha</text>
+<path d="M 596 642 L 620 642" fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="888" y="596" width="244" height="92" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/>
+<text x="1010.0" y="631.5" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="650" fill="#4c1d95" text-anchor="middle" opacity="1.0">Cloud Run</text>
+<text x="1010.0" y="648.455" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#4c1d95" text-anchor="middle" opacity="0.82">min 0 · max 10 · 1 vCPU / 1GiB</text>
+<text x="1010.0" y="662.455" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#4c1d95" text-anchor="middle" opacity="0.82">concurrency 80 · 60s timeout</text>
+<path d="M 864 642 L 888 642" fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="1156" y="596" width="244" height="92" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/>
+<text x="1278.0" y="638.5" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12.5" font-weight="650" fill="#7c2d12" text-anchor="middle" opacity="1.0">Firestore + Auth</text>
+<text x="1278.0" y="655.455" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#7c2d12" text-anchor="middle" opacity="0.82">same project · IAM SA binding</text>
+<path d="M 1132 642 L 1156 642" fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="84" y="704" width="1304" height="46" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+<text x="100" y="732" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10.6" font-weight="500" fill="#334155" text-anchor="start" opacity="1.0">Runtime secrets: GEMINI_API_KEY + FIREBASE_ADMIN_SA mounted from Secret Manager as env vars; the runtime service account holds only datastore.user + secretmanager.secretAccessor.</text>
+</svg>
