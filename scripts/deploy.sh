@@ -7,9 +7,15 @@
 # Reads config from .env. Run scripts/setup-gcp.sh once first — this script assumes the
 # Artifact Registry repo and the runtime service account already exist.
 #
-# Cloud Run settings match ARCHITECTURE.md §8.3: concurrency 80, 60s timeout, 1 vCPU / 1 GiB,
-# scale to zero. Set --min-instances=1 for the hour around a live demo (see the note at the
-# bottom) so the first turn does not eat a cold start.
+# Cloud Run settings follow ARCHITECTURE.md §8.3 — concurrency 80, 1 vCPU / 1 GiB, scale to
+# zero — with one change: the request timeout is 300s, not 60s. A structured turn can spend
+# 1.5-4s generating, double that after a repair re-prompt, plus ~15s of retry backoff before
+# the fifth attempt. 60s cuts the request off mid-turn and the user loses their message. The
+# session survives either way (a stage only advances on a persisted payload) but the turn
+# does not. Override with DEPLOY_TIMEOUT.
+#
+# Set --min-instances=1 for the hour around a live demo (see the note at the bottom) so the
+# first turn does not eat a cold start.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -43,6 +49,7 @@ gcloud builds submit \
 ENV_VARS="GCP_PROJECT_ID=${PROJECT}"
 ENV_VARS="${ENV_VARS},GCP_LOCATION=${GCP_LOCATION:-us-central1}"
 ENV_VARS="${ENV_VARS},FIRESTORE_DATABASE_ID=${FIRESTORE_DATABASE_ID:-(default)}"
+ENV_VARS="${ENV_VARS},FIREBASE_AUTH_PROJECT_ID=${FIREBASE_AUTH_PROJECT_ID:-${PROJECT}}"
 ENV_VARS="${ENV_VARS},GEMINI_TEXT_MODEL=${GEMINI_TEXT_MODEL:-gemini-2.5-flash}"
 ENV_VARS="${ENV_VARS},GEMINI_EMBEDDING_MODEL=${GEMINI_EMBEDDING_MODEL:-gemini-embedding-001}"
 ENV_VARS="${ENV_VARS},EMBEDDING_DIMENSIONS=${EMBEDDING_DIMENSIONS:-768}"
@@ -59,7 +66,7 @@ gcloud run deploy "$SERVICE" \
   --set-env-vars "${ENV_VARS}" \
   --cpu 1 --memory 1Gi \
   --concurrency 80 \
-  --timeout 60 \
+  --timeout "${DEPLOY_TIMEOUT:-300}" \
   --min-instances 0 --max-instances 10
 
 URL="$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" --format='value(status.url)')"

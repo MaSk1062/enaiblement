@@ -17,12 +17,27 @@ const projectId = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT
 // which reads like a permissions problem and is not one.
 const databaseId = process.env.FIRESTORE_DATABASE_ID ?? "(default)";
 
+// Auth can live in a different project from Firestore, and here it does: tokens are minted by
+// the Firebase project, Firestore and Vertex run in the GCP project. verifyIdToken rejects any
+// token whose `aud` is not the app's own projectId, so verifying with GCP_PROJECT_ID fails every
+// real token and reports it as "Invalid or expired token". Defaults to the same project when
+// there is only one.
+const authProjectId = process.env.FIREBASE_AUTH_PROJECT_ID ?? projectId;
+
+// Look apps up by name, not getApps()[0] — whichever is initialised first would otherwise be
+// handed to both.
 function app() {
-  return getApps()[0] ?? initializeApp({ projectId });
+  return getApps().find((a) => a.name === "[DEFAULT]") ?? initializeApp({ projectId });
+}
+
+function authApp() {
+  return getApps().find((a) => a.name === "auth") ?? initializeApp({ projectId: authProjectId }, "auth");
 }
 
 export const db = () => getFirestore(app(), databaseId);
-export const auth = () => getAuth(app());
+// No extra IAM: verifyIdToken checks aud/iss against Google's public certs and needs the project
+// id, not credentials for that project.
+export const auth = () => getAuth(authApp());
 
 const sessions = () => db().collection("sessions");
 const users = () => db().collection("users");
@@ -40,7 +55,9 @@ export function message(
     id: partial.id ?? crypto.randomUUID(),
     timestamp: partial.timestamp ?? new Date().toISOString(),
     sender: partial.sender,
-    agentName: partial.agentName,
+    // Firestore rejects an undefined value outright, and a user message has no agent. Omitting
+    // the key is the difference between a stored turn and a 503 after the model has been paid for.
+    ...(partial.agentName ? { agentName: partial.agentName } : {}),
     text: partial.text,
   };
 }

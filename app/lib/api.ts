@@ -3,7 +3,7 @@
  * turns an error envelope into a thrown Error the caller can show.
  */
 
-import { idToken } from "./firebase.client.ts";
+import { idToken, signOutUser } from "./firebase.client.ts";
 import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -17,6 +17,16 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
 
   const body = await res.json().catch(() => null);
+
+  // A 401 means the token is gone, invalid, or minted for another project — nothing the caller
+  // can retry. Drop the local session and send them to sign in, so a failed bootstrap cannot
+  // strand the user on an error screen that renders no navigation.
+  if (res.status === 401) {
+    await signOutUser().catch(() => {});
+    window.location.assign("/login");
+    throw new Error("Your session expired. Please sign in again.");
+  }
+
   if (!res.ok) throw new Error(body?.error ?? `Request failed (${res.status})`);
   return body as T;
 }

@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from "react-router";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
-import { signOutUser } from "../lib/firebase.client.ts";
+import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
 import type { AgentState, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
 
@@ -99,6 +99,8 @@ export default function Dashboard() {
   if (authLoading || booting) {
     return <Centered>Loading your consultation…</Centered>;
   }
+  // Both of these are dead ends without a way out: no header renders here, so sign out is the
+  // only route back to a working state.
   if (error && !state) {
     return <Centered tone="error">{error}</Centered>;
   }
@@ -128,13 +130,7 @@ export default function Dashboard() {
                 {profile.industry} · {profile.role}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => signOutUser().then(() => navigate("/login", { replace: true }))}
-              className="text-xs text-slate-500 transition hover:text-slate-900"
-            >
-              Sign out
-            </button>
+            <SignOutButton />
           </div>
           <ProgressRail current={state.currentStage} />
         </header>
@@ -191,9 +187,14 @@ function Centered({
 }) {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
-      <p className={tone === "error" ? "text-sm text-red-600" : "text-sm text-slate-500"}>
-        {children}
-      </p>
+      <div className="text-center">
+        <p className={tone === "error" ? "text-sm text-red-600" : "text-sm text-slate-500"}>
+          {children}
+        </p>
+        <div className="mt-4">
+          <SignOutButton className="text-xs text-slate-400 underline transition hover:text-slate-900" />
+        </div>
+      </div>
     </main>
   );
 }

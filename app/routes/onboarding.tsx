@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { startSession } from "../lib/api.ts";
+import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
 import type { Industry, Role } from "../types.ts";
 
@@ -46,9 +47,13 @@ export default function Onboarding() {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
       <form onSubmit={onSubmit} className="w-full max-w-md">
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-          Before we start
-        </h1>
+        <div className="flex items-baseline justify-between">
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+            Before we start
+          </h1>
+          {/* Signed in but no profile yet — without this there is no way back to /login. */}
+          <SignOutButton />
+        </div>
         <p className="mt-2 text-sm leading-relaxed text-slate-500">
           Your Discovery Consultant uses this to open the conversation, and your Industry
           Analyst uses it to pull case studies from your sector.

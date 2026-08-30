@@ -9,6 +9,7 @@ export default [
   // Resource routes — ARCHITECTURE.md Appendix A. One container serves these and the UI
   // (ADR-01), so the orchestrator is an in-process import rather than a network hop.
   route("health", "routes/health.ts"),
+  route("api/me", "routes/api.me.ts"),
   route("api/session/start", "routes/api.session.start.ts"),
   route("api/session/:id", "routes/api.session.$id.ts"),
   route("api/session/:id/use-cases", "routes/api.session.$id.use-cases.ts"),
