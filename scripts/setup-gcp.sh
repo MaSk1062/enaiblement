@@ -51,6 +51,16 @@ for ROLE in roles/aiplatform.user roles/datastore.user; do
     --member="serviceAccount:${SA}" --role="$ROLE" --condition=None --quiet >/dev/null
 done
 
+# Cloud Build runs as the default compute service account, which starts with none of the
+# roles a build needs. Without these the build fails at source upload with a storage 403
+# that names the service account but not the missing role.
+BUILD_SA="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')-compute@developer.gserviceaccount.com"
+for ROLE in roles/storage.objectViewer roles/logging.logWriter roles/artifactregistry.writer; do
+  echo "==> Granting ${ROLE} to the Cloud Build service account"
+  gcloud projects add-iam-policy-binding "$PROJECT" \
+    --member="serviceAccount:${BUILD_SA}" --role="$ROLE" --condition=None --quiet >/dev/null
+done
+
 # Local development uses YOUR credentials, not the service account, so you need the same two.
 CALLER="$(gcloud config get-value account 2>/dev/null)"
 if [ -n "$CALLER" ] && [ "$CALLER" != "(unset)" ]; then
