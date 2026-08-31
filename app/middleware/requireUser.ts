@@ -12,6 +12,7 @@
 
 import type { DecodedIdToken } from "firebase-admin/auth";
 import { auth } from "../services/firestore.ts";
+import { event } from "../services/telemetry.ts";
 
 const MAX_TURNS_PER_MINUTE = Number(process.env.MAX_TURNS_PER_MINUTE ?? 20);
 const WINDOW_MS = 60_000;
@@ -65,7 +66,14 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
     return await fn();
   } catch (err) {
     if (err instanceof Response) return err;
-    console.error("[api]", err);
+    // ERROR severity with a stack is what Cloud Error Reporting groups on, so a recurring
+    // failure surfaces as one issue with a count rather than as N unrelated log lines.
+    event("api.error", {
+      severity: "ERROR",
+      status: 503,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    });
     return errorResponse(503, "Something went wrong. Please try that again.");
   }
 }

@@ -18,6 +18,7 @@ import type * as discovery from "../agents/discovery.ts";
 import type * as projectManager from "../agents/projectManager.ts";
 import type { retrieve } from "../services/rag.ts";
 import { AGENT_NAMES } from "../agents/names.ts";
+import { event } from "../services/telemetry.ts";
 import type { AgentName, AgentState, ChatMessage, SessionDocument, Stage } from "../types.ts";
 
 export interface StageDeps {
@@ -122,6 +123,9 @@ export async function runTurn(
         // The approval gate. PRD Epic 2 requires it; the reference orchestrator skips it.
         const approved = approvedOf(state);
         if (approved.length === 0) {
+          // The gate holding is normal, but a session that never leaves it is the deadlock the
+          // missing Canvas caused. Countable, so it can be seen without reading transcripts.
+          event("stage.blocked", { stage: "architecture", reason: "no approved use cases" });
           return {
             reply: agentMessage(
               AGENT_NAMES.architect,
@@ -188,7 +192,12 @@ export async function runTurn(
     }
   } catch (err) {
     // Never advance on a failed turn. The session stays exactly where it was.
-    console.error(`[stage:${state.currentStage}]`, err);
+    event("agent.failed", {
+      severity: "ERROR",
+      stage: state.currentStage,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    });
     return {
       reply: agentMessage(
         agentForStage(state.currentStage),
@@ -206,7 +215,8 @@ function requireStack(state: AgentState) {
   return state.architectureStack;
 }
 
-function agentForStage(stage: Stage): AgentName {
+/** Exported so the route can label a turn's telemetry without duplicating the mapping. */
+export function agentForStage(stage: Stage): AgentName {
   switch (stage) {
     case "discovery":
       return AGENT_NAMES.discovery;

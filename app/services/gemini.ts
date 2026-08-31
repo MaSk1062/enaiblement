@@ -13,6 +13,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import type { z } from "zod";
+import { countTokens, event } from "./telemetry.ts";
 
 const PROJECT = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
 const LOCATION = process.env.GCP_LOCATION ?? "us-central1";
@@ -49,17 +50,48 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-async function callModel(systemInstruction: string, contents: string): Promise<string> {
-  const res = await withRetry(() =>
-    genai().models.generateContent({
+async function callModel(
+  systemInstruction: string,
+  contents: string,
+  repaired: boolean,
+): Promise<string> {
+  const started = Date.now();
+  try {
+    const res = await withRetry(() =>
+      genai().models.generateContent({
+        model: TEXT_MODEL,
+        contents,
+        config: { systemInstruction, responseMimeType: "application/json" },
+      }),
+    );
+
+    const usage = res.usageMetadata;
+    countTokens(usage?.totalTokenCount);
+    event("agent.call", {
       model: TEXT_MODEL,
-      contents,
-      config: { systemInstruction, responseMimeType: "application/json" },
-    }),
-  );
-  const text = res.text;
-  if (!text) throw new Error("Model returned an empty response");
-  return text;
+      durationMs: Date.now() - started,
+      promptTokens: usage?.promptTokenCount,
+      outputTokens: usage?.candidatesTokenCount,
+      thoughtTokens: usage?.thoughtsTokenCount,
+      totalTokens: usage?.totalTokenCount,
+      repaired,
+      ok: true,
+    });
+
+    const text = res.text;
+    if (!text) throw new Error("Model returned an empty response");
+    return text;
+  } catch (err) {
+    event("agent.call", {
+      severity: "ERROR",
+      model: TEXT_MODEL,
+      durationMs: Date.now() - started,
+      repaired,
+      ok: false,
+      error: (err as Error).message,
+    });
+    throw err;
+  }
 }
 
 /**
@@ -74,10 +106,17 @@ export async function generateStructured<T>(
   payload: string,
   schema: z.ZodType<T>,
 ): Promise<T> {
-  const raw = await callModel(systemInstruction, payload);
+  const raw = await callModel(systemInstruction, payload, false);
 
   const first = schema.safeParse(safeJson(raw));
   if (first.success) return first.data;
+
+  // The repair rate is the R1/R2 metric: a turn that repairs costs twice and is one bad roll
+  // away from a lost turn. Paths only — the values that failed are model output about a user.
+  event("agent.repair", {
+    severity: "WARNING",
+    issuePaths: first.error.issues.map((i) => i.path.join(".") || "(root)"),
+  });
 
   const repaired = await callModel(
     systemInstruction,
@@ -91,6 +130,7 @@ ${raw}
 
 Validation errors:
 ${JSON.stringify(first.error.issues, null, 2)}`,
+    true,
   );
 
   const second = schema.safeParse(safeJson(repaired));
