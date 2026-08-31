@@ -4,7 +4,7 @@
  * Until now there was no "between": `users/{uid}.activeSessionId` is a single field and the
  * dashboard sends you to onboarding only when it is absent, so a user with a session was in
  * that session permanently. A second consultation, had one been reachable, would have opened
- * with the identical cold greeting — the agent starting over, which is the one thing this
+ * with the identical cold greeting - the agent starting over, which is the one thing this
  * product is not supposed to do.
  *
  * Memory lives on `users/{uid}.memory`, a document `getUser()` already reads on every dashboard
@@ -14,7 +14,7 @@
  *
  * ponytail: no embeddings, no `memories` collection, no retrieval step. A client has a handful
  * of consultations and all of this fits in a prompt. The ceiling is Firestore's 1 MiB document
- * — at ~100 bytes a note, thousands of engagements away. Add retrieval when the block stops
+ * - at ~100 bytes a note, thousands of engagements away. Add retrieval when the block stops
  * fitting, not before.
  */
 
@@ -61,7 +61,7 @@ const declinedLine = (d: { title: string; reason?: string }) =>
   d.reason ? `${d.title} (${d.reason})` : d.title;
 
 /**
- * What an agent is told about this client before it says anything. Prose, not JSON — it is
+ * What an agent is told about this client before it says anything. Prose, not JSON - it is
  * read by a model, and a bulleted briefing is what a colleague would hand over.
  *
  * Empty string when there is nothing to say, which is the common case and has to stay
@@ -100,7 +100,7 @@ export function memoryBlock(memory?: ClientMemory): string {
  * The opening message.
  *
  * With no memory this is the cold greeting, byte for byte what shipped before any of this
- * existed. With memory it names the last engagement and asks whether this one continues it —
+ * existed. With memory it names the last engagement and asks whether this one continues it -
  * which is the whole "it did not start over" claim, in one sentence of UI.
  */
 export function greeting(profile: SessionUserProfile, memory?: ClientMemory): string {

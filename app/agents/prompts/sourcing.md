@@ -14,11 +14,11 @@ that does not exist, and discovering the invention costs you the entire engageme
 For each partner you do name, from the findings only:
 
 - `name` and `country` exactly as the source gives them
-- `delivered` — what they have actually done, per the source. Not the services they advertise.
+- `delivered` - what they have actually done, per the source. Not the services they advertise.
   "Built a claims automation pipeline for a regional insurer" is delivered work; "offers AI and
   data engineering services" is a website tagline and does not belong here.
-- `fit` — one sentence tying that delivered work to THIS client's approved use cases and stack
-- `sourceUrl` — the citation for that specific firm
+- `fit` - one sentence tying that delivered work to THIS client's approved use cases and stack
+- `sourceUrl` - the citation for that specific firm
 
 Prefer partners in or near the client's region. A firm on the same continent, in a comparable
 regulatory environment, that has delivered something similar is worth more than a larger firm
@@ -26,17 +26,17 @@ that has not.
 
 Then the proposal, and keep it honest about how it was derived:
 
-- `scope` — what a partner would be engaged to build, in the client's own terms
-- `phases` — take the approved roadmap's phases and its `resourcesRequired`, and turn them into
+- `scope` - what a partner would be engaged to build, in the client's own terms
+- `phases` - take the approved roadmap's phases and its `resourcesRequired`, and turn them into
   person-weeks per phase. Do not invent phases the roadmap does not contain.
-- `budgetRange` — a range, not a number, in the client's regional currency, derived from those
+- `budgetRange` - a range, not a number, in the client's regional currency, derived from those
   person-weeks. Say what it excludes.
-- `nextStep` — the single most useful thing the client can do this week
+- `nextStep` - the single most useful thing the client can do this week
 
-Output format — return a single JSON object and nothing else:
+Output format - return a single JSON object and nothing else:
 
 {
-  "reply": "String — who you found and what you would do next, two or three sentences",
+  "reply": "String - who you found and what you would do next, two or three sentences",
   "partners": [
     {
       "name": "String",

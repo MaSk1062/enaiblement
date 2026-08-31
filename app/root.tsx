@@ -12,6 +12,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", type: "image/png", href: "/logo.png" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -72,7 +73,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             <code>{stack}</code>
           </pre>
         )}
-        {/* Every dead end needs a way out (UI-6) — this one had none: a thrown route error
+        {/* Every dead end needs a way out (UI-6) - this one had none: a thrown route error
             left the user on a page with nothing to click. */}
         <Link
           to="/"

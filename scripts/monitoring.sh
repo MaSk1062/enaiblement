@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Log-based metrics, one alert, one dashboard. Idempotent — safe to re-run.
+# Log-based metrics, one alert, one dashboard. Idempotent - safe to re-run.
 #
 #   ./scripts/monitoring.sh
 #
@@ -16,7 +16,7 @@ cd "$(dirname "$0")/.."
 
 [ -f .env ] && { set -a; . ./.env; set +a; }
 
-PROJECT="${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set — see .env.example}"
+PROJECT="${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set - see .env.example}"
 SERVICE="${DEPLOY_SERVICE:-enaible}"
 BASE="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"${SERVICE}\""
 
@@ -36,7 +36,7 @@ metric() {
   fi
 }
 
-# A metric that measures rather than counts. gcloud takes no flags for these — a distribution
+# A metric that measures rather than counts. gcloud takes no flags for these - a distribution
 # needs metricKind, valueType, a value extractor and bucket options, and the only way in is a
 # config file.
 dist_metric() {
@@ -75,7 +75,7 @@ metric enaible_turn_failures "Chat turns that failed" \
   "${BASE} AND jsonPayload.event=\"turn.end\" AND jsonPayload.ok=false"
 
 # A repair means the model returned output that did not match its schema and had to be asked
-# again. Recoverable, double cost, and one bad roll from a lost turn — so it is a leading
+# again. Recoverable, double cost, and one bad roll from a lost turn - so it is a leading
 # indicator of R1/R2 rather than an error.
 metric enaible_schema_repairs "Agent responses that needed a schema repair" \
   "${BASE} AND jsonPayload.event=\"agent.repair\""

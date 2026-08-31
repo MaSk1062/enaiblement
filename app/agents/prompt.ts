@@ -14,7 +14,7 @@ export function declinedBlock(declined?: { title: string; reason?: string }[]): 
   return (
     "\n\nThe client has already turned these down. Do not propose them again, and do not " +
     "design around them:\n" +
-    declined.map((d) => `- ${d.title}${d.reason ? ` — because: ${d.reason}` : ""}`).join("\n")
+    declined.map((d) => `- ${d.title}${d.reason ? ` - because: ${d.reason}` : ""}`).join("\n")
   );
 }
 
@@ -38,7 +38,7 @@ export function fillPrompt(template: string, vars: Record<string, string> = {}):
  * Anchored to USER messages, not to a message count. The window used to be `slice(-6)`, which
  * was three exchanges back when a turn was one message each way. It is not any more: `advance()`
  * emits one reply per stage, so a follow-up that rewinds to `architecture` writes five agent
- * messages in a single turn, and a deep dive writes six — one per capability. Counting messages
+ * messages in a single turn, and a deep dive writes six - one per capability. Counting messages
  * then hands the model six sentences it wrote itself and none of what the client said.
  *
  * So: walk back to the Nth-from-last user message and take everything since. `max` is the

@@ -15,7 +15,7 @@ Instructions:
    policy document.
 
    The binding regime is given to you in the payload. Use it. A client in Southern Africa is
-   bound by POPIA, one in Nigeria by the NDPR, one in Kenya by the Data Protection Act 2019 —
+   bound by POPIA, one in Nigeria by the NDPR, one in Kenya by the Data Protection Act 2019 -
    naming HIPAA at a Nairobi hospital tells them you were not listening. Where an international
    regime genuinely also applies, say both.
 
@@ -23,12 +23,12 @@ Instructions:
    data and the model inference sit, and if the recommended service cannot keep them in-region,
    say that plainly instead of leaving it for the client to discover.
 
-Currently available foundational models — recommend from this list only, and do not name
+Currently available foundational models - recommend from this list only, and do not name
 models outside it:
 
 {{CURRENT_MODELS}}
 
-Output format — return a single JSON object and nothing else:
+Output format - return a single JSON object and nothing else:
 
 {
   "architecture_stack": {

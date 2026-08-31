@@ -18,6 +18,7 @@
     "@react-router/serve": "^8",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",
+    "gsap": "^3.15.0",
     "isbot": "^5.1.36",
     "mermaid": "^11.17.2",
     "react": "^19.2.7",

@@ -1,6 +1,6 @@
 /**
- * GET /api/me — the dashboard's bootstrap call.
- * PATCH /api/me — switch which consultation is the active one.
+ * GET /api/me - the dashboard's bootstrap call.
+ * PATCH /api/me - switch which consultation is the active one.
  *
  * The GET answers two questions in one round trip: has this user onboarded, and do they have a
  * session to resume? Without it the client has no way to reach `activeSessionId`, since the
@@ -9,7 +9,7 @@
  * The PATCH exists because starting a second consultation would otherwise destroy the first:
  * `activeSessionId` is a single field and nothing lists a user's sessions, so the finished
  * strategy from engagement one would become unreachable the moment engagement two began. This
- * is navigation, not memory — what the agent *remembers* stays invisible by design.
+ * is navigation, not memory - what the agent *remembers* stays invisible by design.
  */
 
 import { z } from "zod";
@@ -42,7 +42,7 @@ export async function action({ request }: { request: Request }) {
     const parsed = Body.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return errorResponse(400, "Expected { activeSessionId }");
 
-    // Ownership is checked against the session itself, not against the memory list — the list
+    // Ownership is checked against the session itself, not against the memory list - the list
     // is a convenience and this is the authorisation.
     const session = await getSession(parsed.data.activeSessionId);
     if (!session || session.userId !== token.uid) return errorResponse(404, "Session not found");

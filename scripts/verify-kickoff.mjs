@@ -4,7 +4,7 @@
  *   gcloud auth application-default login      # once, per machine
  *   node scripts/verify-kickoff.mjs
  *
- * Auth is Application Default Credentials throughout — no API key anywhere. Locally that
+ * Auth is Application Default Credentials throughout - no API key anywhere. Locally that
  * is your gcloud ADC file; on Cloud Run it is the runtime service account via the metadata
  * server, with nothing to configure and nothing to leak.
  *
@@ -37,7 +37,7 @@ if (typeof FieldValue.vector === "function") {
   bad("FieldValue.vector() missing");
 }
 if (adminFirestore.VectorValue?.create === undefined) {
-  ok("VectorValue.create is undefined, as expected — docs/FIRESTORE_SCHEMA.md uses it and is wrong");
+  ok("VectorValue.create is undefined, as expected - docs/FIRESTORE_SCHEMA.md uses it and is wrong");
 } else {
   console.log("  NOTE  VectorValue.create now exists; the reference code may be usable as-is");
 }
@@ -70,7 +70,7 @@ for (const model of TEXT_MODELS) {
     console.log(`  ----  ${model}: ${firstLine(e)}`);
   }
 }
-if (!liveTextModel) bad("no text model responded — check ADC and that the Vertex AI API is enabled");
+if (!liveTextModel) bad("no text model responded - check ADC and that the Vertex AI API is enabled");
 
 // --- 3. embedding model + dimension ------------------------------------------
 console.log("\n[embedding models]");
@@ -91,7 +91,7 @@ for (const model of EMBED_MODELS) {
       ok(`${model}: native ${nLen}d, pinned to ${pLen}d via outputDimensionality`);
       liveEmbedModel ??= model;
     } else {
-      bad(`${model}: asked for ${WANT_DIMS}d, got ${pLen}d — the index would not match`);
+      bad(`${model}: asked for ${WANT_DIMS}d, got ${pLen}d - the index would not match`);
     }
   } catch (e) {
     console.log(`  ----  ${model}: ${firstLine(e)}`);

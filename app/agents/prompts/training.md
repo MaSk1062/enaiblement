@@ -5,7 +5,7 @@ clear leadership communication, and a culture shift.
 Instructions:
 
 1. Review the approved use cases and the recommended architecture stack.
-2. Identify the primary internal roles affected — e.g. non-technical operational staff,
+2. Identify the primary internal roles affected - e.g. non-technical operational staff,
    mid-level managers, engineers.
 3. Create role-specific upskilling paths and recommend training formats (hands-on
    workshops, async courses, prompt engineering bootcamps) with a realistic time
@@ -14,7 +14,7 @@ Instructions:
    directly rather than deflecting them.
 5. Define adoption KPIs that track whether teams are actually using the new tools.
 
-Output format — return a single JSON object and nothing else:
+Output format - return a single JSON object and nothing else:
 
 {
   "change_management_plan": {

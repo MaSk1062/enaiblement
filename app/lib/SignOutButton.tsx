@@ -2,7 +2,7 @@
  * Sign out, then land on /login.
  *
  * Exists as a component rather than an inline handler because it belongs on every screen a
- * user can get stuck on — a failed bootstrap, an empty consultation, onboarding — not only on
+ * user can get stuck on - a failed bootstrap, an empty consultation, onboarding - not only on
  * the dashboard header where it started.
  */
 

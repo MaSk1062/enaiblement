@@ -16,7 +16,7 @@ based on what you're querying:
 
 | Scenario                                                    | Mechanism                | Directive Needed?                   |
 | ----------------------------------------------------------- | ------------------------ | ----------------------------------- |
-| Single-entity lookup by ID (e.g., `movie(id: $id)`)         | **Automatic refresh**    | No — SQL Connect handles it         |
+| Single-entity lookup by ID (e.g., `movie(id: $id)`)         | **Automatic refresh**    | No - SQL Connect handles it         |
 | List query that should update when a specific mutation runs | **Event-driven refresh** | `@refresh(onMutationExecuted: ...)` |
 | Any query that should poll at a fixed interval              | **Time-based polling**   | `@refresh(every: ...)`              |
 
@@ -52,7 +52,7 @@ query MovieLeaderboard
 **Constraints:**
 
 - The `every` argument takes a duration object: `{ seconds: Int }`
-- **Minimum**: `{ seconds: 10 }` — protects against excessive server load
+- **Minimum**: `{ seconds: 10 }` - protects against excessive server load
 - **Maximum**: `{ hours: 1 }` (3600 seconds)
 - Values outside this range fail validation at deploy time
 
@@ -98,7 +98,7 @@ query ListAllMessages
 It's highly recommended to define fine granular conditions. Inaccurate refresh
 policies could consume Postgres resources and make your app slower.
 
-Use conditions to scope refreshes precisely — a review list should only refresh
+Use conditions to scope refreshes precisely - a review list should only refresh
 when the mutation targets the same movie, not every review across the entire
 app.
 
@@ -130,7 +130,7 @@ ______________________________________________________________________
 
 The `condition` expression in `onMutationExecuted` has access to two contexts:
 
-### `request` — The Query Subscription
+### `request` - The Query Subscription
 
 The state of the query being subscribed to.
 
@@ -140,7 +140,7 @@ The state of the query being subscribed to.
 | `request.auth.uid`   | UID of the user who subscribed                               |
 | `request.auth.token` | Full auth token claims of the subscriber                     |
 
-### `mutation` — The Triggering Event
+### `mutation` - The Triggering Event
 
 The mutation that just executed.
 
@@ -171,7 +171,7 @@ ______________________________________________________________________
 ## Implicit Entity Refresh signals
 
 For single-entity lookups by unique identifier, SQL Connect handles refreshes
-automatically — no `@refresh` directive needed.
+automatically - no `@refresh` directive needed.
 
 **What qualifies:**
 
@@ -188,7 +188,7 @@ automatically — no `@refresh` directive needed.
 
 **What does NOT qualify:**
 
-- List queries: `movies(where: {...})`, `users { id name }` — these require
+- List queries: `movies(where: {...})`, `users { id name }` - these require
   explicit `@refresh`
 - Nested query with JOINs
 - Aggregation
@@ -196,7 +196,7 @@ automatically — no `@refresh` directive needed.
 - Customized Resolver (if supported)
 
 ```graphql
-# When subscribed to, this query auto-refreshes when movie data changes — no @refresh needed
+# When subscribed to, this query auto-refreshes when movie data changes - no @refresh needed
 query GetMovie($id: UUID!) @auth(level: PUBLIC) {
   movie(id: $id) {
     id title rating description
@@ -206,5 +206,5 @@ query GetMovie($id: UUID!) @auth(level: PUBLIC) {
 ```
 
 To consume automatic refreshes on the client, use `subscribe()` instead of
-`execute()` — the same client pattern works regardless of whether the refresh is
+`execute()` - the same client pattern works regardless of whether the refresh is
 automatic or directive-driven.

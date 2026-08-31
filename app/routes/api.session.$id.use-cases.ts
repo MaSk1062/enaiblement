@@ -1,5 +1,5 @@
 /**
- * PATCH /api/session/:id/use-cases — the approval gate (ARCHITECTURE.md §6.2).
+ * PATCH /api/session/:id/use-cases - the approval gate (ARCHITECTURE.md §6.2).
  *
  * PRD Epic 2 requires it and the reference orchestrator skips it. This is the moment the
  * product stops being a chatbot and starts being a consultation: the Architect only ever sees
@@ -18,7 +18,7 @@ import { event, newTurnId, traceFrom, withTurn } from "../services/telemetry.ts"
 
 // A decision may carry the client's reason. That reason is the only feedback signal in the
 // product that says anything more than yes or no, and it is what stops a rebuilt list from
-// re-proposing what was just refused — see AgentState.declined.
+// re-proposing what was just refused - see AgentState.declined.
 const Body = z.object({
   decisions: z.record(
     z.string(),

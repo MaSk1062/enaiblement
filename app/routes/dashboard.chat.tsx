@@ -1,9 +1,9 @@
 /**
- * The consultation. One route, and this is the only place the strategy is read or revised —
+ * The consultation. One route, and this is the only place the strategy is read or revised -
  * /dashboard/canvas is a separate, chat-free destination for export only (UI-4).
  *
  * Three shapes, not two. Before the gate, this is a conversation and the Canvas appears in it
- * only at the one moment the user has to act — inline under the Analyst's handoff. Once at
+ * only at the one moment the user has to act - inline under the Analyst's handoff. Once at
  * least one use case is approved, the pipeline is building against a real decision, so the
  * Canvas moves beside the chat and fills in live as each specialist hands off (UI-2). Once
  * `currentStage` is "complete", that same two-pane layout is the artefact plus a rail for
@@ -20,7 +20,7 @@ import { useConsultation } from "../lib/consultation.ts";
 import { formatElapsed } from "../lib/pipelineView.ts";
 import type { AgentName, ChatMessage, Stage } from "../types.ts";
 
-/** Where a specialist's work lands on the Canvas — for the deep link on their name (UI-4). */
+/** Where a specialist's work lands on the Canvas - for the deep link on their name (UI-4). */
 const AGENT_SECTION: Partial<Record<AgentName, string>> = {
   "Discovery Consultant": "section-bottleneck",
   "Industry Analyst": "section-use-cases",
@@ -39,11 +39,11 @@ export default function Chat() {
   const done = state.currentStage === "complete";
   // The gate is the moment there is an artefact worth looking at: once something is approved,
   // the Architect (and whoever runs after) is building against it, so the Canvas earns the
-  // page instead of waiting for the whole pipeline to finish (UI-2 — the build-out shape).
+  // page instead of waiting for the whole pipeline to finish (UI-2 - the build-out shape).
   const buildingOut = state.useCases.some((uc) => uc.status === "approved");
   const showCanvas = done || buildingOut;
 
-  // The page just changed shape under the user — a mouse user sees it, but a keyboard or
+  // The page just changed shape under the user - a mouse user sees it, but a keyboard or
   // screen-reader user is still wherever the composer left them unless focus moves too.
   const canvasHeadingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function Chat() {
           {done && (
             <div className="mb-6 flex items-center justify-between print:hidden">
               <p className="text-lg font-medium text-slate-900">Your finished AI enablement strategy</p>
-              {/* The one download button lives on /dashboard/canvas (UI-4) — this page is for
+              {/* The one download button lives on /dashboard/canvas (UI-4) - this page is for
                   reading and revising it, not a second place the export action can drift from. */}
               <Link
                 to="/dashboard/canvas"
@@ -78,7 +78,7 @@ export default function Chat() {
               </Link>
             </div>
           )}
-          {/* Finished, it's the artifact, not a form — a document deserves to look lifted off
+          {/* Finished, it's the artifact, not a form - a document deserves to look lifted off
               the page (UI-12). Mid-build-out it's still in progress, so it stays flat. */}
           <div
             className={
@@ -108,8 +108,8 @@ export default function Chat() {
  * The one moment the user has to act, inline under the handoff that created it.
  *
  * Some stages need a real answer (`discovery`) or a real decision (`architecture`, before
- * anything is approved). The rest — `research`, `architecture` once approved, `roadmap`,
- * `training` — only need *a* message to run the next specialist; the content is thrown away
+ * anything is approved). The rest - `research`, `architecture` once approved, `roadmap`,
+ * `training` - only need *a* message to run the next specialist; the content is thrown away
  * (`stageMachine.ts` never reads it there). Those get a CTA instead of leaving the composer's
  * placeholder as the only way to discover that.
  */
@@ -155,7 +155,7 @@ function StageContinue() {
   );
 }
 
-/** Milliseconds since `active` last became true — resets to 0 the moment it goes false. */
+/** Milliseconds since `active` last became true - resets to 0 the moment it goes false. */
 function useElapsed(active: boolean): number {
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef<number | null>(null);
@@ -213,7 +213,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
 
         {busy && (
           // aria-live covers who's working and on what, so a screen reader hears it once (and
-          // again on a real stage change) — the ticking clock inside is aria-hidden on purpose,
+          // again on a real stage change) - the ticking clock inside is aria-hidden on purpose,
           // or "polite" would re-announce the whole line every second.
           <div aria-live="polite" className="flex items-center gap-2.5 text-sm text-slate-500">
             <Dots />
@@ -278,7 +278,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
 /**
  * The deep bench, on the composer.
  *
- * Present from the first message rather than appearing once the strategy is done — a capability
+ * Present from the first message rather than appearing once the strategy is done - a capability
  * that is not ready says WHY, which teaches the shape of the consultation instead of hiding it.
  */
 function DeepBench({ compact }: { compact?: boolean }) {
@@ -298,9 +298,9 @@ function DeepBench({ compact }: { compact?: boolean }) {
         title={
           plan.run.length
             ? `Runs ${plan.run.length} specialist${plan.run.length > 1 ? "s" : ""}`
-            : "Nothing is ready yet — finish the discovery interview"
+            : "Nothing is ready yet - finish the discovery interview"
         }
-        className="rounded-l-lg border border-r-0 border-slate-300 px-3 py-2 text-sm whitespace-nowrap text-slate-700 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+        className="rounded-l-lg border border-r-0 border-slate-300 px-3 py-2 text-sm whitespace-nowrap text-slate-700 transition hover:border-slate-900 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
       >
         Deep dive
       </button>
@@ -310,7 +310,7 @@ function DeepBench({ compact }: { compact?: boolean }) {
         disabled={busy}
         aria-expanded={open}
         aria-label="Run a single specialist"
-        className="rounded-r-lg border border-slate-300 px-1.5 py-2 text-xs text-slate-500 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+        className="rounded-r-lg border border-slate-300 px-1.5 py-2 text-xs text-slate-500 transition hover:border-slate-900 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
       >
         ▾
       </button>
@@ -339,7 +339,7 @@ function DeepBench({ compact }: { compact?: boolean }) {
                     setOpen(false);
                     void produce(c.id);
                   }}
-                  className="block w-full border-b border-slate-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
+                  className="block w-full border-b border-slate-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
                 >
                   <span className="block text-sm text-slate-900">{c.label}</span>
                   <span className="mt-0.5 block text-xs text-slate-500">
@@ -366,7 +366,7 @@ function Bubble({ message, compact }: { message: ChatMessage; compact?: boolean 
     );
   }
 
-  // Only the rail sits next to a visible Canvas — the single-pane, pre-gate conversation has
+  // Only the rail sits next to a visible Canvas - the single-pane, pre-gate conversation has
   // nothing on the page yet for the name to point at.
   const sectionId = compact && message.agentName ? AGENT_SECTION[message.agentName] : undefined;
   const persona = message.agentName ? agentPersona(message.agentName) : null;

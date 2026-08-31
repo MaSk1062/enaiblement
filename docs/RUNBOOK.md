@@ -4,7 +4,7 @@ What to run when something is wrong, or when someone asks what the demo cost.
 
 Every line the app logs is a single JSON object on stdout, which Cloud Run files as
 `jsonPayload` (see `app/services/telemetry.ts`). So all of this is `gcloud logging read` with a
-filter on `jsonPayload.event` — no log parsing, no regex over free text.
+filter on `jsonPayload.event` - no log parsing, no regex over free text.
 
 ```bash
 PROJECT=$GCP_PROJECT_ID
@@ -17,7 +17,7 @@ BASE='resource.type="cloud_run_revision" AND resource.labels.service_name="enaib
 |---|---|
 | `turn.start` / `turn.end` | one `POST /api/chat`. `ok:false` means the user lost their message |
 | `stage.advance` | the consultation moved on: `from` -> `to` |
-| `stage.blocked` | the approval gate held — normal once, a deadlock if it never stops |
+| `stage.blocked` | the approval gate held - normal once, a deadlock if it never stops |
 | `agent.call` | one model call, with latency and token counts. `repaired:true` = this was the retry |
 | `agent.repair` | output failed its schema and had to be asked again. `issuePaths` says which field |
 | `agent.failed` | the agent threw; the stage did NOT advance and the turn is replayable |
@@ -27,12 +27,12 @@ BASE='resource.type="cloud_run_revision" AND resource.labels.service_name="enaib
 | `api.error` | an unhandled failure that became a 503 |
 
 Nothing in any of them is user text. Message contents, emails and prompts cannot reach a log
-line — `event()` copies only from a fixed allow-list, and `telemetry.test.ts` keeps it that way.
+line - `event()` copies only from a fixed allow-list, and `telemetry.test.ts` keeps it that way.
 
 ## The five queries
 
 **1. Everything that happened in one consultation.** The first thing to run when someone says
-"it broke" — it is the whole turn, in order, including which agent ran and what it cost.
+"it broke" - it is the whole turn, in order, including which agent ran and what it cost.
 
 ```bash
 gcloud logging read "$BASE AND jsonPayload.sessionId=\"session_1234567890_abcd\"" \
@@ -57,7 +57,7 @@ gcloud logging read "$BASE AND jsonPayload.event=\"agent.repair\"" \
   --format='table(jsonPayload.agent, jsonPayload.stage, jsonPayload.issuePaths)'
 ```
 
-**4. What today cost.** `totalTokens` on `turn.end` is the whole turn — every model call it made,
+**4. What today cost.** `totalTokens` on `turn.end` is the whole turn - every model call it made,
 including a repair and any grounded search.
 
 ```bash
@@ -78,7 +78,7 @@ gcloud logging read "$BASE AND jsonPayload.event=\"turn.end\" AND jsonPayload.du
 ## Dashboard and alert
 
 `./scripts/monitoring.sh` creates five log-based metrics, one dashboard (turn latency p95,
-failed turns, schema repairs, tokens per turn) and — with `ALERT_EMAIL` set — one alert on more
+failed turns, schema repairs, tokens per turn) and - with `ALERT_EMAIL` set - one alert on more
 than three failed turns in five minutes.
 
 Log-based metrics only count entries written after the metric exists. A newly created dashboard

@@ -18,7 +18,7 @@ export function meta() {
 }
 
 // ponytail: one form, not the three-step wizard in FRD §2.1. Three fields do not need three
-// screens, and the profile it produces is identical. Company size is collected by neither —
+// screens, and the profile it produces is identical. Company size is collected by neither -
 // no agent reads it. Add both back if the demo script wants the ceremony.
 export default function Onboarding() {
   const { user, loading } = useAuth();
@@ -55,10 +55,10 @@ export default function Onboarding() {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
       <form onSubmit={onSubmit} className="w-full max-w-md">
-        {/* Same wordmark and voice as /login — nothing here should feel like a second product. */}
+        {/* Same wordmark and voice as /login - nothing here should feel like a second product. */}
         <div className="flex items-start justify-between">
           <p className="text-3xl font-semibold tracking-tight text-indigo-600">Enaible</p>
-          {/* Signed in but no profile yet — without this there is no way back to /login. */}
+          {/* Signed in but no profile yet - without this there is no way back to /login. */}
           <SignOutButton />
         </div>
 

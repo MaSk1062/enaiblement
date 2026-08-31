@@ -116,11 +116,11 @@ class Svg:
 
 
 # =====================================================================
-# HLA — High-Level Architecture
+# HLA - High-Level Architecture
 # =====================================================================
 def hla():
     s = Svg(1460, 1010)
-    s.text(48, 46, "enaible — High-Level Architecture (HLA)", size=23, weight=750, anchor="start")
+    s.text(48, 46, "enaible - High-Level Architecture (HLA)", size=23, weight=750, anchor="start")
     s.text(48, 70, "AI Enablement & Consulting Platform · MVP · Google Cloud",
            size=12.5, weight=450, anchor="start", fill="#64748b")
     s.add('<line x1="48" y1="86" x2="1412" y2="86" stroke="#e2e8f0" stroke-width="1.5"/>')
@@ -147,7 +147,7 @@ def hla():
            ["Export module", "strategy → PDF / slide deck"], "client")
 
     # ---- Tier 3: Cloud Run
-    s.group(48, 412, 1364, 258, "3 · Application tier — Google Cloud Run (container, scale 0→N)", chip="right")
+    s.group(48, 412, 1364, 258, "3 · Application tier - Google Cloud Run (container, scale 0→N)", chip="right")
     s.node(78, 440, 300, 74, ["Edge / SSR server", "React Router request handler"], "service")
     s.node(408, 440, 320, 74, ["Auth middleware", "Firebase JWT verify · session guard"], "service")
     s.node(758, 440, 300, 74, ["REST API layer", "/api/session · /api/chat · /api/export"], "service")
@@ -167,7 +167,7 @@ def hla():
         s.node(x, 730, 122, 72, [nm, code], "agent", r=9, size=12.5, sub_size=10)
 
     # ---- Tier 5: data + platform
-    s.group(772, 706, 640, 118, "5 · Data tier — Firestore (native mode)")
+    s.group(772, 706, 640, 118, "5 · Data tier - Firestore (native mode)")
     s.node(796, 730, 190, 72, ["users", "profile · role · industry"], "data", size=12.5, sub_size=10)
     s.node(1002, 730, 190, 72, ["sessions", "messages · AgentState"], "data", size=12.5, sub_size=10)
     s.node(1208, 730, 188, 72, ["knowledge_base", "768-d vector index"], "data", size=12.5, sub_size=10)
@@ -207,11 +207,11 @@ def hla():
 
 
 # =====================================================================
-# LLA-1 — Backend module decomposition + /api/chat request path
+# LLA-1 - Backend module decomposition + /api/chat request path
 # =====================================================================
 def lla_modules():
     s = Svg(1460, 1000)
-    s.text(48, 46, "LLA-1 — Backend module decomposition & the /api/chat request path",
+    s.text(48, 46, "LLA-1 - Backend module decomposition & the /api/chat request path",
            size=21, weight=750, anchor="start")
     s.text(48, 69, "Every numbered hop is one function call inside the Cloud Run container unless marked as a network call.",
            size=12, weight=450, anchor="start", fill="#64748b")
@@ -267,21 +267,21 @@ def lla_modules():
         col = "#0d9488" if "network" in lab else "#475569"
         s.arrow(a, y, b, y, lab, color=col, lx=(a + b) / 2, ly=y - 7, lsize=10.2)
 
-    s.text(56, 946, "Failure policy — 4/12 Firestore: 5xx returns an error envelope, no state mutation.  "
+    s.text(56, 946, "Failure policy - 4/12 Firestore: 5xx returns an error envelope, no state mutation.  "
                     "8: Gemini retried 5× with exponential backoff (1s→16s).  "
                     "9: one schema-repair re-prompt, then the turn is returned as plain prose and the stage is NOT advanced.",
            size=11, weight=450, anchor="start", fill="#64748b")
-    s.text(56, 968, "Invariant — the stage only advances after the parsed payload has been persisted, so a crashed turn is always replayable.",
+    s.text(56, 968, "Invariant - the stage only advances after the parsed payload has been persisted, so a crashed turn is always replayable.",
            size=11, weight=550, anchor="start", fill="#334155")
     s.save("lla-1-modules.svg")
 
 
 # =====================================================================
-# LLA-2 — Agent state machine
+# LLA-2 - Agent state machine
 # =====================================================================
 def lla_state():
     s = Svg(1460, 780)
-    s.text(48, 46, "LLA-2 — Orchestrator stage machine & AgentState mutations",
+    s.text(48, 46, "LLA-2 - Orchestrator stage machine & AgentState mutations",
            size=21, weight=750, anchor="start")
     s.text(48, 69, "state.currentStage is the single source of truth. One agent owns each stage and writes exactly one field.",
            size=12, weight=450, anchor="start", fill="#64748b")
@@ -293,7 +293,7 @@ def lla_state():
         ("architecture", "Technical Architect", "architectureStack", "gated on ≥1 approved use case"),
         ("roadmap", "Project Manager", "roadmapPhases[]", "3 phases · pilot→integrate→scale"),
         ("training", "Change Coach", "changeManagementPlan", "upskilling · comms · KPIs"),
-        ("complete", "AI Enabler (Q&A)", "— read only —", "export unlocked"),
+        ("complete", "AI Enabler (Q&A)", "- read only -", "export unlocked"),
     ]
     y = 150
     bw, bh = 206, 96
@@ -339,21 +339,21 @@ def lla_state():
     s.node(732, 554, 340, 74, ["state.<field>", "needsAssessment · useCases · stack · phases · plan"], "data", sub_size=10)
     s.node(1096, 554, 292, 74, ["updatedAt", "optimistic-concurrency check"], "data")
 
-    s.text(60, 686, "Recovery — because the whole AgentState is one document written in a single update(), a failed turn leaves the session on its previous stage.",
+    s.text(60, 686, "Recovery - because the whole AgentState is one document written in a single update(), a failed turn leaves the session on its previous stage.",
            size=11, weight=450, anchor="start", fill="#64748b")
     s.text(60, 706, "The client reconciles by re-reading the session on reconnect; no server-side in-memory agent state exists, so any Cloud Run instance can serve any turn.",
            size=11, weight=450, anchor="start", fill="#64748b")
-    s.text(60, 734, "Cold-start note — stateless instances mean scale-to-zero is safe; the trade-off is a ~1–2s cold start on the first turn after idle.",
+    s.text(60, 734, "Cold-start note - stateless instances mean scale-to-zero is safe; the trade-off is a ~1–2s cold start on the first turn after idle.",
            size=11, weight=550, anchor="start", fill="#334155")
     s.save("lla-2-state-machine.svg")
 
 
 # =====================================================================
-# LLA-3 — Data model & vector search
+# LLA-3 - Data model & vector search
 # =====================================================================
 def lla_data():
     s = Svg(1460, 900)
-    s.text(48, 46, "LLA-3 — Firestore data model & RAG vector-search path",
+    s.text(48, 46, "LLA-3 - Firestore data model & RAG vector-search path",
            size=21, weight=750, anchor="start")
     s.text(48, 69, "Three collections. Sessions denormalise the whole workspace into one document so a turn is one read and one write.",
            size=12, weight=450, anchor="start", fill="#64748b")
@@ -395,7 +395,7 @@ def lla_data():
     ])
 
     s.arrow(440, 200, 518, 200, "1 : N", ly=192)
-    s.text(1216, 404, "No join to sessions — read by the RAG service only, at query time.",
+    s.text(1216, 404, "No join to sessions - read by the RAG service only, at query time.",
            size=11, weight=550, fill="#0d9488")
     s.text(730, 452, "One document per consultation: a turn is exactly one get() + one update().",
            size=11, weight=550, fill="#7c2d12")
@@ -420,7 +420,7 @@ def lla_data():
             s.arrow(x - 22, 567, x, 567, lbg=False)
 
     s.rect(84, 620, 1304, 72, "platform", r=8, sw=1.2)
-    s.text(100, 640, "Index — must exist before the first query, and takes minutes to build. Create it on day one:",
+    s.text(100, 640, "Index - must exist before the first query, and takes minutes to build. Create it on day one:",
            size=11, weight=650, anchor="start", kind="platform")
     for i, ln in enumerate([
         "gcloud alpha firestore indexes composite create --collection-group=knowledge_base --query-scope=COLLECTION \\",
@@ -434,7 +434,7 @@ def lla_data():
     rules = [
         ("users/{uid}", "read/write if request.auth.uid == uid"),
         ("sessions/{id}", "read/write if resource.data.userId == request.auth.uid"),
-        ("knowledge_base/*", "client access denied — server (Admin SDK) only"),
+        ("knowledge_base/*", "client access denied - server (Admin SDK) only"),
         ("Admin ingest", "/api/knowledge/ingest behind an admin custom claim"),
     ]
     for i, (a, b) in enumerate(rules):
@@ -445,11 +445,11 @@ def lla_data():
 
 
 # =====================================================================
-# LLA-4 — Frontend & deployment
+# LLA-4 - Frontend & deployment
 # =====================================================================
 def lla_frontend():
     s = Svg(1460, 830)
-    s.text(48, 46, "LLA-4 — Frontend route/component tree & deployment topology",
+    s.text(48, 46, "LLA-4 - Frontend route/component tree & deployment topology",
            size=21, weight=750, anchor="start")
     s.text(48, 69, "React Router v8 framework mode: loaders/actions run on the same server that hosts the API, so the client never holds a service credential.",
            size=12, weight=450, anchor="start", fill="#64748b")
@@ -482,7 +482,7 @@ def lla_frontend():
                                "holds AgentState; every API response replaces it wholesale"], "client")
     s.node(816, 232, 274, 90, ["useChat()", "optimistic user bubble", "typing indicator per agent"], "client", gap=14)
     s.node(1114, 232, 274, 90, ["useStrategy()", "derives canvas + gantt", "from the same AgentState"], "client", gap=14)
-    s.node(816, 338, 572, 66, ["Why one state object", "canvas and roadmap update the instant a turn lands — no second fetch, no drift"], "client")
+    s.node(816, 338, 572, 66, ["Why one state object", "canvas and roadmap update the instant a turn lands - no second fetch, no drift"], "client")
     s.node(816, 420, 572, 76, ["Export", "client-side html → /api/export → server renders PDF & PPTX from AgentState"], "client")
 
     # deployment
@@ -512,7 +512,7 @@ def lla_frontend():
 # =====================================================================
 def sprint():
     s = Svg(1460, 760)
-    s.text(48, 46, "48-hour sprint plan — workstream timeline", size=21, weight=750, anchor="start")
+    s.text(48, 46, "48-hour sprint plan - workstream timeline", size=21, weight=750, anchor="start")
     s.text(48, 69, "T0 = kickoff. Hard freeze at T+44h; the last 4 hours are demo rehearsal only.",
            size=12, weight=450, anchor="start", fill="#64748b")
     s.add('<line x1="48" y1="84" x2="1412" y2="84" stroke="#e2e8f0" stroke-width="1.5"/>')

@@ -1,5 +1,5 @@
 /**
- * POST /api/session/start — create a consultation and return the Discovery greeting.
+ * POST /api/session/start - create a consultation and return the Discovery greeting.
  *
  * This route owns HTTP shape only: parsing, status codes, error envelopes (§5.1).
  */

@@ -8,7 +8,7 @@
   </marker>
 </defs>
 <rect width="1460" height="780" fill="#ffffff"/>
-<text x="48" y="46" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="21" font-weight="750" fill="#0f172a" text-anchor="start" opacity="1.0">LLA-2 — Orchestrator stage machine &amp; AgentState mutations</text>
+<text x="48" y="46" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="21" font-weight="750" fill="#0f172a" text-anchor="start" opacity="1.0">LLA-2 - Orchestrator stage machine &amp; AgentState mutations</text>
 <text x="48" y="69" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12" font-weight="450" fill="#64748b" text-anchor="start" opacity="1.0">state.currentStage is the single source of truth. One agent owns each stage and writes exactly one field.</text>
 <line x1="48" y1="84" x2="1412" y2="84" stroke="#e2e8f0" stroke-width="1.5"/>
 <rect x="60" y="150" width="206" height="96" rx="12" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.6"/>
@@ -49,7 +49,7 @@
 <text x="1303.0" y="176" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="14.5" font-weight="700" fill="#7c2d12" text-anchor="middle" opacity="1.0">complete</text>
 <text x="1303.0" y="197" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11.5" font-weight="550" fill="#7c2d12" text-anchor="middle" opacity="0.9">AI Enabler (Q&amp;A)</text>
 <rect x="1216" y="208" width="174" height="24" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.1"/>
-<text x="1303.0" y="224.5" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="10.5" font-weight="600" fill="#7c2d12" text-anchor="middle" opacity="1.0">— read only —</text>
+<text x="1303.0" y="224.5" font-family="'JetBrains Mono','SF Mono',Consolas,monospace" font-size="10.5" font-weight="600" fill="#7c2d12" text-anchor="middle" opacity="1.0">- read only -</text>
 <text x="1303.0" y="264" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="450" fill="#64748b" text-anchor="middle" opacity="1.0">export unlocked</text>
 <path d="M 1178 198.0 L 1200 198.0" fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)"/>
 <path d="M 121.8 150 C 121.8 98, 204.2 98, 204.2 150" fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)"/>
@@ -78,7 +78,7 @@
 <rect x="1096" y="554" width="292" height="74" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/>
 <text x="1242.0" y="587.28" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13.5" font-weight="650" fill="#7c2d12" text-anchor="middle" opacity="1.0">updatedAt</text>
 <text x="1242.0" y="605.505" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#7c2d12" text-anchor="middle" opacity="0.82">optimistic-concurrency check</text>
-<text x="60" y="686" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#64748b" text-anchor="start" opacity="1.0">Recovery — because the whole AgentState is one document written in a single update(), a failed turn leaves the session on its previous stage.</text>
+<text x="60" y="686" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#64748b" text-anchor="start" opacity="1.0">Recovery - because the whole AgentState is one document written in a single update(), a failed turn leaves the session on its previous stage.</text>
 <text x="60" y="706" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="450" fill="#64748b" text-anchor="start" opacity="1.0">The client reconciles by re-reading the session on reconnect; no server-side in-memory agent state exists, so any Cloud Run instance can serve any turn.</text>
-<text x="60" y="734" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="550" fill="#334155" text-anchor="start" opacity="1.0">Cold-start note — stateless instances mean scale-to-zero is safe; the trade-off is a ~1–2s cold start on the first turn after idle.</text>
+<text x="60" y="734" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="550" fill="#334155" text-anchor="start" opacity="1.0">Cold-start note - stateless instances mean scale-to-zero is safe; the trade-off is a ~1–2s cold start on the first turn after idle.</text>
 </svg>

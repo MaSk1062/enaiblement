@@ -3,7 +3,7 @@
  *
  * 1. Instrumentation cannot fail the thing it observes.
  * 2. A line carries its turn context, or Cloud Logging cannot group it.
- * 3. Nothing a user typed can reach a log line — the allow-list is what enforces that, so this
+ * 3. Nothing a user typed can reach a log line - the allow-list is what enforces that, so this
  *    is the test that keeps it enforced when someone adds a field in a hurry.
  */
 

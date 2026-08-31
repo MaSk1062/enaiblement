@@ -1,5 +1,5 @@
 /**
- * FR-A1 — the Discovery Consultant. Owns the `discovery` stage, writes `needsAssessment`.
+ * FR-A1 - the Discovery Consultant. Owns the `discovery` stage, writes `needsAssessment`.
  *
  * Completion is a parsed discriminant, never a string match: the model returns either
  * {"status":"asking"} or {"status":"complete", …} (ARCHITECTURE.md §6.3).

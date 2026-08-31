@@ -18,7 +18,7 @@ import {
 import type { AgentName, Stage } from "../types.ts";
 
 /**
- * One hue per specialist (UI-10 — ui-identity-tasks.md), reused everywhere that agent's name
+ * One hue per specialist (UI-10 - ui-identity-tasks.md), reused everywhere that agent's name
  * renders: the progress rail, a chat bubble's agent label, a Canvas section header. `solid` is
  * the active-stage chip background; `light`/`lightText` are the done-stage chip; `text` is for
  * the icon and label wherever it sits on a plain background rather than its own chip.
@@ -94,13 +94,16 @@ const STATUS: Record<Stage, AgentStatus> = {
     name: AGENT_NAMES.sourcing,
     working: "is finding partners who have done this before",
     blurb: "Shortlisting implementation partners and drafting a proposal",
-    // ponytail: reuses PeopleIcon — partners are people; own hue is what distinguishes the badge
+    // ponytail: reuses PeopleIcon - partners are people; own hue is what distinguishes the badge.
+    // That hue is cyan, not the emerald first drafted here - emerald already means "approved"
+    // on a use-case card (ui-identity-tasks.md UI-10 rules agent colors off status colors on
+    // purpose), and a sixth specialist sharing that hue would read as "already approved."
     Icon: PeopleIcon,
     accent: {
-      text: "text-emerald-600",
-      solid: "bg-emerald-600",
-      light: "bg-emerald-50",
-      lightText: "text-emerald-700",
+      text: "text-cyan-600",
+      solid: "bg-cyan-600",
+      light: "bg-cyan-50",
+      lightText: "text-cyan-700",
     },
   },
   complete: {
@@ -120,7 +123,7 @@ const STATUS: Record<Stage, AgentStatus> = {
 export const agentStatus = (stage: Stage): AgentStatus => STATUS[stage];
 
 /**
- * Icon + accent by agent name rather than stage — a chat message carries `agentName`, not the
+ * Icon + accent by agent name rather than stage - a chat message carries `agentName`, not the
  * stage that produced it, and "Change Coach" alone owns two stages (training and complete).
  */
 const PERSONA: Record<AgentName, Pick<AgentStatus, "Icon" | "accent">> = Object.fromEntries(

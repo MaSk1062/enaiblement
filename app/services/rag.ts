@@ -3,9 +3,9 @@
  *
  * Two retrievers, tried in order, and the order is the point:
  *
- *   1. knowledge_base — bottleneck -> embedding -> where(industry) -> findNearest(COSINE, k).
+ *   1. knowledge_base - bottleneck -> embedding -> where(industry) -> findNearest(COSINE, k).
  *      Curated, verified, fast, and free of the open web. Always preferred when it answers.
- *   2. Google Search, via Gemini's own tool — real URLs, no corpus to seed and no index to
+ *   2. Google Search, via Gemini's own tool - real URLs, no corpus to seed and no index to
  *      build, but it is the open web and the user is told so.
  *   3. Nothing. `grounded: false`, and the prompt is instructed not to invent anything.
  *
@@ -13,7 +13,7 @@
  * and it is why the composite index declares `industry` ASCENDING alongside the vector config.
  *
  * NOTE: docs/FIRESTORE_SCHEMA.md writes vectors with `VectorValue.create()`, which does not
- * exist in the SDK. `FieldValue.vector()` is the real API — this is the only file that
+ * exist in the SDK. `FieldValue.vector()` is the real API - this is the only file that
  * knows that, and scripts/verify-kickoff.mjs asserts it.
  */
 
@@ -76,13 +76,13 @@ async function webSearch(bottleneck: string, industry: Industry) {
   );
 
   // No citations means the model answered from its own weights and the search returned nothing
-  // usable — which is precisely the ungrounded case, so do not dress it up as retrieval.
+  // usable - which is precisely the ungrounded case, so do not dress it up as retrieval.
   if (!text.trim() || sources.length === 0) return { documents: [] as Retrieved[], sources: [] };
 
   const documents: Retrieved[] = [
     {
       id: "web-search",
-      title: `Web research — AI applied to "${bottleneck}" in ${industry}`,
+      title: `Web research - AI applied to "${bottleneck}" in ${industry}`,
       content: `${text.trim()}\n\nSources:\n${sources.map((s) => `- ${s.title}: ${s.url}`).join("\n")}`,
     },
   ];
@@ -158,7 +158,7 @@ export function toContextBlock({ documents, source }: RagResult): string {
 
   return [
     source === "web"
-      ? "RETRIEVED FROM A WEB SEARCH (open web, not our curated corpus — attribute accordingly):"
+      ? "RETRIEVED FROM A WEB SEARCH (open web, not our curated corpus - attribute accordingly):"
       : "RETRIEVED CASE STUDIES:",
     ...documents.map(
       (d, i) =>

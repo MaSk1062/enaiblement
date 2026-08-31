@@ -25,7 +25,7 @@ test("an ordinary alternating conversation is unchanged", () => {
 });
 
 test("a deep dive's six replies cannot push the client out of the window", () => {
-  // Six capability replies land back to back — this is what a full deep dive writes, and what
+  // Six capability replies land back to back - this is what a full deep dive writes, and what
   // the old slice(-6) window returned in its entirety, leaving the model nothing the client said.
   const messages = [
     user("Cut the claims backlog."),
@@ -41,7 +41,7 @@ test("a deep dive's six replies cannot push the client out of the window", () =>
 });
 
 test("a five-reply rewind turn keeps the earlier user messages", () => {
-  // followUp() seeds one reply and advance() adds one per stage — five agent messages in a
+  // followUp() seeds one reply and advance() adds one per stage - five agent messages in a
   // single turn. Counting messages would leave only the newest user line.
   const messages = [
     user("What would this cost?"),

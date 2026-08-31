@@ -1,7 +1,7 @@
 /**
  * Every Firestore read and write. No product rules live here (ARCHITECTURE.md §5.1).
  *
- * Credentials are ADC — the runtime service account on Cloud Run, `gcloud auth
+ * Credentials are ADC - the runtime service account on Cloud Run, `gcloud auth
  * application-default login` locally. There is no service-account JSON to mount.
  */
 
@@ -33,7 +33,7 @@ const databaseId = process.env.FIRESTORE_DATABASE_ID ?? "(default)";
 // there is only one.
 const authProjectId = process.env.FIREBASE_AUTH_PROJECT_ID ?? projectId;
 
-// Look apps up by name, not getApps()[0] — whichever is initialised first would otherwise be
+// Look apps up by name, not getApps()[0] - whichever is initialised first would otherwise be
 // handed to both.
 function app() {
   return getApps().find((a) => a.name === "[DEFAULT]") ?? initializeApp({ projectId });
@@ -76,7 +76,7 @@ export async function createSession(
   profile: SessionUserProfile,
 ): Promise<SessionDocument> {
   // Starting a new consultation is what turns the current one into history, so this is where
-  // memory accumulates — before the pointer moves, and nowhere else.
+  // memory accumulates - before the pointer moves, and nowhere else.
   const existing = await getUser(userId);
   const previous = existing.activeSessionId ? await getSession(existing.activeSessionId) : null;
   const memory = remember(existing.memory, previous ? summarise(previous) : null);
@@ -99,7 +99,7 @@ export async function createSession(
     messages: [opener],
     state: { currentStage: "discovery", needsAssessment: {}, useCases: [] },
     // Frozen here rather than looked up per turn: the agents reach it through the session they
-    // already receive. Omitted when empty — Firestore rejects undefined, and a stored empty
+    // already receive. Omitted when empty - Firestore rejects undefined, and a stored empty
     // string would put a blank line at the top of every prompt.
     ...(recalled ? { memoryBlock: recalled } : {}),
   };
@@ -204,7 +204,7 @@ export interface ArtifactMerge {
   artifacts: Artifact[];
   /** Only what changed, so the caller writes the minimum. */
   written: Artifact[];
-  /** Paths dropped, with why — surfaced to the user rather than silently truncated. */
+  /** Paths dropped, with why - surfaced to the user rather than silently truncated. */
   rejected: { path: string; reason: string }[];
 }
 
@@ -212,7 +212,7 @@ export interface ArtifactMerge {
  * Merges freshly generated files into what a session already holds.
  *
  * Keyed by `path`: regenerating infra/main.tf replaces it instead of leaving three versions
- * behind. Over-cap content is REJECTED rather than truncated — half a Terraform file that looks
+ * behind. Over-cap content is REJECTED rather than truncated - half a Terraform file that looks
  * complete is worse than an honest refusal.
  */
 export function applyArtifacts(existing: Artifact[], incoming: Artifact[]): ArtifactMerge {
@@ -264,7 +264,7 @@ export async function setUseCaseStatuses(
   const useCases = session.state.useCases.map((uc) => {
     const decision = decisions[uc.id];
     if (!decision) return uc;
-    // The key is omitted rather than set undefined — Firestore rejects the whole write.
+    // The key is omitted rather than set undefined - Firestore rejects the whole write.
     return {
       ...uc,
       status: decision.status,

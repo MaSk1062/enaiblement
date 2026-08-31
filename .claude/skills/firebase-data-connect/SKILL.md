@@ -21,7 +21,7 @@ SDKs.
 ```text
 dataconnect/
 ├── dataconnect.yaml      # Service configuration
-├── seed_data.gql         # LOCAL ONLY — prototype/test data
+├── seed_data.gql         # LOCAL ONLY - prototype/test data
 ├── schema/
 │   └── schema.gql        # Data model (types with @table)
 └── connector/

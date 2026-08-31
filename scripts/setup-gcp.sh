@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# One-time GCP setup. Idempotent — safe to re-run.
+# One-time GCP setup. Idempotent - safe to re-run.
 #
 #   ./scripts/setup-gcp.sh
 #
@@ -15,7 +15,7 @@ cd "$(dirname "$0")/.."
 
 [ -f .env ] && { set -a; . ./.env; set +a; }
 
-PROJECT="${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set — see .env.example}"
+PROJECT="${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set - see .env.example}"
 REGION="${DEPLOY_REGION:-us-central1}"
 REPO="${DEPLOY_REPO:-enaible}"
 DB="${FIRESTORE_DATABASE_ID:-(default)}"

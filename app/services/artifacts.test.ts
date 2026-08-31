@@ -2,7 +2,7 @@
  * Merging generated files into a session.
  *
  * Two failure modes worth a test. Regenerating a capability must not leave three copies of
- * main.tf behind — the whole point of keying on `path`. And a file that breaches the cap must be
+ * main.tf behind - the whole point of keying on `path`. And a file that breaches the cap must be
  * REJECTED rather than truncated: half a Terraform file that looks complete is the kind of thing
  * someone runs.
  */

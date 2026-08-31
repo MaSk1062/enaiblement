@@ -1,9 +1,9 @@
-# enaible — Architecture Document
+# enaible - Architecture Document
 
 **Product:** AI Enablement & Consulting Platform
 **Codename:** enaible
 **Version:** 1.0 · MVP (Phase 1)
-**Status:** Proposed — for hackathon build
+**Status:** Proposed - for hackathon build
 **Source documents:** PRD v1.0, FRD v1.0, Firestore Schema & Vector Search Spec, Agent System Prompts
 
 ---
@@ -12,7 +12,7 @@
 
 This document describes how the platform in the PRD and FRD is actually built: the runtime topology, the module boundaries, the data model, and the decisions taken where the source documents were silent or in conflict.
 
-It covers the MVP scope only — a single-user consultation that runs five specialist agents in sequence over a Firestore-backed session and ends in an exportable strategy. Multi-user workspaces and code deployment into customer environments are explicitly out of scope, per PRD §5.
+It covers the MVP scope only - a single-user consultation that runs five specialist agents in sequence over a Firestore-backed session and ends in an exportable strategy. Multi-user workspaces and code deployment into customer environments are explicitly out of scope, per PRD §5.
 
 Two things in this document are decisions rather than descriptions, and are flagged as such: the collapse of "SPA + separate API service" into one Cloud Run container (§4.1), and the replacement of an LLM-routed orchestrator with a deterministic stage machine (§4.2). Everything else follows the source specs.
 
@@ -33,23 +33,23 @@ Two things in this document are decisions rather than descriptions, and are flag
 
 ## 3. High-Level Architecture (HLA)
 
-![Figure 1 — High-level architecture: six tiers, from actors down to Google Cloud platform services.](diagrams/hla.svg)
+![Figure 1 - High-level architecture: six tiers, from actors down to Google Cloud platform services.](diagrams/hla.svg)
 
 ### 3.1 Reading the diagram
 
 Six tiers, top to bottom.
 
-**① Actors.** The three PRD personas plus one internal actor the PRD omits: someone has to put case studies into the knowledge base. Without a curator role the RAG tier has no content, and the Analyst agent degrades to generic advice — exactly the failure mode the Agent Prompts spec says to reject.
+**① Actors.** The three PRD personas plus one internal actor the PRD omits: someone has to put case studies into the knowledge base. Without a curator role the RAG tier has no content, and the Analyst agent degrades to generic advice - exactly the failure mode the Agent Prompts spec says to reject.
 
 **② Client.** A React Router v8 application in framework mode with SSR enabled (this is what the existing repo scaffold already is). Three concerns live here: the routed UI, the Strategy Canvas store that mirrors `AgentState`, and the export module.
 
 **③ Application tier.** One Cloud Run container. The React Router server handles both document requests and the `/api/*` resource routes. Behind those sit the orchestrator, the RAG service, and the prompt/JSON contract layer.
 
-**④ Specialist agents.** Five prompt-scoped modules (FR-A1…A5). They are not separate processes or separate models — each is a system prompt, an input projection over `AgentState`, and an output schema.
+**④ Specialist agents.** Five prompt-scoped modules (FR-A1…A5). They are not separate processes or separate models - each is a system prompt, an input projection over `AgentState`, and an output schema.
 
 **⑤ Data tier.** Three Firestore collections. `knowledge_base` carries a 768-dimension vector index for native ANN search.
 
-**⑥ Platform.** Firebase Auth, the Gemini API on Vertex, Artifact Registry, Cloud Logging. No client code touches these directly, and no static credential exists for any of them — see §8.3.
+**⑥ Platform.** Firebase Auth, the Gemini API on Vertex, Artifact Registry, Cloud Logging. No client code touches these directly, and no static credential exists for any of them - see §8.3.
 
 ### 3.2 The request in one sentence
 
@@ -59,7 +59,7 @@ A browser sends a chat turn with a Firebase ID token; the Cloud Run container ve
 
 ## 4. Key architectural decisions
 
-### 4.1 ADR-01 — One Cloud Run service, not two
+### 4.1 ADR-01 - One Cloud Run service, not two
 
 **Context.** The FRD describes a decoupled SPA plus a containerised Node/Express API. The repository, however, is already a React Router v8 framework-mode app with `ssr: true`, which ships its own Node server.
 
@@ -72,9 +72,9 @@ A browser sends a chat turn with a Firebase ID token; the Cloud Run container ve
 - *Bad:* UI traffic and agent traffic scale together. A slow agent turn occupies a request slot that also serves page loads.
 - *Bad:* it diverges from the FRD as written.
 
-**Mitigation and exit.** Cloud Run concurrency is set to 80 with a 60-second request timeout, so page loads are not starved by in-flight agent turns at MVP volume. If agent load ever needs to scale independently, `orchestrator/` and `agents/` lift out into a second Cloud Run service unchanged — the only edit is swapping the in-process call in `api.chat.ts` for a `fetch`. The module boundary in §5 exists to keep that edit to one file.
+**Mitigation and exit.** Cloud Run concurrency is set to 80 with a 60-second request timeout, so page loads are not starved by in-flight agent turns at MVP volume. If agent load ever needs to scale independently, `orchestrator/` and `agents/` lift out into a second Cloud Run service unchanged - the only edit is swapping the in-process call in `api.chat.ts` for a `fetch`. The module boundary in §5 exists to keep that edit to one file.
 
-### 4.2 ADR-02 — A deterministic stage machine, not an LLM router
+### 4.2 ADR-02 - A deterministic stage machine, not an LLM router
 
 **Context.** The Agent Prompts spec describes an "Orchestrator Agent [that] acts as the router, calling these specialized sub-agents based on the conversation state." That can be read two ways: an LLM that decides which agent to call, or code that switches on state.
 
@@ -87,40 +87,40 @@ A browser sends a chat turn with a Firebase ID token; the Cloud Run container ve
 - *Good:* every transition is testable without a model in the loop.
 - *Bad:* the user cannot say "actually, go back and redo the use cases" and have the system understand. The MVP handles this only through the explicit approval gate (§6.2); free-form revision intent is post-MVP and is drawn as the dashed edge in LLA-2.
 
-### 4.3 ADR-03 — Google ADK deferred
+### 4.3 ADR-03 - Google ADK deferred
 
-**Context.** The FRD names Google ADK as the orchestration layer. ADK's mature surface is Python; the Node story is thinner, and the reference code in the Firestore spec does not use it — it calls the Gemini SDK directly.
+**Context.** The FRD names Google ADK as the orchestration layer. ADK's mature surface is Python; the Node story is thinner, and the reference code in the Firestore spec does not use it - it calls the Gemini SDK directly.
 
 **Decision.** Build on `@google/generative-ai` directly for the MVP, behind a thin `services/gemini.ts` seam.
 
-**Consequences.** Fewer moving parts and no SDK-maturity risk during a sprint. The cost is that ADK's built-in tracing, tool-calling and session primitives have to be hand-rolled — which for five prompt-scoped agents with fixed transitions is roughly 150 lines. If the team later wants ADK (or a Python ADK microservice), the seam is `services/gemini.ts` plus the five agent modules; nothing in the routes or the data model changes.
+**Consequences.** Fewer moving parts and no SDK-maturity risk during a sprint. The cost is that ADK's built-in tracing, tool-calling and session primitives have to be hand-rolled - which for five prompt-scoped agents with fixed transitions is roughly 150 lines. If the team later wants ADK (or a Python ADK microservice), the seam is `services/gemini.ts` plus the five agent modules; nothing in the routes or the data model changes.
 
-### 4.4 ADR-04 — Firestore native vector search, not a dedicated vector store
+### 4.4 ADR-04 - Firestore native vector search, not a dedicated vector store
 
 **Decision.** Store embeddings in the `knowledge_base` collection and query with `findNearest()`, as the schema spec prescribes.
 
 **Consequences.** One database, one credential, one bill, and the industry pre-filter runs in the same query as the ANN search. The ceiling is real but distant: `flat` indexing scans the filtered set, which is fine at the hundreds-to-low-thousands of documents an MVP knowledge base holds, and would need revisiting in the hundreds of thousands. Migration to Vertex AI Vector Search is a change confined to `services/rag.ts`.
 
-### 4.5 ADR-05 — Model selection
+### 4.5 ADR-05 - Model selection
 
 The PRD/FRD say "Gemini 3.5". At the time this ADR was written no such model existed, and it read like a conflation of Gemini 2.5 and Claude 3.5; the reference code named `gemini-2.5-flash-preview-09-2025`.
 
-> **Amended 2026-08-31 — the FRD was early, not wrong.** `gemini-3.5-flash` is now generally available on Vertex AI and is the model this project runs on. Two constraints, both probed rather than assumed:
+> **Amended 2026-08-31 - the FRD was early, not wrong.** `gemini-3.5-flash` is now generally available on Vertex AI and is the model this project runs on. Two constraints, both probed rather than assumed:
 >
-> - **It serves only from the `global` endpoint.** `gemini-3.5-flash` in `us-central1` is a plain 404. `GCP_LOCATION` therefore defaults to `global`, and the model and the endpoint are a pair — changing one without the other breaks every agent call. The cost is data residency: `global` may serve from any region.
+> - **It serves only from the `global` endpoint.** `gemini-3.5-flash` in `us-central1` is a plain 404. `GCP_LOCATION` therefore defaults to `global`, and the model and the endpoint are a pair - changing one without the other breaks every agent call. The cost is data residency: `global` may serve from any region.
 > - **There is no `gemini-3.5-pro`.** It 404s. Nothing may offer it, least of all the Architect's fallback model menu.
 >
 > Both defaults now live in one place, `app/services/gemini.ts`; `scripts/deploy.sh` passes the env vars through only when set rather than carrying its own copy, which is how the defaults drifted apart in the first place. `GET /health` reports the pair in production.
 
-**Decision.** Pin one Flash-class model for all five agents — `gemini-3.5-flash` as of the amendment above, `gemini-2.5-flash` as originally written — and `gemini-embedding-001` at 768 output dimensions for embeddings, pinned via `outputDimensionality` to match the declared index (the model is natively 3072-d; `text-embedding-004` as originally specified was superseded). Flash is the right default: the agents produce short structured JSON, not long prose, and latency is on the critical path. Read the model id from an environment variable so it can be swapped to Pro for the Architect agent without a redeploy if output quality demands it.
+**Decision.** Pin one Flash-class model for all five agents - `gemini-3.5-flash` as of the amendment above, `gemini-2.5-flash` as originally written - and `gemini-embedding-001` at 768 output dimensions for embeddings, pinned via `outputDimensionality` to match the declared index (the model is natively 3072-d; `text-embedding-004` as originally specified was superseded). Flash is the right default: the agents produce short structured JSON, not long prose, and latency is on the critical path. Read the model id from an environment variable so it can be swapped to Pro for the Architect agent without a redeploy if output quality demands it.
 
 **Verify before building:** model availability and exact ids change frequently. Confirm the current id in the Gemini API docs at kickoff rather than trusting this document.
 
 ---
 
-## 5. Low-Level Architecture — modules and the request path
+## 5. Low-Level Architecture - modules and the request path
 
-![Figure 2 — LLA-1: backend module decomposition and the full POST /api/chat request path.](diagrams/lla-1-modules.svg)
+![Figure 2 - LLA-1: backend module decomposition and the full POST /api/chat request path.](diagrams/lla-1-modules.svg)
 
 ### 5.1 Module boundaries
 
@@ -153,9 +153,9 @@ The invariant behind all of it: **the stage advances only after the parsed paylo
 
 ---
 
-## 6. Low-Level Architecture — the stage machine
+## 6. Low-Level Architecture - the stage machine
 
-![Figure 3 — LLA-2: the six-stage orchestrator machine, the approval gate, and what each stage persists.](diagrams/lla-2-state-machine.svg)
+![Figure 3 - LLA-2: the six-stage orchestrator machine, the approval gate, and what each stage persists.](diagrams/lla-2-state-machine.svg)
 
 ### 6.1 Stages and ownership
 
@@ -168,11 +168,11 @@ Each stage has exactly one owning agent that writes exactly one field of `AgentS
 | `architecture` | Technical Architect (FR-A3) | `architectureStack` | Stack + security parsed |
 | `roadmap` | Project Manager (FR-A4) | `roadmapPhases[]` | 3 phases parsed |
 | `training` | Change Coach (FR-A5) | `changeManagementPlan` | Plan parsed |
-| `complete` | Q&A fallback | nothing | — |
+| `complete` | Q&A fallback | nothing | - |
 
-### 6.2 The approval gate — a gap in the source documents
+### 6.2 The approval gate - a gap in the source documents
 
-PRD Epic 2 says: *"As a user, I want to approve or reject suggested use cases to refine my strategy."* The reference orchestrator in the Firestore spec advances `research → architecture` automatically, with no approval step. The two documents contradict each other, and the PRD wins — approval is the moment the product stops being a chatbot and starts being a consultation.
+PRD Epic 2 says: *"As a user, I want to approve or reject suggested use cases to refine my strategy."* The reference orchestrator in the Firestore spec advances `research → architecture` automatically, with no approval step. The two documents contradict each other, and the PRD wins - approval is the moment the product stops being a chatbot and starts being a consultation.
 
 **Design.** After `research` writes `useCases[]`, the Canvas renders them with approve/reject controls. `PATCH /api/session/:id/use-cases` sets each `status` to `approved` or `rejected`. The `architecture` stage refuses to run while zero use cases are approved and returns a nudge instead. The Architect agent then receives only the approved subset.
 
@@ -180,7 +180,7 @@ This costs one endpoint and one guard clause, and it is the difference between d
 
 ### 6.3 Detecting stage completion
 
-The reference code checks `replyText.includes('"status": "complete"')`. That is brittle — it depends on the model's exact whitespace, and `includes('identified_bottleneck')` will fire on a model that merely mentions the phrase.
+The reference code checks `replyText.includes('"status": "complete"')`. That is brittle - it depends on the model's exact whitespace, and `includes('identified_bottleneck')` will fire on a model that merely mentions the phrase.
 
 **Design.** For `discovery`, request `responseMimeType: 'application/json'` with a two-branch schema: either `{"status":"asking","question":"…"}` or `{"status":"complete","summary":…,"primary_objective":…,"data_readiness":…,"identified_bottleneck":…}`. Parse with zod and branch on the discriminant. The other four stages already use JSON mode in the reference code; validate all five the same way.
 
@@ -190,15 +190,15 @@ Two browser tabs on one session can interleave writes. The MVP takes the cheap d
 
 ---
 
-## 7. Low-Level Architecture — data model and retrieval
+## 7. Low-Level Architecture - data model and retrieval
 
-![Figure 4 — LLA-3: the three Firestore collections, the RAG retrieval pipeline, and access-control rules.](diagrams/lla-3-data-model.svg)
+![Figure 4 - LLA-3: the three Firestore collections, the RAG retrieval pipeline, and access-control rules.](diagrams/lla-3-data-model.svg)
 
 ### 7.1 Why the session is one denormalised document
 
 Everything a consultation produces lives in one `sessions/{sessionId}` document: the message log and the full `AgentState`. A turn is one `get()` and one `update()`.
 
-The trade-off is Firestore's 1 MiB document limit, which the message array will eventually approach. At ~1 KB per message that is roughly a thousand turns — far beyond a single consultation, so it is not an MVP concern. The moment it becomes one, `messages` moves to a `sessions/{id}/messages` subcollection and `state` stays on the parent; the agents are unaffected because they only ever see the last six messages.
+The trade-off is Firestore's 1 MiB document limit, which the message array will eventually approach. At ~1 KB per message that is roughly a thousand turns - far beyond a single consultation, so it is not an MVP concern. The moment it becomes one, `messages` moves to a `sessions/{id}/messages` subcollection and `state` stays on the parent; the agents are unaffected because they only ever see the last six messages.
 
 **One correction to the schema spec:** `SessionDocument` as written omits `userProfile`, but the reference orchestrator reads `sessionData.userProfile` on every turn. Add it to the interface:
 
@@ -220,7 +220,7 @@ Denormalising the profile onto the session is deliberate: it saves a `users` rea
 
 The pipeline is: bottleneck text → `text-embedding-004` → `where('industry','==',…)` → `findNearest(embedding, COSINE, limit 3)` → a ~2k-token context block → the Analyst prompt.
 
-The industry equality filter is not a nicety. It is what makes a flat index viable, and it is why the composite index declares `industry` ASCENDING alongside the vector config. **The index must exist before the first query and takes minutes to build — create it on day one, not at demo time.**
+The industry equality filter is not a nicety. It is what makes a flat index viable, and it is why the composite index declares `industry` ASCENDING alongside the vector config. **The index must exist before the first query and takes minutes to build - create it on day one, not at demo time.**
 
 When retrieval returns nothing, the reference code logs a warning and proceeds with an empty context. Keep that behaviour, but surface it: the Analyst prompt should be told when it is running ungrounded, and the response should be marked as such rather than silently presenting invented case studies as researched ones.
 
@@ -233,13 +233,13 @@ When retrieval returns nothing, the reference code logs a warning and proceeds w
 | `knowledge_base/*` | no client access; server-side Admin SDK only |
 | `POST /api/knowledge/ingest` | admin custom claim required |
 
-The ingest endpoint in the reference code has **no authentication at all**. As written, anyone who finds the URL can write into the corpus that grounds every customer's advice — a content-poisoning path straight into the product's core value. Gate it before the service is ever public.
+The ingest endpoint in the reference code has **no authentication at all**. As written, anyone who finds the URL can write into the corpus that grounds every customer's advice - a content-poisoning path straight into the product's core value. Gate it before the service is ever public.
 
 ---
 
-## 8. Low-Level Architecture — frontend and deployment
+## 8. Low-Level Architecture - frontend and deployment
 
-![Figure 5 — LLA-4: React Router route tree, shared client state, and the deployment pipeline.](diagrams/lla-4-frontend-deploy.svg)
+![Figure 5 - LLA-4: React Router route tree, shared client state, and the deployment pipeline.](diagrams/lla-4-frontend-deploy.svg)
 
 ### 8.1 Client state
 
@@ -253,17 +253,17 @@ FRD §3 lists no export endpoint, but PRD Epic 3 requires PDF and slide-deck exp
 
 GitHub → Cloud Build → Artifact Registry → Cloud Run, same project as Firestore and Firebase Auth.
 
-Cloud Run: min instances 0, max 10, 1 vCPU / 1 GiB, concurrency 80, 60 s timeout. Scale-to-zero is deliberate and its cost is a 1–2 second cold start on the first turn after idle — acceptable for MVP, and worth setting min instances to 1 for the hour around a live demo.
+Cloud Run: min instances 0, max 10, 1 vCPU / 1 GiB, concurrency 80, 60 s timeout. Scale-to-zero is deliberate and its cost is a 1–2 second cold start on the first turn after idle - acceptable for MVP, and worth setting min instances to 1 for the hour around a live demo.
 
-**Credentials: ADC, no secrets.** Both Gemini and Firestore are reached with Application Default Credentials — the runtime service account via the Cloud Run metadata server in production, and `gcloud auth application-default login` on a developer machine. Gemini therefore runs against Vertex AI rather than the Gemini Developer API, which is key-only.
+**Credentials: ADC, no secrets.** Both Gemini and Firestore are reached with Application Default Credentials - the runtime service account via the Cloud Run metadata server in production, and `gcloud auth application-default login` on a developer machine. Gemini therefore runs against Vertex AI rather than the Gemini Developer API, which is key-only.
 
 This removes Secret Manager from the MVP entirely: there is no API key, no admin service-account JSON, and nothing to rotate, mount, or accidentally commit. The runtime service account holds `aiplatform.user` and `datastore.user` and nothing else.
 
-**Repository defect to fix first:** the existing `Dockerfile` runs `npm ci` against `package-lock.json`, but the repo ships `pnpm-lock.yaml` and no npm lockfile. The build fails as committed. Either switch the Dockerfile to `corepack enable && pnpm install --frozen-lockfile`, or generate and commit a `package-lock.json`. Pick one and delete the other lockfile — keeping both guarantees drift.
+**Repository defect to fix first:** the existing `Dockerfile` runs `npm ci` against `package-lock.json`, but the repo ships `pnpm-lock.yaml` and no npm lockfile. The build fails as committed. Either switch the Dockerfile to `corepack enable && pnpm install --frozen-lockfile`, or generate and commit a `package-lock.json`. Pick one and delete the other lockfile - keeping both guarantees drift.
 
 ---
 
-## 9. Non-functional requirements — status against the FRD
+## 9. Non-functional requirements - status against the FRD
 
 ### 9.1 Performance: the streaming conflict
 
@@ -289,12 +289,12 @@ Stateless request handling means horizontal scale is a Cloud Run setting. The re
 
 | # | Risk | Impact | Response |
 |---|---|---|---|
-| R1 | Knowledge base is thin or empty at demo time | Analyst produces generic advice — the exact output the prompt spec forbids | Treat 20–30 seed documents across the five industries as a hard day-one deliverable, not a stretch goal |
+| R1 | Knowledge base is thin or empty at demo time | Analyst produces generic advice - the exact output the prompt spec forbids | Treat 20–30 seed documents across the five industries as a hard day-one deliverable, not a stretch goal |
 | R2 | Model returns malformed JSON mid-demo | Stage stalls | JSON mode + zod + one repair re-prompt; never advance on an unparsed payload |
 | R3 | Vector index not built when the first query runs | `findNearest` errors | Create the index on day one; the RAG fallback keeps the flow alive if it is late |
 | R4 | Gemini model id drifts or preview model is withdrawn | Total outage | Model id in an env var; verify at kickoff |
 | R5 | Cold start on the first demo turn | Awkward pause | Set min instances to 1 before the demo; warm the session beforehand |
-| R6 | Five sequential agents exceed the 5-minute time-to-value KPI | KPI miss | The KPI is measured to the *first use case* (end of `research`), which is 2–4 turns in — reachable. The full plan is not, and the PRD does not ask it to be |
+| R6 | Five sequential agents exceed the 5-minute time-to-value KPI | KPI miss | The KPI is measured to the *first use case* (end of `research`), which is 2–4 turns in - reachable. The full plan is not, and the PRD does not ask it to be |
 | R7 | Cost per consultation is unmeasured | Budget surprise | Log token counts per turn from day one; the number is needed for pricing anyway |
 
 ---
@@ -304,7 +304,7 @@ Stateless request handling means horizontal scale is a Cloud Run setting. The re
 Stated plainly so nobody discovers it late:
 
 - No streaming on structured stages (§9.1).
-- No free-form "go back and change that" — only the explicit use-case approval gate (§6.2).
+- No free-form "go back and change that" - only the explicit use-case approval gate (§6.2).
 - No multi-user collaboration; sessions belong to one uid (PRD §5).
 - No code generation or deployment into customer environments (PRD §5).
 - No automated knowledge-base ingestion; the corpus is hand-curated.
@@ -312,7 +312,7 @@ Stated plainly so nobody discovers it late:
 
 ---
 
-## Appendix A — API surface (MVP)
+## Appendix A - API surface (MVP)
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
@@ -324,12 +324,12 @@ Stated plainly so nobody discovers it late:
 | `POST` | `/api/export` | JWT + owner | Render `AgentState` to PDF or PPTX |
 | `POST` | `/api/knowledge/ingest` | JWT + admin claim | Embed and store a knowledge document |
 
-## Appendix B — Environment variables
+## Appendix B - Environment variables
 
 | Name | Source | Notes |
 |---|---|---|
 | `GCP_PROJECT_ID` | env | Vertex, Firestore, and Auth project |
-| `GCP_LOCATION` | env | Default `global` — required by `gemini-3.5-flash`, which 404s in a region |
+| `GCP_LOCATION` | env | Default `global` - required by `gemini-3.5-flash`, which 404s in a region |
 | `GEMINI_TEXT_MODEL` | env | Default `gemini-3.5-flash`; `GET /health` reports the live value |
 | `GEMINI_EMBEDDING_MODEL` | env | `gemini-embedding-001`, pinned to 768 dimensions |
 | `GCP_PROJECT_ID` | env | Firestore + Auth project |
@@ -337,7 +337,7 @@ Stated plainly so nobody discovers it late:
 | `RAG_TOP_K` | env | Default 3 |
 | `MAX_TURNS_PER_MINUTE` | env | Per-user rate limit |
 
-## Appendix C — Traceability
+## Appendix C - Traceability
 
 | Requirement | Where it is served |
 |---|---|
@@ -348,8 +348,8 @@ Stated plainly so nobody discovers it late:
 | Profiling (PRD Epic 1) | `users/{uid}`, `/onboarding` |
 | Discovery chat (PRD Epic 2) | `discovery` stage |
 | 3–5 use cases (PRD Epic 2) | `research` stage |
-| Approve / reject (PRD Epic 2) | §6.2 — **added**, absent from the reference code |
+| Approve / reject (PRD Epic 2) | §6.2 - **added**, absent from the reference code |
 | Tech stack recommendation (PRD Epic 3) | `architecture` stage |
 | Phased roadmap (PRD Epic 3) | `roadmap` stage |
-| PDF / deck export (PRD Epic 3) | §8.2 — **added**, absent from the FRD |
+| PDF / deck export (PRD Epic 3) | §8.2 - **added**, absent from the FRD |
 | Change management (Prompt spec §5) | `training` stage |

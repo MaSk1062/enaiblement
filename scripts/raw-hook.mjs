@@ -5,7 +5,7 @@
  *
  * Without this, no script outside the Vite build can import an agent module, and an eval that
  * cannot import the real agent is an eval of a copy of the agent. `module.registerHooks` is
- * stdlib and synchronous — no loader thread, no dependency, ~20 lines.
+ * stdlib and synchronous - no loader thread, no dependency, ~20 lines.
  */
 
 import { readFileSync } from "node:fs";

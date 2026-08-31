@@ -20,13 +20,13 @@ const PROJECT = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
 /**
  * These two defaults are a pair and must move together.
  *
- * `gemini-3.5-flash` serves ONLY from the `global` endpoint — probed 2026-08-31, it is a plain
+ * `gemini-3.5-flash` serves ONLY from the `global` endpoint - probed 2026-08-31, it is a plain
  * 404 ("publisher model not found") in `us-central1`. Defaulting the model here while leaving
  * the location regional would 404 every agent call for anyone who has not set GCP_LOCATION by
  * hand. This file is the single source of both defaults; scripts/deploy.sh passes the env vars
  * through only when they are set rather than carrying its own copy.
  *
- * `global` means requests may be served from any region — a data-residency ceiling, not a
+ * `global` means requests may be served from any region - a data-residency ceiling, not a
  * problem for this build. If residency ever matters, the model has to change, not the config.
  */
 export const LOCATION = process.env.GCP_LOCATION ?? "global";
@@ -34,7 +34,7 @@ export const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL ?? "gemini-3.5-flash";
 export const EMBEDDING_MODEL = process.env.GEMINI_EMBEDDING_MODEL ?? "gemini-embedding-001";
 export const EMBEDDING_DIMENSIONS = Number(process.env.EMBEDDING_DIMENSIONS ?? 768);
 
-const MAX_ATTEMPTS = 5; // 1s, 2s, 4s, 8s, 16s — ARCHITECTURE.md §5.3
+const MAX_ATTEMPTS = 5; // 1s, 2s, 4s, 8s, 16s - ARCHITECTURE.md §5.3
 const FIRST_BACKOFF_MS = 1000;
 
 let client: GoogleGenAI | undefined;
@@ -48,7 +48,7 @@ function genai(): GoogleGenAI {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Retries transient API failures. Does not retry schema failures — those get one repair. */
+/** Retries transient API failures. Does not retry schema failures - those get one repair. */
 async function withRetry<T>(fn: () => Promise<T>, maxAttempts = MAX_ATTEMPTS): Promise<T> {
   let backoff = FIRST_BACKOFF_MS;
   for (let attempt = 1; ; attempt++) {
@@ -110,7 +110,7 @@ async function callModel(
  * The call every agent makes. Returns the parsed, camelCased output, or throws.
  *
  * On a parse failure it re-prompts exactly once with the validation error appended. If the
- * repair also fails it throws — and the caller must leave the stage where it was, because
+ * repair also fails it throws - and the caller must leave the stage where it was, because
  * a stage may only advance on a payload that parsed (ARCHITECTURE.md §5.3, §6.3).
  */
 export async function generateStructured<T>(
@@ -124,7 +124,7 @@ export async function generateStructured<T>(
   if (first.success) return first.data;
 
   // The repair rate is the R1/R2 metric: a turn that repairs costs twice and is one bad roll
-  // away from a lost turn. Paths only — the values that failed are model output about a user.
+  // away from a lost turn. Paths only - the values that failed are model output about a user.
   event("agent.repair", {
     severity: "WARNING",
     issuePaths: first.error.issues.map((i) => i.path.join(".") || "(root)"),
@@ -186,11 +186,11 @@ export interface GroundedAnswer {
  * A Google Search-grounded answer, with its citations.
  *
  * Separate from generateStructured because the search tool and `responseMimeType:
- * "application/json"` are mutually exclusive on Vertex — you get grounding or you get JSON
+ * "application/json"` are mutually exclusive on Vertex - you get grounding or you get JSON
  * mode, never both. So this returns prose, and the caller feeds that prose to the structured
  * call as retrieved context (see services/rag.ts).
  *
- * ponytail: two attempts, not five. This is best-effort enrichment on a user-facing turn —
+ * ponytail: two attempts, not five. This is best-effort enrichment on a user-facing turn -
  * a full 31s backoff ladder before giving up costs more than the grounding is worth.
  */
 export async function searchGrounded(

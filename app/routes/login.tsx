@@ -8,6 +8,7 @@ import {
   signInWithGoogle,
   signUpWithEmail,
 } from "../lib/firebase.client.ts";
+import { DotGrid } from "../lib/DotGrid.tsx";
 import { useAuth } from "../lib/useAuth.ts";
 
 export function meta() {
@@ -174,23 +175,54 @@ export default function Login() {
 }
 
 /**
- * The landing page — this and /onboarding are the only screens a first-time visitor (a judge,
+ * The landing page - this and /onboarding are the only screens a first-time visitor (a judge,
  * most of the time) ever sees before deciding whether the product is worth a second look. It
  * used to be a single narrow card with one sentence of copy; this is the whole pitch, not just
  * the login form.
  */
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
-      <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div>
-          <p className="text-5xl font-bold tracking-tight text-indigo-600 sm:text-6xl">Enaible</p>
-          <p className="mt-5 text-lg leading-relaxed text-slate-800 sm:text-xl">
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-slate-950 px-6 py-12">
+      {/* Decorative, and the only screen that gets it - this renders continuously while
+          mounted, and the rest of the app is functional UI someone is trying to read, not
+          look at (see the note on DotGrid.tsx). Dark background on purpose: light dots on dark
+          read as a glow when the pointer is near them, which is the whole point of the effect -
+          on a light page the same dots just look like noise sitting behind the text. */}
+      <div className="absolute inset-0">
+        <DotGrid
+          dotSize={4}
+          gap={24}
+          baseColor="#334155"
+          activeColor="#818CF8"
+          proximity={130}
+          shockRadius={220}
+          shockStrength={4}
+          resistance={750}
+          returnDuration={1.5}
+        />
+      </div>
+
+      <div className="relative grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        {/* A frosted panel, not a solid one - the big bold headline reads fine directly on the
+            dots (see the "Organized chaos" reference), but the smaller tagline and the persona
+            blurbs are lower-contrast, smaller text, and lost their legibility sitting right on
+            top of the dot pattern. This dims what's behind it without hiding the effect. */}
+        <div className="rounded-3xl bg-slate-950/50 p-8 backdrop-blur-sm">
+          {/* The mark is a stylized "e" - pairing it with the full word would read as a doubled
+              E. Text picks up from "naible" so together it reads "enaible" once; both halves
+              are aria-hidden and the label carries the whole name once. */}
+          <div className="flex items-center gap-3" aria-label="Enaible">
+            <img src="/logo.png" alt="" aria-hidden className="h-14 w-14 sm:h-16 sm:w-16" />
+            <p aria-hidden className="text-5xl font-bold tracking-tight text-indigo-400 sm:text-6xl">
+              naible
+            </p>
+          </div>
+          <p className="mt-5 text-lg leading-relaxed text-white sm:text-xl">
             A consulting team of five AI specialists that turns your bottleneck into a funded,
             phased AI adoption plan.
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-slate-500">
-            Built around African compliance regimes and cost realities — not retrofitted from a
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">
+            Built around African compliance regimes and cost realities - not retrofitted from a
             US or EU playbook.
           </p>
 
@@ -199,14 +231,12 @@ function Shell({ children }: { children: React.ReactNode }) {
               const { name, blurb, Icon, accent } = agentStatus(stage);
               return (
                 <li key={stage} className="flex items-start gap-3">
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${accent.light}`}
-                  >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10">
                     <Icon className={`h-4 w-4 ${accent.text}`} />
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-slate-900">{name}</p>
-                    <p className="text-xs text-slate-500">{blurb}</p>
+                    <p className="text-sm font-medium text-white">{name}</p>
+                    <p className="text-xs text-slate-400">{blurb}</p>
                   </div>
                 </li>
               );
@@ -214,7 +244,9 @@ function Shell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
 
-        <div className="w-full max-w-sm justify-self-center lg:justify-self-end">
+        {/* Its own solid surface, not floating on the hero's dark/dotted background - an auth
+            form needs to read as a form, not as more decoration. */}
+        <div className="w-full max-w-sm justify-self-center rounded-2xl bg-white p-8 shadow-xl lg:justify-self-end">
           {children}
 
           <p className="mt-8 text-xs text-slate-500">

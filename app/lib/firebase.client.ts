@@ -1,11 +1,11 @@
 /**
- * Firebase client SDK — browser only. Does the SSO popup and holds the ID token.
+ * Firebase client SDK - browser only. Does the SSO popup and holds the ID token.
  *
  * The token goes to the server as a bearer header on every API call and is verified there
  * with the Admin SDK (middleware/requireUser.ts). There is no session cookie: on a 48-hour
  * clock that is an evening of work for no demo value.
  *
- * These VITE_ values are public by design — they identify the Firebase project, they do not
+ * These VITE_ values are public by design - they identify the Firebase project, they do not
  * authorise anything. Access control lives in the rules and in requireUser.
  */
 
@@ -37,7 +37,7 @@ export function firebaseAuth(): Auth {
   if (!isConfigured) {
     throw new Error(
       "Firebase is not configured. Set VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN " +
-        "and VITE_FIREBASE_PROJECT_ID — see .env.example.",
+        "and VITE_FIREBASE_PROJECT_ID - see .env.example.",
     );
   }
   app ??= getApps()[0] ?? initializeApp(config);
@@ -47,7 +47,7 @@ export function firebaseAuth(): Auth {
 export function signInWithGoogle() {
   // ponytail: Google only. PRD Epic 1 says Google/Microsoft, but one provider demos
   // identically and the Azure app registration is the slow part. Add Microsoft by
-  // swapping in OAuthProvider("microsoft.com") — the rest of the flow is unchanged.
+  // swapping in OAuthProvider("microsoft.com") - the rest of the flow is unchanged.
   return signInWithPopup(firebaseAuth(), new GoogleAuthProvider());
 }
 
@@ -70,7 +70,7 @@ const AUTH_ERRORS: Record<string, string> = {
   "auth/invalid-email": "That does not look like an email address.",
   "auth/user-not-found": "No account with that email. Create one below.",
   "auth/wrong-password": "That email and password do not match.",
-  "auth/email-already-in-use": "That email already has an account — sign in instead.",
+  "auth/email-already-in-use": "That email already has an account - sign in instead.",
   "auth/weak-password": "Use at least 6 characters.",
   "auth/too-many-requests": "Too many attempts. Try again in a few minutes.",
   "auth/operation-not-allowed":
@@ -83,7 +83,7 @@ const AUTH_ERRORS: Record<string, string> = {
     "console and turn on the Email/Password and Google providers.",
 };
 
-/** Returns null for a cancelled popup — that is a user action, not an error to shout about. */
+/** Returns null for a cancelled popup - that is a user action, not an error to shout about. */
 export function authErrorMessage(err: unknown): string | null {
   const code = (err as { code?: string })?.code ?? "";
   if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return null;

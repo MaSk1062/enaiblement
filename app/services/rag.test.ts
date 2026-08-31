@@ -3,7 +3,7 @@
  *
  * The order is the invariant: the curated corpus always wins, the open web is the fallback,
  * and "nothing" must stay visibly "nothing" rather than quietly becoming a grounded turn.
- * No network, no Firestore — the retrievers are injected.
+ * No network, no Firestore - the retrievers are injected.
  */
 
 import assert from "node:assert/strict";

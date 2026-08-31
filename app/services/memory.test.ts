@@ -1,14 +1,14 @@
 /**
  * What survives between consultations, and what must not.
  *
- * Three things worth pinning. A first-time client cannot be able to tell this feature exists —
+ * Three things worth pinning. A first-time client cannot be able to tell this feature exists -
  * an accidental change to the cold greeting is a regression every single user would see. A
  * returning client's refusals have to come back WITH their reasons, because a reason is the
  * only feedback in the product that says more than yes or no. And an abandoned consultation
  * must never become a memory: recalling one would have the agent open by referring to work
  * that does not exist.
  *
- * Pure — no Firestore, no model.
+ * Pure - no Firestore, no model.
  */
 
 import assert from "node:assert/strict";
@@ -117,7 +117,7 @@ test("only a finished consultation becomes a memory", () => {
   assert.ok(done);
   assert.equal(done.bottleneck, "Claims triage by hand");
   assert.deepEqual(done.approved, ["Triage scoring"]);
-  // From `declined`, not from filtering useCases — a rerun rebuilds that array and the refusal
+  // From `declined`, not from filtering useCases - a rerun rebuilds that array and the refusal
   // that shaped the final strategy would not be in it.
   assert.deepEqual(done.rejected, [
     { title: "Auto-adjudication", reason: "regulator will not wear it" },
@@ -134,7 +134,7 @@ test("remembering folds newest-first and keeps the store bounded", () => {
   assert.equal(next.consultations[1].sessionId, "session_0");
   assert.deepEqual(next.notes, populated.notes, "notes are untouched by a new consultation");
 
-  // Nothing finished — an abandoned consultation must not displace a real one.
+  // Nothing finished - an abandoned consultation must not displace a real one.
   assert.deepEqual(remember(populated, null).consultations, populated.consultations);
 
   const full: ClientMemory = {

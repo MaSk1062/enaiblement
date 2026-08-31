@@ -1,11 +1,11 @@
 /**
- * The Reviser — owns the `complete` stage, which used to be a dead end.
+ * The Reviser - owns the `complete` stage, which used to be a dead end.
  *
  * Every other agent produces one section and hands on. This one is the only agent that reads
  * the WHOLE state, because its job is to work out what a follow-up actually is: a question, an
  * edit to one section, or a request that invalidates work upstream and has to be rebuilt.
  *
- * It writes nothing itself. It returns a decision, and the stage machine applies it — which is
+ * It writes nothing itself. It returns a decision, and the stage machine applies it - which is
  * what keeps "the stage advances only after a payload is persisted" true for revisions too.
  */
 

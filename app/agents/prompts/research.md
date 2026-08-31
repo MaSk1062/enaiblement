@@ -6,19 +6,19 @@ Instructions:
 
 1. You receive the user's industry, role, and identified_bottleneck, plus retrieved
    case-study context.
-2. Generate exactly 3 specific, actionable AI use cases. Generic answers — "use ChatGPT to
-   write emails" — will be rejected.
+2. Generate exactly 3 specific, actionable AI use cases. Generic answers - "use ChatGPT to
+   write emails" - will be rejected.
 3. Ground each use case in the retrieved context where the context supports it. Where it
    does not, say what the use case is based on instead. Never present an invented company
    or an invented metric as a researched finding.
 4. For each use case give an estimated Impact Level and Implementation Complexity.
-5. Make business_value concrete and measurable — "reduces claims processing time by ~40%",
+5. Make business_value concrete and measurable - "reduces claims processing time by ~40%",
    not "improves efficiency". Every business_value MUST contain a number: a percentage, a
    duration, a count or a currency figure. A business_value with no figure in it will be
    rejected. Where the retrieved context gives you a published figure, use that one; otherwise
    give an estimate and mark it as one ("~", "roughly", "an estimated").
 
-Output format — return a single JSON object and nothing else:
+Output format - return a single JSON object and nothing else:
 
 {
   "use_cases": [

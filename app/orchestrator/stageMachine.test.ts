@@ -1,5 +1,5 @@
 /**
- * The stage machine's check. No model, no Firestore — which is exactly what ADR-02 bought.
+ * The stage machine's check. No model, no Firestore - which is exactly what ADR-02 bought.
  * Run: node --test app/orchestrator/stageMachine.test.ts
  */
 import assert from "node:assert/strict";
@@ -98,7 +98,7 @@ const needsAssessment = {
 
 test("one message carries the consultation from a finished interview to the gate", async () => {
   // The change that matters: a completed interview no longer waits to be told to continue. It
-  // runs research too, and stops where a human is genuinely needed — the approval gate.
+  // runs research too, and stops where a human is genuinely needed - the approval gate.
   const { replies, state } = await runTurn(
     session("discovery"),
     "mostly claims",
@@ -372,6 +372,6 @@ test("sourcing: an ungrounded search names no partner and says so", async () => 
   assert.equal(state.currentStage, "complete", "no partners is a result, not a failure");
   assert.deepEqual(state.sourcing?.partners, [], "nothing invented to fill the gap");
   assert.equal(state.sourcing?.grounded, false);
-  assert.ok(state.sourcing?.proposal, "the proposal survives — it derives from the roadmap");
+  assert.ok(state.sourcing?.proposal, "the proposal survives - it derives from the roadmap");
   assert.match(replies[0].text, /could not find/i, "the user is told, not left to notice");
 });

@@ -4,8 +4,8 @@
  *   node --env-file=.env scripts/demo.ts --uid <your firebase uid>
  *   node --env-file=.env scripts/demo.ts --uid <uid> --clear
  *
- * IMPLEMENTATION_PLAN §8 called a pre-completed session the insurance policy — "the difference
- * between a bad five minutes and no demo at all" — and it was never built. A Vertex outage, a
+ * IMPLEMENTATION_PLAN §8 called a pre-completed session the insurance policy - "the difference
+ * between a bad five minutes and no demo at all" - and it was never built. A Vertex outage, a
  * quota limit or venue wifi now costs the live-generation moment, not the demo: sign in as
  * yourself and the finished strategy is already there.
  *
@@ -95,7 +95,7 @@ const transcript: [ChatMessage["sender"], string][] = [
   ],
   [
     "agent",
-    "Your change-management plan is ready. Your AI enablement strategy is complete — you can " +
+    "Your change-management plan is ready. Your AI enablement strategy is complete - you can " +
       "review and export it from the dashboard.",
   ],
 ];
@@ -238,7 +238,7 @@ const state: AgentState = {
     communicationStrategy: {
       leadershipNarrative:
         "The model assembles the paperwork; adjusters make the judgement calls. Nobody is " +
-        "replaced by this — the backlog is.",
+        "replaced by this - the backlog is.",
       mitigatingConcerns: [
         "Job security among the claims team",
         "Clinical accountability for an AI-assembled submission",

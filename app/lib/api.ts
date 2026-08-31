@@ -18,7 +18,7 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const body = await res.json().catch(() => null);
 
-  // A 401 means the token is gone, invalid, or minted for another project — nothing the caller
+  // A 401 means the token is gone, invalid, or minted for another project - nothing the caller
   // can retry. Drop the local session and send them to sign in, so a failed bootstrap cannot
   // strand the user on an error screen that renders no navigation.
   if (res.status === 401) {
