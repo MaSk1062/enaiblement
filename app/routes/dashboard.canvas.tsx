@@ -1,9 +1,12 @@
 /**
- * /dashboard/canvas — the Canvas on its own.
+ * /dashboard/canvas — the strategy, alone, for export.
  *
- * Not linked from anywhere any more: the Canvas comes to the user now, inline at a decision
- * and as the main column once the strategy is done. This route is the focused view, and the
- * page the print stylesheet targets (ARCHITECTURE.md §8.2 replacement, UI-5).
+ * The Canvas itself lives in the chat route now (inline at a decision, then as the main
+ * column once the strategy is done) — that is where you read and revise it. This route is
+ * not a second way to see the same thing: no chat rail, nothing but the artefact and the
+ * download button, which is what the print stylesheet targets (UI-5). Nav only links here
+ * once the strategy is complete (UI-4) — a nav item that opens an empty page is worse than
+ * one that isn't there yet.
  */
 
 import { CanvasPanel } from "../lib/CanvasPanel.tsx";

@@ -20,20 +20,6 @@ export function ChatIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-export function CanvasIcon({ className = "h-4 w-4" }: IconProps) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
-      <rect x="3.5" y="3.5" width="13" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M6.5 7.5h7M6.5 10.5h7M6.5 13.5h4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export function CheckIcon({ className = "h-3.5 w-3.5" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>

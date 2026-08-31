@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
-import { CanvasIcon, ChatIcon, SpinnerIcon } from "../lib/icons.tsx";
+import { ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
@@ -135,7 +135,10 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="flex items-center gap-5">
-              <Nav pending={state.useCases.filter((uc) => uc.status === "suggested").length} />
+              <Nav
+                pending={state.useCases.filter((uc) => uc.status === "suggested").length}
+                exportReady={state.currentStage === "complete"}
+              />
               <SignOutButton />
             </div>
           </div>
@@ -151,10 +154,14 @@ export default function Dashboard() {
 }
 
 /**
- * Chat and Canvas, plus the count of use cases still waiting on a decision — which is the
- * only signal pointing at the approval gate while the gate is what is blocking the stage.
+ * Chat, plus Export once there is something to export (UI-4 — one canvas, not two: the
+ * strategy itself lives only in the chat route now; /dashboard/canvas is the distraction-free
+ * print destination that route points at, never a second place to see the same thing).
+ *
+ * The pending-count badge sits on Chat, not Export, because Chat is where the gate that badge
+ * describes actually lives — the only signal pointing at the decision blocking the pipeline.
  */
-function Nav({ pending }: { pending: number }) {
+function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }) {
   const style = ({ isActive }: { isActive: boolean }) =>
     [
       "text-xs transition",
@@ -167,12 +174,6 @@ function Nav({ pending }: { pending: number }) {
         <span className="flex items-center gap-1.5">
           <ChatIcon className="h-3.5 w-3.5" />
           Chat
-        </span>
-      </NavLink>
-      <NavLink to="/dashboard/canvas" className={style}>
-        <span className="flex items-center gap-1.5">
-          <CanvasIcon className="h-3.5 w-3.5" />
-          Canvas
           {pending > 0 && (
             <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
               {pending}
@@ -180,6 +181,14 @@ function Nav({ pending }: { pending: number }) {
           )}
         </span>
       </NavLink>
+      {exportReady && (
+        <NavLink to="/dashboard/canvas" className={style}>
+          <span className="flex items-center gap-1.5">
+            <DownloadIcon className="h-3.5 w-3.5" />
+            Export
+          </span>
+        </NavLink>
+      )}
     </nav>
   );
 }
