@@ -151,6 +151,21 @@ export function PeopleIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+/** The account menu trigger — one person, distinct from PeopleIcon's two (a persona, not you). */
+export function UserIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
+      <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M3.5 16.5c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function DownloadIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
