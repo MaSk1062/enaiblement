@@ -4,7 +4,7 @@
  */
 
 import { idToken, signOutUser } from "./firebase.client.ts";
-import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
+import type { AgentState, Artifact, ChatMessage, SessionUserProfile } from "../types.ts";
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(path, {
@@ -44,6 +44,7 @@ export interface SessionView {
   userProfile: SessionUserProfile;
   messages: ChatMessage[];
   state: AgentState;
+  artifacts: Artifact[];
 }
 
 export const getSession = (id: string) =>
@@ -60,6 +61,13 @@ export const sendMessage = (sessionId: string, message: string) =>
     method: "POST",
     body: JSON.stringify({ sessionId, message }),
   });
+
+/** Runs one deep-bench specialist. Does not advance the consultation. */
+export const produce = (sessionId: string, capability: string, request?: string) =>
+  call<{ replies: ChatMessage[]; state: AgentState; artifacts: Artifact[] }>(
+    `/api/session/${encodeURIComponent(sessionId)}/produce`,
+    { method: "POST", body: JSON.stringify({ capability, request }) },
+  );
 
 export const decideUseCases = (
   sessionId: string,

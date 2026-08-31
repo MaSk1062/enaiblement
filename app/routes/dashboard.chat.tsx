@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { CAPABILITIES, capability } from "../capabilities.ts";
 import { agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
@@ -58,20 +59,25 @@ function Decisions() {
 }
 
 function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?: boolean }) {
-  const { messages, state, sending, error, send } = useConsultation();
+  const { messages, state, sending, producing, error, send } = useConsultation();
   const [draft, setDraft] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, sending]);
+  }, [messages.length, sending, producing]);
 
-  const status = agentStatus(state.currentStage);
+  // While a specialist is running, the indicator names THEM, not whoever owns the current stage.
+  const running = producing ? capability(producing) : undefined;
+  const status = running
+    ? { name: running.specialist, working: running.working, blurb: running.blurb }
+    : agentStatus(state.currentStage);
+  const busy = sending || Boolean(producing);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     const text = draft.trim();
-    if (!text || sending) return;
+    if (!text || busy) return;
     setDraft("");
     await send(text);
   }
@@ -85,7 +91,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
 
         {inline}
 
-        {sending && (
+        {busy && (
           <div className="flex items-center gap-2.5 text-sm text-slate-500">
             <Dots />
             <span>
@@ -111,6 +117,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
           the bottom of it. */}
       <form onSubmit={onSubmit} className={compact ? "px-5 pb-5" : "pt-2 pb-6"}>
         <div className="flex items-end gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm focus-within:border-slate-900">
+          <DeepBench compact={compact} />
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -131,7 +138,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
           />
           <button
             type="submit"
-            disabled={sending || !draft.trim()}
+            disabled={busy || !draft.trim()}
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-30"
           >
             Send
@@ -140,6 +147,69 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
         {!compact && <p className="mt-2 px-1 text-xs text-slate-400">{status.blurb}</p>}
       </form>
     </>
+  );
+}
+
+/**
+ * The deep bench, on the composer.
+ *
+ * Present from the first message rather than appearing once the strategy is done — a capability
+ * that is not ready says WHY, which teaches the shape of the consultation instead of hiding it.
+ */
+function DeepBench({ compact }: { compact?: boolean }) {
+  const { state, producing, produce } = useConsultation();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        disabled={Boolean(producing)}
+        aria-expanded={open}
+        title="Bring in a specialist"
+        className="rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-600 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+      >
+        +
+      </button>
+
+      {open && (
+        <>
+          {/* Click-away. A dropdown that traps you is worse than one that closes too eagerly. */}
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
+          <div
+            className={[
+              "absolute bottom-full z-20 mb-2 w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg",
+              compact ? "right-0" : "left-0",
+            ].join(" ")}
+          >
+            <p className="border-b border-slate-100 px-3 py-2 text-xs font-medium tracking-wide text-slate-500 uppercase">
+              Bring in a specialist
+            </p>
+            {CAPABILITIES.map((c) => {
+              const blocked = c.requires(state);
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  disabled={Boolean(blocked)}
+                  onClick={() => {
+                    setOpen(false);
+                    void produce(c.id);
+                  }}
+                  className="block w-full border-b border-slate-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
+                >
+                  <span className="block text-sm text-slate-900">{c.label}</span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {blocked ?? c.blurb}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

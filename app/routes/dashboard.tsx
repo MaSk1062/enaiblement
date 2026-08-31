@@ -5,7 +5,7 @@ import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
-import type { AgentState, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
+import type { AgentState, Artifact, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -15,7 +15,9 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<SessionUserProfile | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [state, setState] = useState<AgentState | null>(null);
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [sending, setSending] = useState(false);
+  const [producing, setProducing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
 
@@ -42,6 +44,7 @@ export default function Dashboard() {
         setProfile(session.userProfile);
         setMessages(session.messages);
         setState(session.state);
+        setArtifacts(session.artifacts ?? []);
       } catch (err) {
         if (!cancelled) setError((err as Error).message);
       } finally {
@@ -83,6 +86,26 @@ export default function Dashboard() {
     [sessionId, sending],
   );
 
+  // A capability is not a turn: it adds a reply and may add files, but never moves the stage.
+  const produce = useCallback(
+    async (capability: string) => {
+      if (!sessionId || producing) return;
+      setProducing(capability);
+      setError(null);
+      try {
+        const result = await api.produce(sessionId, capability);
+        setMessages((m) => [...m, ...result.replies]);
+        setState(result.state);
+        setArtifacts(result.artifacts);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setProducing(null);
+      }
+    },
+    [sessionId, producing],
+  );
+
   const decide = useCallback(
     async (decisions: Record<string, "approved" | "rejected">) => {
       if (!sessionId) return;
@@ -113,10 +136,13 @@ export default function Dashboard() {
     profile,
     messages,
     state,
+    artifacts,
     sending,
+    producing,
     error,
     send,
     decide,
+    produce,
   };
 
   return (

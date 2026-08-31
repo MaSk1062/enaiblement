@@ -8,7 +8,13 @@
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
-import type { AgentState, ChatMessage, SessionDocument, SessionUserProfile } from "../types.ts";
+import type {
+  AgentState,
+  Artifact,
+  ChatMessage,
+  SessionDocument,
+  SessionUserProfile,
+} from "../types.ts";
 
 const projectId = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
 
@@ -118,12 +124,77 @@ export async function getSession(sessionId: string): Promise<SessionDocument | n
  * all-or-nothing and the stage never advances ahead of the payload that justified it
  * (ARCHITECTURE.md §5.3).
  */
-export async function saveTurn(sessionId: string, messages: ChatMessage[], state: AgentState) {
-  await sessions().doc(sessionId).update({
-    messages,
-    state,
-    updatedAt: FieldValue.serverTimestamp(),
-  });
+export async function saveTurn(
+  sessionId: string,
+  messages: ChatMessage[],
+  state: AgentState,
+  artifacts: Artifact[] = [],
+) {
+  const doc = sessions().doc(sessionId);
+
+  // Artifacts live in a subcollection because generated code and manifests would eventually
+  // breach Firestore's 1 MiB document ceiling, and the failure mode is the whole turn failing
+  // to persist. A batch keeps the guarantee that matters: artifacts and the state they belong
+  // to land together, or neither does.
+  const batch = db().batch();
+  for (const artifact of artifacts) {
+    batch.set(doc.collection(ARTIFACTS).doc(artifact.id), artifact);
+  }
+  batch.update(doc, { messages, state, updatedAt: FieldValue.serverTimestamp() });
+
+  await batch.commit();
+}
+
+const ARTIFACTS = "artifacts";
+
+/** Per-artifact and per-session ceilings, so a runaway generation cannot wedge a consultation. */
+export const MAX_ARTIFACT_BYTES = 24_000;
+export const MAX_ARTIFACTS = 12;
+
+export async function getArtifacts(sessionId: string): Promise<Artifact[]> {
+  const snap = await sessions().doc(sessionId).collection(ARTIFACTS).get();
+  return snap.docs.map((d) => d.data() as Artifact);
+}
+
+export interface ArtifactMerge {
+  /** Everything the session should hold after the merge, existing files included. */
+  artifacts: Artifact[];
+  /** Only what changed, so the caller writes the minimum. */
+  written: Artifact[];
+  /** Paths dropped, with why — surfaced to the user rather than silently truncated. */
+  rejected: { path: string; reason: string }[];
+}
+
+/**
+ * Merges freshly generated files into what a session already holds.
+ *
+ * Keyed by `path`: regenerating infra/main.tf replaces it instead of leaving three versions
+ * behind. Over-cap content is REJECTED rather than truncated — half a Terraform file that looks
+ * complete is worse than an honest refusal.
+ */
+export function applyArtifacts(existing: Artifact[], incoming: Artifact[]): ArtifactMerge {
+  const byPath = new Map(existing.map((a) => [a.path, a]));
+  const written: Artifact[] = [];
+  const rejected: { path: string; reason: string }[] = [];
+
+  for (const candidate of incoming) {
+    const bytes = Buffer.byteLength(candidate.content, "utf8");
+    if (bytes > MAX_ARTIFACT_BYTES) {
+      rejected.push({ path: candidate.path, reason: `${bytes} bytes exceeds the ${MAX_ARTIFACT_BYTES} limit` });
+      continue;
+    }
+    if (!byPath.has(candidate.path) && byPath.size >= MAX_ARTIFACTS) {
+      rejected.push({ path: candidate.path, reason: `session already holds ${MAX_ARTIFACTS} files` });
+      continue;
+    }
+
+    // Reuse the id of the file being replaced so the subcollection does not grow either.
+    const artifact = { ...candidate, id: byPath.get(candidate.path)?.id ?? candidate.id };
+    byPath.set(artifact.path, artifact);
+    written.push(artifact);
+  }
+
+  return { artifacts: [...byPath.values()], written, rejected };
 }
 
 /** The approval gate (ARCHITECTURE.md §6.2). Only touches `status`, never regenerates. */

@@ -1,7 +1,7 @@
 /** GET /api/session/:id — rehydrate a session. Owner only. */
 
 import { errorResponse, handle, json, requireUser } from "../middleware/requireUser.ts";
-import { getSession } from "../services/firestore.ts";
+import { getArtifacts, getSession } from "../services/firestore.ts";
 
 export async function loader({ request, params }: { request: Request; params: { id?: string } }) {
   return handle(async () => {
@@ -16,6 +16,7 @@ export async function loader({ request, params }: { request: Request; params: { 
       userProfile: session.userProfile,
       messages: session.messages,
       state: session.state,
+      artifacts: await getArtifacts(session.sessionId),
     });
   });
 }
