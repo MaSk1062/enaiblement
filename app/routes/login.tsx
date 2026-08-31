@@ -180,7 +180,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <p className="text-2xl font-semibold tracking-tight text-slate-900">enaible</p>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
             A consulting team of five AI specialists that turns your bottleneck into a funded,
-            phased adoption plan.
+            phased AI adoption plan — built around African compliance regimes and cost
+            realities, not retrofitted from a US or EU playbook.
           </p>
         </div>
 

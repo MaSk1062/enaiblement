@@ -8,6 +8,14 @@ import type { Industry, Role } from "../types.ts";
 const ROLES: Role[] = ["CEO/Founder", "CTO/CIO", "Department Head", "Developer"];
 const INDUSTRIES: Industry[] = ["Healthcare", "Finance", "Manufacturing", "Retail", "SaaS"];
 
+// UI-7 / suggestions.md P1-3: not a shared type yet. `SessionUserProfile` has no `region` field
+// and /api/session/start's zod body doesn't accept one, so this select is collected and held —
+// not sent — until the backend field exists. Three options, matching the three data-protection
+// regimes suggestions.md names for architecture.md: POPIA (Southern Africa), NDPR (West
+// Africa), Kenya's 2019 Act (East Africa).
+type Region = "West Africa" | "East Africa" | "Southern Africa";
+const REGIONS: Region[] = ["West Africa", "East Africa", "Southern Africa"];
+
 export function meta() {
   return [{ title: "Set up · enaible" }];
 }
@@ -22,6 +30,8 @@ export default function Onboarding() {
   const [name, setName] = useState("");
   const [role, setRole] = useState<Role | "">("");
   const [industry, setIndustry] = useState<Industry | "">("");
+  // Held, not sent — see the note on Region above.
+  const [region, setRegion] = useState<Region | "">("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,6 +120,26 @@ export default function Onboarding() {
               ))}
             </select>
           </Field>
+
+          {/* Not one of "three quick questions" above on purpose — it isn't required, and
+              isn't sent yet either (see the Region note up top). */}
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
+              Your region <span className="font-normal text-slate-500">(optional, for now)</span>
+            </span>
+            <select
+              value={region}
+              onChange={(e) => setRegion(e.target.value as Region)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-900"
+            >
+              <option value="">Prefer not to say</option>
+              {REGIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {error && <p className="mt-5 text-sm text-red-600">{error}</p>}
