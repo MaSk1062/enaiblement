@@ -1,4 +1,4 @@
-/** FR-A4 — the Project Manager. Owns the `roadmap` stage, writes `roadmapPhases[]`. */
+/** FR-A4 - the Project Manager. Owns the `roadmap` stage, writes `roadmapPhases[]`. */
 
 import template from "./prompts/roadmap.md?raw";
 import { fillPrompt } from "./prompt.ts";

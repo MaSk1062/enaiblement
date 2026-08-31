@@ -3,7 +3,7 @@
  *
  * Cloud Run's logging agent parses a single-line JSON object on stdout into `jsonPayload`,
  * honours `severity`, and files the entry under its request when
- * `logging.googleapis.com/trace` is set. So the whole exporter is `console.log` — no SDK, no
+ * `logging.googleapis.com/trace` is set. So the whole exporter is `console.log` - no SDK, no
  * OpenTelemetry, nothing to keep alive in a container that scales to zero. Locally the same
  * lines are readable in the dev terminal.
  *
@@ -72,7 +72,7 @@ export interface EventFields {
   status?: number;
   error?: string;
   stack?: string;
-  /** zod issue paths — which field was wrong, never what was in it. */
+  /** zod issue paths - which field was wrong, never what was in it. */
   issuePaths?: string[];
 }
 
@@ -117,7 +117,7 @@ export const newTurnId = () => crypto.randomUUID().slice(0, 8);
 
 /**
  * `X-Cloud-Trace-Context: TRACE_ID/SPAN_ID;o=1` -> the resource name Cloud Logging groups by.
- * Absent locally, which is fine — the field is simply omitted.
+ * Absent locally, which is fine - the field is simply omitted.
  */
 export function traceFrom(request: Request): string | undefined {
   const project = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;

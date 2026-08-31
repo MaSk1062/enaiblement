@@ -3,7 +3,7 @@ start on Monday morning.
 
 Write the smallest thing that is genuinely runnable, not a tour of the whole system:
 
-1. The service entry point for this use case — the handler, the model call, the response.
+1. The service entry point for this use case - the handler, the model call, the response.
 2. The schema its input and output are validated against, at the boundary.
 3. One test that would fail if the logic broke. Not a suite. Not mocks of everything.
 
@@ -26,10 +26,10 @@ Rules for every file you return:
 - `summary` is one line: what the file is for, not what it contains.
 - Use ONLY the technologies in the approved architecture.
 
-Output format — return a single JSON object and nothing else:
+Output format - return a single JSON object and nothing else:
 
 {
-  "reply": "String — what you scaffolded, and what a developer does with it first",
+  "reply": "String - what you scaffolded, and what a developer does with it first",
   "files": [
     { "path": "String", "language": "String", "summary": "String", "content": "String" }
   ]

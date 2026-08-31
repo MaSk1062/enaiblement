@@ -1,8 +1,8 @@
 /**
  * The deep bench: six specialists reached on demand rather than by working through the pipeline.
  *
- * They live in one file because they are all the same shape — a prompt, a schema, and a payload
- * built from the state — and the interesting differences are entirely in the prompts. Six files
+ * They live in one file because they are all the same shape - a prompt, a schema, and a payload
+ * built from the state - and the interesting differences are entirely in the prompts. Six files
  * of eight lines each would be six places to look for nothing.
  *
  * None of them can move the consultation. They enrich the state or hand over files; the stage

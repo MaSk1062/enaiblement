@@ -2,7 +2,7 @@
  * Pure derivations for the live pipeline view (UI-2).
  *
  * The progress rail and the chat's turn-in-flight line both need to say what a finished stage
- * produced and how long the current one has been running. Neither is markup — both read from
+ * produced and how long the current one has been running. Neither is markup - both read from
  * here so the header and the chat never say something different about the same turn.
  */
 
@@ -34,7 +34,7 @@ export function stageSummary(stage: Stage, state: AgentState): string | null {
   }
 }
 
-/** "8s" under a minute, "1m 12s" past it — a stage can genuinely run that long. */
+/** "8s" under a minute, "1m 12s" past it - a stage can genuinely run that long. */
 export function formatElapsed(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   if (totalSeconds < 60) return `${totalSeconds}s`;

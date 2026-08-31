@@ -1,5 +1,5 @@
 /**
- * GET /api/me — the dashboard's bootstrap call.
+ * GET /api/me - the dashboard's bootstrap call.
  *
  * Answers two questions in one round trip: has this user onboarded, and do they have a
  * session to resume? Without it the client has no way to reach `activeSessionId`, since

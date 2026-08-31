@@ -1,4 +1,4 @@
-/** FR-A5 — the Change Coach. Owns the `training` stage, writes `changeManagementPlan`. */
+/** FR-A5 - the Change Coach. Owns the `training` stage, writes `changeManagementPlan`. */
 
 import template from "./prompts/training.md?raw";
 import { fillPrompt } from "./prompt.ts";

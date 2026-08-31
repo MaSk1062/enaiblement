@@ -9,7 +9,7 @@ export default [
     route("dashboard/canvas", "routes/dashboard.canvas.tsx"),
   ]),
 
-  // Resource routes — ARCHITECTURE.md Appendix A. One container serves these and the UI
+  // Resource routes - ARCHITECTURE.md Appendix A. One container serves these and the UI
   // (ADR-01), so the orchestrator is an in-process import rather than a network hop.
   route("health", "routes/health.ts"),
   route("api/me", "routes/api.me.ts"),

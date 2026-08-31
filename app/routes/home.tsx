@@ -18,7 +18,7 @@ export default function Home() {
   }, [user, loading, navigate]);
 
   // Usually on screen well under a second, but a fully blank page still reads as broken if it
-  // happens to land badly (UI-9) — same brand mark and spinner as dashboard.tsx's Centered.
+  // happens to land badly (UI-9) - same brand mark and spinner as dashboard.tsx's Centered.
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">

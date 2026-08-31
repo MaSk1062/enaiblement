@@ -132,21 +132,21 @@ def build(md_name, out_name, cover):
 build("ARCHITECTURE.md", "enaible-Architecture.pdf", {
     "eyebrow": "Architecture Document · v1.0",
     "title": "enaible",
-    "sub": "AI Enablement & Consulting Platform — system architecture, "
+    "sub": "AI Enablement & Consulting Platform - system architecture, "
            "high-level and low-level design for the Phase 1 MVP.",
     "meta": [
         ("Product", "AI Enablement &amp; Consulting Platform"),
         ("Scope", "MVP (PRD Phase 1)"),
         ("Stack", "React Router v8 · TypeScript · Node · Cloud Run · Firestore · Gemini"),
         ("Contains", "HLA · LLA-1 modules · LLA-2 state machine · LLA-3 data · LLA-4 frontend &amp; deploy"),
-        ("Status", "Proposed — for hackathon build"),
+        ("Status", "Proposed - for hackathon build"),
         ("Sources", "PRD v1.0 · FRD v1.0 · Firestore &amp; Vector Search spec · Agent System Prompts"),
     ],
 })
 
 build("IMPLEMENTATION_PLAN.md", "enaible-Implementation-Plan.pdf", {
     "eyebrow": "Implementation Plan · 48-hour sprint",
-    "title": "enaible — Build Plan",
+    "title": "enaible - Build Plan",
     "sub": "Hour-by-hour workstreams, milestones, cut list and risk responses "
            "for building the MVP in one hackathon sprint.",
     "meta": [

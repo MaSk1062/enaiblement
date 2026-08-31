@@ -1,9 +1,9 @@
 /**
- * POST /api/session/:id/produce — run one deep-bench capability.
+ * POST /api/session/:id/produce - run one deep-bench capability.
  *
  * Deliberately separate from /api/chat. A turn advances a consultation; this does not. It runs
  * one named specialist, writes what they produced, and leaves `currentStage` exactly where it
- * was — so depth can be asked for at any point without the pipeline having to know about it.
+ * was - so depth can be asked for at any point without the pipeline having to know about it.
  *
  * Same write guarantee as a turn: the artifacts and the state land in one batch, or neither
  * does (`saveTurn` in app/services/firestore.ts).
@@ -41,7 +41,7 @@ export async function action({ request, params }: { request: Request; params: { 
     // The same predicate the button is disabled by, enforced here too: the client is not the
     // authority on whether the consultation has produced what this specialist needs.
     const blocked = spec.requires(session.state);
-    if (blocked) return errorResponse(409, `Not ready — ${blocked}`);
+    if (blocked) return errorResponse(409, `Not ready - ${blocked}`);
 
     const ctx = {
       sessionId: session.sessionId,

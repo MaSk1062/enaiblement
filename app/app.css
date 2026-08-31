@@ -23,7 +23,7 @@ body {
   }
 }
 
-/* A Canvas section that appears mid-run (UI-2) says so once, on mount — not a loop, not a
+/* A Canvas section that appears mid-run (UI-2) says so once, on mount - not a loop, not a
    distraction, just enough motion that a field landing doesn't look like nothing happened. */
 @keyframes section-enter {
   from {
@@ -47,7 +47,7 @@ body {
 }
 
 /* The one motion moment 2026 AI-agent UX guidance actually calls load-bearing for trust: a
-   visible handoff, not a static swap (UI-13, ui-identity-tasks.md). Plays once, on mount —
+   visible handoff, not a static swap (UI-13, ui-identity-tasks.md). Plays once, on mount -
    ProgressRail forces a remount by keying the active chip on its own active-ness. */
 @keyframes handoff-pulse {
   0% {

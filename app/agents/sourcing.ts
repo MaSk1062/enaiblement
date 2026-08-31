@@ -1,5 +1,5 @@
 /**
- * The Sourcing Lead — the one agent that answers "so who actually builds this?"
+ * The Sourcing Lead - the one agent that answers "so who actually builds this?"
  *
  * Two model calls, for the reason `rag.ts` already documents: search grounding and
  * `responseMimeType: "application/json"` are mutually exclusive on Vertex. So the first call
@@ -8,7 +8,7 @@
  * only firms it is shown are the ones the search returned.
  *
  * `grounded: false` is a first-class outcome here, not an error. Zero citable partners means an
- * empty list and a reply that says so — the same discipline `rag.ts` applies to case studies,
+ * empty list and a reply that says so - the same discipline `rag.ts` applies to case studies,
  * for a much sharper reason: a fabricated consultancy on screen ends the engagement.
  */
 
@@ -35,7 +35,7 @@ const SEARCH_INSTRUCTION = [
   "",
   "ALWAYS run a Google Search before answering. Never answer from memory: every firm you name",
   "must come from a page you retrieved in this turn, and you must say what that page says they",
-  "delivered — not what they advertise. If the results contain no such firm, reply with exactly:",
+  "delivered - not what they advertise. If the results contain no such firm, reply with exactly:",
   "NONE",
   "",
   "For each firm give the name, the country, the delivered work, and nothing else. No preamble.",
@@ -72,7 +72,7 @@ export async function run(input: SourcingInput): Promise<{ reply: string; sourci
     : [
         "SEARCH FINDINGS: none.",
         "The search returned no citable implementation partners. Return an EMPTY partners list",
-        "and say so plainly in your reply — do not name a firm from memory. Still produce the",
+        "and say so plainly in your reply - do not name a firm from memory. Still produce the",
         "proposal, since it derives from the approved roadmap rather than from any partner.",
       ].join("\n");
 

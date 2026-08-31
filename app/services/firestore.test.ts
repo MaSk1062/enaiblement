@@ -1,10 +1,10 @@
 /**
  * `message()` is the choke point every stored message passes through, and Firestore rejects an
- * undefined value outright — a whole turn 503s after the model has already been paid for. The
+ * undefined value outright - a whole turn 503s after the model has already been paid for. The
  * second assertion is the one that matters: it fails for ANY future field left undefined, not
  * just agentName.
  *
- * Pure function, no emulator, no credentials — the module initialises Firebase lazily.
+ * Pure function, no emulator, no credentials - the module initialises Firebase lazily.
  */
 
 import assert from "node:assert/strict";

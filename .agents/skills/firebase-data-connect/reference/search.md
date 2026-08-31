@@ -36,7 +36,7 @@ semantic meaning of text.
 ### Schema Setup
 
 - **Configure Column Dimensions**: Define the column dimension size using the
-  `@col(size: X)` directive — SQL Connect requires an explicit size for Vector
+  `@col(size: X)` directive - SQL Connect requires an explicit size for Vector
   fields to allocate storage.
 - **Match Model Specifications**: Ensure the column size matches the output
   dimension of your chosen embedding model (e.g., **768** for Google Vertex AI's
@@ -55,7 +55,7 @@ type Movie @table {
 ### Automatic Embedding Generation (`_embed` server value)
 
 Ensure you use the exact same embedding model across all queries and mutations
-on a given vector field — vector embeddings generated from different model
+on a given vector field - vector embeddings generated from different model
 versions are incompatible and will result in poor search relevance or errors.
 
 #### A. Generation on Insert
@@ -188,7 +188,7 @@ type Movie @table {
 - **Stemming Language**: By default, parsing uses English stemming. Configure
   custom stemming using `@searchable(language: "languagename")`.
 - **Multi-Column Stemming Gotcha**: Ensure all indexed columns use the exact
-  same language when searching over multiple columns in a single query —
+  same language when searching over multiple columns in a single query -
   PostgreSQL requires matching text search configurations for multi-column
   queries.
 

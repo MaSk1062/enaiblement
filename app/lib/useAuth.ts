@@ -1,4 +1,4 @@
-/** Firebase auth state as a hook. Browser only — `watchUser` runs in an effect. */
+/** Firebase auth state as a hook. Browser only - `watchUser` runs in an effect. */
 
 import { useEffect, useState } from "react";
 import type { User } from "firebase/auth";
@@ -20,7 +20,7 @@ export function useAuth(): AuthState {
     if (!isConfigured) {
       setConfigError(
         "Firebase is not configured. Set VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN " +
-          "and VITE_FIREBASE_PROJECT_ID in .env — see .env.example.",
+          "and VITE_FIREBASE_PROJECT_ID in .env - see .env.example.",
       );
       setLoading(false);
       return;

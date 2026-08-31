@@ -1,11 +1,11 @@
 /**
- * /dashboard/canvas — the strategy, alone, for export.
+ * /dashboard/canvas - the strategy, alone, for export.
  *
  * The Canvas itself lives in the chat route now (inline at a decision, then as the main
- * column once the strategy is done) — that is where you read and revise it. This route is
+ * column once the strategy is done) - that is where you read and revise it. This route is
  * not a second way to see the same thing: no chat rail, nothing but the artefact and the
  * download button, which is what the print stylesheet targets (UI-5). Nav only links here
- * once the strategy is complete (UI-4) — a nav item that opens an empty page is worse than
+ * once the strategy is complete (UI-4) - a nav item that opens an empty page is worse than
  * one that isn't there yet.
  */
 
@@ -36,7 +36,7 @@ export default function Canvas() {
           </button>
         </div>
       )}
-      {/* Nav only links here once complete, but a direct URL can still land mid-pipeline —
+      {/* Nav only links here once complete, but a direct URL can still land mid-pipeline -
           the lifted "document" treatment is for the finished artifact (UI-12), not a
           work-in-progress view, so it's gated on `ready` the same as the button above. */}
       <div

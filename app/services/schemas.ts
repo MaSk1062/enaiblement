@@ -81,7 +81,7 @@ export const UseCasesOutput = z
           impact: Level,
           complexity: Level,
           // A figure is required, not requested. The prompt asks for "reduces processing time
-          // by 40%" and not "improves efficiency", and one run in six ignored it — caught by
+          // by 40%" and not "improves efficiency", and one run in six ignored it - caught by
           // scripts/eval.ts, scored 5/5 by the judge. Enforcing it here routes the failure into
           // the repair re-prompt, which fixes it with the exact error rather than by hoping.
           business_value: z.string().min(1).regex(/\d/, "business_value must contain a figure"),
@@ -221,7 +221,7 @@ const ReviseRaw = z.discriminatedUnion("action", [
 
 export type ReviseResult =
   | { action: "answer"; reply: string }
-  /** A partial state, so the caller applies it by spreading — no field names to keep in step. */
+  /** A partial state, so the caller applies it by spreading - no field names to keep in step. */
   | { action: "revise"; reply: string; patch: Partial<AgentState> }
   | { action: "rerun"; reply: string; from: (typeof REWIND_STAGES)[number] };
 
@@ -243,7 +243,7 @@ export const ReviseOutput = ReviseRaw.transform((r): ReviseResult => {
 
 // --- sourcing -----------------------------------------------------------------
 // The only agent whose output names real organisations, so the schema carries the rule: a
-// partner without a URL is not a partner. `.min(1).url()` is doing real work here — it turns a
+// partner without a URL is not a partner. `.min(1).url()` is doing real work here - it turns a
 // fabricated firm into a validation failure, which the repair re-prompt then has to answer for.
 
 export const SourcingOutput = z

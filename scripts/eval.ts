@@ -1,5 +1,5 @@
 /**
- * Agent evals — the only thing in the repo that asserts a PROMPT works.
+ * Agent evals - the only thing in the repo that asserts a PROMPT works.
  *
  *   npm run eval
  *   npm run eval -- --k 1                 # one run per case, the fast loop
@@ -20,7 +20,7 @@
  * eval measures the same instrument production does.
  *
  * Exits non-zero when an agent falls below the thresholds, so it CAN gate a deploy. It is not
- * wired into one — and it draws on the same Vertex quota as the demo, so do not run it during
+ * wired into one - and it draws on the same Vertex quota as the demo, so do not run it during
  * a rehearsal.
  */
 
@@ -79,7 +79,7 @@ const GROUNDED = {
   documents: [
     {
       id: "kb-1",
-      title: "Ochsner Health — prior authorisation triage",
+      title: "Ochsner Health - prior authorisation triage",
       content:
         "Ochsner Health applied a document-extraction model to prior authorisation packets, " +
         "auto-assembling the clinical evidence payers ask for. Turnaround fell from 19 days " +
@@ -137,7 +137,7 @@ interface EvalCase {
  *
  * Checking the Architect against its live searched menu proves nothing: that menu lists every
  * model the Architect would name anyway, so the check passes even with the prompt's "recommend
- * from this list only" constraint deleted — verified by deleting it. Pinning two models makes
+ * from this list only" constraint deleted - verified by deleting it. Pinning two models makes
  * obedience observable. `modelMenu()` honours this over the search.
  */
 const NARROW_MENU = [
@@ -157,7 +157,7 @@ const CASES: EvalCase[] = [
       discovery({
         profile: HEALTHCARE,
         messages: COMPLETE_TRANSCRIPT,
-        latest: "That is everything — what have you got?",
+        latest: "That is everything - what have you got?",
       }),
     checks: [
       (o: { status: string }) => (o.status === "complete" ? undefined : `status was "${o.status}"`),
@@ -373,7 +373,7 @@ async function main() {
   process.env.ARCHITECT_MODEL_MENU = NARROW_MENU;
   menu = await modelMenu();
 
-  console.log(`\nevals — ${cases.length} cases x ${K} run(s)\n`);
+  console.log(`\nevals - ${cases.length} cases x ${K} run(s)\n`);
   const results: Result[] = [];
 
   for (const c of cases) {
@@ -382,7 +382,7 @@ async function main() {
       results.push(r);
       const mark = r.passed ? "PASS" : "FAIL";
       const score = r.score ? `judge ${r.score.toFixed(1)}` : "judge n/a";
-      console.log(`  ${mark}  ${r.agent}/${c.name} — ${score}, ${r.durationMs}ms, ${r.tokens} tok`);
+      console.log(`  ${mark}  ${r.agent}/${c.name} - ${score}, ${r.durationMs}ms, ${r.tokens} tok`);
       for (const f of r.failures) console.log(`        ! ${f}`);
       if (r.reason && !r.passed) console.log(`        judge: ${r.reason}`);
     }
@@ -423,7 +423,7 @@ async function main() {
   );
   console.log(
     failing.length
-      ? `\nFAILED: ${failing.map((f) => f.agent).join(", ")} — see evals/latest.json\n`
+      ? `\nFAILED: ${failing.map((f) => f.agent).join(", ")} - see evals/latest.json\n`
       : "\nAll agents within thresholds. Baseline written to evals/latest.json\n",
   );
   if (failing.length) process.exitCode = 1;

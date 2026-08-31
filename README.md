@@ -5,7 +5,7 @@ An AI enablement consultancy, run by five specialist agents.
 A user describes a business bottleneck. A Discovery Consultant interviews them, an Industry
 Analyst finds grounded use cases, a Technical Architect recommends a stack, a Project Manager
 phases the rollout, and a Change Coach plans the people side. The output is a **Strategy
-Canvas** — a document you can print — not a chat log.
+Canvas** - a document you can print - not a chat log.
 
 ## How it is built
 
@@ -19,7 +19,7 @@ Three decisions explain most of the code:
 - **One seam to the model.** `app/services/gemini.ts` owns retry, JSON mode, schema validation
   and a single repair re-prompt; `app/services/schemas.ts` is the only place the agents'
   snake_case meets the app's camelCase. An agent is then a prompt, an input projection and a
-  schema — about thirty lines.
+  schema - about thirty lines.
 
 Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) ·
 diagram: [`docs/diagrams/hla.svg`](docs/diagrams/hla.svg) ·
@@ -35,7 +35,7 @@ native vector search for retrieval · Cloud Run · Firebase Auth.
 - Node 22 or newer (the test runner and TypeScript stripping are used directly, with no build
   step for scripts)
 - A Google Cloud project with Vertex AI and Firestore enabled
-- A Firebase project for authentication — it may be the same project or a different one
+- A Firebase project for authentication - it may be the same project or a different one
 - `gcloud`, authenticated
 
 ### Credentials
@@ -73,7 +73,7 @@ npm run dev
 ```
 
 `npm run seed` researches each seed document with a live web search and **drops any that comes
-back without a citation** — the corpus is small on purpose and every document carries a source.
+back without a citation** - the corpus is small on purpose and every document carries a source.
 
 ### On Cloud Run
 
@@ -94,9 +94,9 @@ npm test          # node --test, no framework
 npm run eval      # scores the agent prompts against the real model
 ```
 
-`npm run eval` is the unusual one: it runs the real agents and asserts on their output —
+`npm run eval` is the unusual one: it runs the real agents and asserts on their output -
 discovery branches correctly, the Architect stays inside the menu it was given, every business
-value carries a figure — and a Gemini judge scores specificity, grounding and role fit. It
+value carries a figure - and a Gemini judge scores specificity, grounding and role fit. It
 costs real tokens, so it is not part of `npm test`.
 
 ## Things worth knowing before you trust it

@@ -175,7 +175,7 @@ export default function Login() {
 }
 
 /**
- * The landing page — this and /onboarding are the only screens a first-time visitor (a judge,
+ * The landing page - this and /onboarding are the only screens a first-time visitor (a judge,
  * most of the time) ever sees before deciding whether the product is worth a second look. It
  * used to be a single narrow card with one sentence of copy; this is the whole pitch, not just
  * the login form.
@@ -183,10 +183,10 @@ export default function Login() {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-slate-950 px-6 py-12">
-      {/* Decorative, and the only screen that gets it — this renders continuously while
+      {/* Decorative, and the only screen that gets it - this renders continuously while
           mounted, and the rest of the app is functional UI someone is trying to read, not
           look at (see the note on DotGrid.tsx). Dark background on purpose: light dots on dark
-          read as a glow when the pointer is near them, which is the whole point of the effect —
+          read as a glow when the pointer is near them, which is the whole point of the effect -
           on a light page the same dots just look like noise sitting behind the text. */}
       <div className="absolute inset-0">
         <DotGrid
@@ -203,12 +203,12 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="relative grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        {/* A frosted panel, not a solid one — the big bold headline reads fine directly on the
+        {/* A frosted panel, not a solid one - the big bold headline reads fine directly on the
             dots (see the "Organized chaos" reference), but the smaller tagline and the persona
             blurbs are lower-contrast, smaller text, and lost their legibility sitting right on
             top of the dot pattern. This dims what's behind it without hiding the effect. */}
         <div className="rounded-3xl bg-slate-950/50 p-8 backdrop-blur-sm">
-          {/* The mark is a stylized "e" — pairing it with the full word would read as a doubled
+          {/* The mark is a stylized "e" - pairing it with the full word would read as a doubled
               E. Text picks up from "naible" so together it reads "enaible" once; both halves
               are aria-hidden and the label carries the whole name once. */}
           <div className="flex items-center gap-3" aria-label="Enaible">
@@ -222,7 +222,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             phased AI adoption plan.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-slate-400">
-            Built around African compliance regimes and cost realities — not retrofitted from a
+            Built around African compliance regimes and cost realities - not retrofitted from a
             US or EU playbook.
           </p>
 
@@ -244,7 +244,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
 
-        {/* Its own solid surface, not floating on the hero's dark/dotted background — an auth
+        {/* Its own solid surface, not floating on the hero's dark/dotted background - an auth
             form needs to read as a form, not as more decoration. */}
         <div className="w-full max-w-sm justify-self-center rounded-2xl bg-white p-8 shadow-xl lg:justify-self-end">
           {children}

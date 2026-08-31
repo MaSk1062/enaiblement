@@ -2,12 +2,12 @@
  * The contract. Every module on both sides of the API boundary imports from here.
  *
  * Source: docs/FIRESTORE_SCHEMA.md §2, verbatim, plus two corrections:
- *   - SessionDocument gains `userProfile` (docs/ARCHITECTURE.md §7.1) — the orchestrator
+ *   - SessionDocument gains `userProfile` (docs/ARCHITECTURE.md §7.1) - the orchestrator
  *     reads it every turn, and denormalising it saves a `users` read per turn.
  *   - `users/{uid}` gains `activeSessionId` so the dashboard can find the session it owns.
  *
  * These interfaces are camelCase. The agents emit snake_case. Nothing in this file
- * ever sees snake_case — `services/schemas.ts` is the single translation point.
+ * ever sees snake_case - `services/schemas.ts` is the single translation point.
  */
 
 import type { Timestamp } from "firebase-admin/firestore";
@@ -26,7 +26,7 @@ export type CompanySize = "1-50" | "51-200" | "201-1000" | "1000+";
 /**
  * Where the client operates. Not decoration: it decides which data-protection regime the
  * Architect must design against, which currency a budget is quoted in, and which partners are
- * actually reachable. Optional so existing sessions keep working — every prompt treats an
+ * actually reachable. Optional so existing sessions keep working - every prompt treats an
  * absent region as "unspecified" rather than assuming the United States.
  */
 export type Region =
@@ -204,7 +204,7 @@ export interface Reliability {
   alerts: { name: string; condition: string; severity: "page" | "ticket" }[];
 }
 
-/** A real firm, with a link. A partner without a citation does not get stored — see sourcing.ts. */
+/** A real firm, with a link. A partner without a citation does not get stored - see sourcing.ts. */
 export interface Partner {
   name: string;
   country: string;
@@ -228,7 +228,7 @@ export interface Sourcing {
   proposal: Proposal;
   /**
    * False when the search returned no citable firms. The reply says so and `partners` is empty
-   * — the one thing this feature must never do is invent a consultancy.
+   * - the one thing this feature must never do is invent a consultancy.
    */
   grounded: boolean;
 }

@@ -4,11 +4,11 @@
 #
 #   ./scripts/deploy.sh
 #
-# Reads config from .env. Run scripts/setup-gcp.sh once first — this script assumes the
+# Reads config from .env. Run scripts/setup-gcp.sh once first - this script assumes the
 # Artifact Registry repo and the runtime service account already exist.
 #
-# Cloud Run settings follow ARCHITECTURE.md §8.3 — concurrency 80, 1 vCPU / 1 GiB, scale to
-# zero — with one change: the request timeout is 300s, not 60s. A structured turn can spend
+# Cloud Run settings follow ARCHITECTURE.md §8.3 - concurrency 80, 1 vCPU / 1 GiB, scale to
+# zero - with one change: the request timeout is 300s, not 60s. A structured turn can spend
 # 1.5-4s generating, double that after a repair re-prompt, plus ~15s of retry backoff before
 # the fifth attempt. 60s cuts the request off mid-turn and the user loses their message. The
 # session survives either way (a stage only advances on a persisted payload) but the turn
@@ -22,13 +22,13 @@ cd "$(dirname "$0")/.."
 
 [ -f .env ] && { set -a; . ./.env; set +a; }
 
-PROJECT="${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set — see .env.example}"
+PROJECT="${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set - see .env.example}"
 REGION="${DEPLOY_REGION:-us-central1}"
 SERVICE="${DEPLOY_SERVICE:-enaible}"
 REPO="${DEPLOY_REPO:-enaible}"
 RUN_SA="${DEPLOY_SERVICE_ACCOUNT:-enaible-run@${PROJECT}.iam.gserviceaccount.com}"
 
-# The client bundle is useless without these, and the failure is silent — the deployed login
+# The client bundle is useless without these, and the failure is silent - the deployed login
 # page just says Firebase is not configured. Fail loudly here instead.
 : "${VITE_FIREBASE_API_KEY:?VITE_FIREBASE_API_KEY is not set}"
 : "${VITE_FIREBASE_AUTH_DOMAIN:?VITE_FIREBASE_AUTH_DOMAIN is not set}"
@@ -52,7 +52,7 @@ ENV_VARS="${ENV_VARS},FIREBASE_AUTH_PROJECT_ID=${FIREBASE_AUTH_PROJECT_ID:-${PRO
 ENV_VARS="${ENV_VARS},GEMINI_EMBEDDING_MODEL=${GEMINI_EMBEDDING_MODEL:-gemini-embedding-001}"
 
 # The model and its endpoint are a pair (gemini-3.5-flash is global-only) and their defaults
-# live in app/services/gemini.ts. Passed through only when .env sets them — a second copy of a
+# live in app/services/gemini.ts. Passed through only when .env sets them - a second copy of a
 # default here is a second place for it to drift, and it is the place it drifted last time.
 # `if`, not `[ … ] && …`: under `set -e` a false test is a failing command and would abort here.
 if [ -n "${GEMINI_TEXT_MODEL:-}" ]; then
