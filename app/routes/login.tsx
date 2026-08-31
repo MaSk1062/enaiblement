@@ -203,16 +203,17 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="relative grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div>
+        {/* A frosted panel, not a solid one — the big bold headline reads fine directly on the
+            dots (see the "Organized chaos" reference), but the smaller tagline and the persona
+            blurbs are lower-contrast, smaller text, and lost their legibility sitting right on
+            top of the dot pattern. This dims what's behind it without hiding the effect. */}
+        <div className="rounded-3xl bg-slate-950/50 p-8 backdrop-blur-sm">
           {/* The mark is a stylized "e" — pairing it with the full word would read as a doubled
               E. Text picks up from "naible" so together it reads "enaible" once; both halves
               are aria-hidden and the label carries the whole name once. */}
           <div className="flex items-center gap-3" aria-label="Enaible">
             <img src="/logo.png" alt="" aria-hidden className="h-14 w-14 sm:h-16 sm:w-16" />
-            <p
-              aria-hidden
-              className="text-5xl font-bold tracking-tight text-indigo-400 sm:text-6xl"
-            >
+            <p aria-hidden className="text-5xl font-bold tracking-tight text-indigo-400 sm:text-6xl">
               naible
             </p>
           </div>
