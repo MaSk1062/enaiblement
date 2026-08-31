@@ -15,7 +15,7 @@ import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
 import { buildTimeline } from "./timeline.ts";
-import type { Level, RoadmapPhase, UseCase } from "../types.ts";
+import type { Level, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
   const { state, profile, decide, error } = useConsultation();
@@ -192,7 +192,90 @@ export function CanvasPanel() {
           </Section>
         </div>
       )}
+
+      {state.sourcing && (
+        <div className="animate-section-enter">
+          <PartnersAndProposal sourcing={state.sourcing} />
+        </div>
+      )}
     </div>
+  );
+}
+
+/**
+ * Who could build it, and what it would take.
+ *
+ * Every firm carries a clickable citation, for the same reason the use cases do: this is the
+ * one section naming real organisations, and a name without a source is indistinguishable from
+ * an invented one. When the search found nothing the list is empty and says so — the proposal
+ * still stands, because it derives from the approved roadmap rather than from any partner.
+ */
+function PartnersAndProposal({ sourcing }: { sourcing: Sourcing }) {
+  const { partners, proposal } = sourcing;
+
+  return (
+    <Section
+      id="section-partners"
+      title="Partners and proposal"
+      aside={
+        <span className="text-xs text-slate-400">
+          {partners.length > 0 ? `${partners.length} shortlisted` : "no verified partners"}
+        </span>
+      }
+    >
+      {partners.length === 0 ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
+          The search returned no implementation partners we could verify, so none are listed. An
+          unverified shortlist would be worse than an empty one — the proposal below is derived
+          from your approved roadmap and does not depend on a partner being named.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {partners.map((partner) => (
+            <div
+              key={partner.sourceUrl}
+              className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium text-slate-900">{partner.name}</h3>
+                <span className="text-xs whitespace-nowrap text-slate-500">{partner.country}</span>
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{partner.delivered}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{partner.fit}</p>
+              <a
+                href={partner.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block truncate text-xs text-slate-500 underline decoration-slate-300 hover:text-slate-900"
+              >
+                {partner.sourceUrl}
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
+        <p className="text-sm leading-relaxed text-slate-700">{proposal.scope}</p>
+
+        <dl className="mt-3 space-y-1.5">
+          {proposal.phases.map((phase) => (
+            <div key={phase.phaseName} className="flex items-baseline justify-between gap-3">
+              <dt className="text-sm text-slate-800">{phase.phaseName}</dt>
+              <dd className="text-xs whitespace-nowrap text-slate-500">
+                {phase.personWeeks} person-weeks · {phase.partnerRole}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-3 text-sm font-medium text-slate-900">{proposal.budgetRange}</p>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          <span className="font-medium">Next · </span>
+          {proposal.nextStep}
+        </p>
+      </div>
+    </Section>
   );
 }
 

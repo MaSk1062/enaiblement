@@ -42,6 +42,11 @@ const STATUS: Record<Stage, AgentStatus> = {
     working: "is planning the people side",
     blurb: "Upskilling paths and leadership communication",
   },
+  sourcing: {
+    name: AGENT_NAMES.sourcing,
+    working: "is finding partners who have done this before",
+    blurb: "Shortlisting implementation partners and drafting a proposal",
+  },
   complete: {
     name: AGENT_NAMES.changeCoach,
     working: "is thinking",
@@ -58,5 +63,6 @@ export const STAGES: Stage[] = [
   "architecture",
   "roadmap",
   "training",
+  "sourcing",
   "complete",
 ];

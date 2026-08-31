@@ -85,17 +85,25 @@ export default function Dashboard() {
     [sessionId, sending],
   );
 
+  // Approving releases the rest of the pipeline, so this call can take as long as a chat turn
+  // and comes back with several replies. `sending` drives the same typing indicator, because
+  // from the user's side it is the same thing: the specialists are working.
   const decide = useCallback(
     async (decisions: Record<string, "approved" | "rejected">) => {
-      if (!sessionId) return;
+      if (!sessionId || sending) return;
+      setSending(true);
+      setError(null);
       try {
-        const { state: next } = await api.decideUseCases(sessionId, decisions);
+        const { replies, state: next } = await api.decideUseCases(sessionId, decisions);
+        setMessages((m) => [...m, ...replies]);
         setState(next);
       } catch (err) {
         setError((err as Error).message);
+      } finally {
+        setSending(false);
       }
     },
-    [sessionId],
+    [sessionId, sending],
   );
 
   if (authLoading || booting) {
@@ -205,7 +213,9 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
   return (
     <div className="overflow-x-auto px-6 pb-3">
       <ol className="flex min-w-max items-center gap-2">
-        {STAGES.slice(0, 5).map((stage, i) => {
+        {/* Every stage but `complete`, which is a conversation rather than a step. Derived
+            rather than sliced to a count, so adding a stage does not silently drop one. */}
+        {STAGES.filter((s) => s !== "complete").map((stage, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
           const working = active && sending;

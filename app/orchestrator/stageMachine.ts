@@ -17,6 +17,7 @@ import type * as changeCoach from "../agents/changeCoach.ts";
 import type * as discovery from "../agents/discovery.ts";
 import type * as projectManager from "../agents/projectManager.ts";
 import type * as reviser from "../agents/reviser.ts";
+import type * as sourcing from "../agents/sourcing.ts";
 import type { retrieve } from "../services/rag.ts";
 import { AGENT_NAMES } from "../agents/names.ts";
 import { event } from "../services/telemetry.ts";
@@ -29,6 +30,7 @@ export interface StageDeps {
   projectManager: typeof projectManager.run;
   changeCoach: typeof changeCoach.run;
   reviser: typeof reviser.run;
+  sourcing: typeof sourcing.run;
   retrieve: typeof retrieve;
 }
 
@@ -40,6 +42,7 @@ export const defaultDeps: StageDeps = {
   projectManager: (i) => import("../agents/projectManager").then((m) => m.run(i)),
   changeCoach: (i) => import("../agents/changeCoach").then((m) => m.run(i)),
   reviser: (i) => import("../agents/reviser").then((m) => m.run(i)),
+  sourcing: (i) => import("../agents/sourcing").then((m) => m.run(i)),
   retrieve: (...args) => import("../services/rag").then((m) => m.retrieve(...args)),
 };
 
@@ -150,7 +153,11 @@ async function runStage(
           };
         }
 
-        const stack = await deps.architect({ role: userProfile.role, approvedUseCases: approved });
+        const stack = await deps.architect({
+          role: userProfile.role,
+          approvedUseCases: approved,
+          region: userProfile.region,
+        });
         return {
           reply: agentMessage(
             AGENT_NAMES.architect,
@@ -186,10 +193,32 @@ async function runStage(
         return {
           reply: agentMessage(
             AGENT_NAMES.changeCoach,
-            "Your change-management plan is ready. Your AI enablement strategy is complete " +
-              "— you can review and export it from the dashboard.",
+            "Your change-management plan is ready. Handing off to our Sourcing Lead to find " +
+              "partners who have delivered this before.",
           ),
-          state: { ...state, changeManagementPlan: plan, currentStage: "complete" },
+          state: { ...state, changeManagementPlan: plan, currentStage: "sourcing" },
+        };
+      }
+
+      // ----------------------------------------------------------------- sourcing
+      case "sourcing": {
+        const { reply, sourcing: result } = await deps.sourcing({
+          profile: userProfile,
+          approvedUseCases: approvedOf(state),
+          stack: requireStack(state),
+          roadmapPhases: state.roadmapPhases ?? [],
+        });
+
+        // An ungrounded shortlist is empty, not invented, and the user is told which happened.
+        event("sourcing", {
+          documents: result.partners.length,
+          ok: result.grounded,
+          source: result.grounded ? "web" : "none",
+        });
+
+        return {
+          reply: agentMessage(AGENT_NAMES.sourcing, reply),
+          state: { ...state, sourcing: result, currentStage: "complete" },
         };
       }
 
@@ -223,8 +252,17 @@ async function runStage(
 }
 
 /**
- * One turn. Every stage but the last runs a single agent; `complete` is a conversation about
- * the finished strategy, and may rebuild parts of it.
+ * One turn, which is as many stages as can run without asking the user anything else.
+ *
+ * The consultation used to advance exactly one stage per message, so a user who had finished
+ * the interview still had to type "ok, continue" to get research, again for architecture, again
+ * for the roadmap. Those messages carried no information — the agent already had everything it
+ * needed and was waiting to be told to proceed.
+ *
+ * Now it proceeds. The loop stops where a human is genuinely required, and that stop is not a
+ * special case: the approval gate returns its stage unchanged, so `advance()` exits on the
+ * condition it already had. `complete` is a conversation rather than a stage and keeps its own
+ * path.
  */
 export async function runTurn(
   session: SessionDocument,
@@ -233,11 +271,18 @@ export async function runTurn(
 ): Promise<TurnResult> {
   if (session.state.currentStage === "complete") return followUp(session, userMessage, deps);
 
-  const step = await runStage(session, userMessage, deps);
-  return { replies: [step.reply], state: step.state };
+  return advance(session, session.state, userMessage, deps, []);
 }
 
-const ORDER: Stage[] = ["discovery", "research", "architecture", "roadmap", "training", "complete"];
+const ORDER: Stage[] = [
+  "discovery",
+  "research",
+  "architecture",
+  "roadmap",
+  "training",
+  "sourcing",
+  "complete",
+];
 
 /**
  * Rewinding to a stage clears everything produced at or after it.
@@ -259,6 +304,7 @@ export function rewind(state: AgentState, from: Stage): AgentState {
   if (clears("architecture")) delete next.architectureStack;
   if (clears("roadmap")) delete next.roadmapPhases;
   if (clears("training")) delete next.changeManagementPlan;
+  if (clears("sourcing")) delete next.sourcing;
 
   return next;
 }
@@ -266,20 +312,23 @@ export function rewind(state: AgentState, from: Stage): AgentState {
 const MAX_REPLAY_STAGES = 5;
 
 /**
- * Runs stages forward from a rewound state until the strategy is whole again.
+ * Runs stages forward until the consultation needs a human again.
  *
- * It stops when nothing advanced, which is the approval gate doing its job: regenerated use
- * cases arrive as `suggested`, so `architecture` blocks and the decision goes back to the user
- * rather than the loop guessing on their behalf. A failed agent stops it the same way.
+ * One loop, two callers: the forward path after a user message, and `followUp()` replaying
+ * after a rewind. It stops when nothing advanced — which is the approval gate doing its job,
+ * because a blocked stage returns its state unchanged and a failed agent does the same. So the
+ * gate needs no special handling here and neither does failure.
+ *
+ * `MAX_REPLAY_STAGES` is the rail: five is more than the pipeline has, so hitting it means a
+ * stage advanced into a cycle, and stopping beats spending money on one.
  */
-async function replay(
+async function advance(
   session: SessionDocument,
   start: AgentState,
   userMessage: string,
   deps: StageDeps,
-  first: ChatMessage,
+  replies: ChatMessage[],
 ): Promise<TurnResult> {
-  const replies = [first];
   let state = start;
 
   for (let i = 0; i < MAX_REPLAY_STAGES && state.currentStage !== "complete"; i++) {
@@ -336,13 +385,9 @@ async function followUp(
       if (decision.patch.useCases) {
         revised.useCases = carryStatus(state.useCases, decision.patch.useCases);
         event("stage.rewind", { from: "complete", to: "architecture", reason: "use cases revised" });
-        return replay(
-          session,
-          rewind(revised, "architecture"),
-          question,
-          deps,
+        return advance(session, rewind(revised, "architecture"), question, deps, [
           agentMessage(AGENT_NAMES.analyst, decision.reply),
-        );
+        ]);
       }
 
       // Attributed to whoever owns that section, not to whoever happened to take the message —
@@ -352,13 +397,9 @@ async function followUp(
     }
 
     event("stage.rewind", { from: "complete", to: decision.from, reason: "follow-up" });
-    return replay(
-      session,
-      rewind(state, decision.from),
-      question,
-      deps,
+    return advance(session, rewind(state, decision.from), question, deps, [
       agentMessage(agentForStage(decision.from), decision.reply),
-    );
+    ]);
   } catch (err) {
     // Same rule as a stage: a failed turn changes nothing and stays replayable.
     event("agent.failed", {
@@ -394,6 +435,8 @@ export function agentForStage(stage: Stage): AgentName {
       return AGENT_NAMES.architect;
     case "roadmap":
       return AGENT_NAMES.projectManager;
+    case "sourcing":
+      return AGENT_NAMES.sourcing;
     default:
       return AGENT_NAMES.changeCoach;
   }

@@ -26,6 +26,7 @@ const AGENT_SECTION: Partial<Record<AgentName, string>> = {
   "Technical Architect": "section-stack",
   "Project Manager": "section-roadmap",
   "Change Coach": "section-people",
+  "Sourcing Lead": "section-partners",
 };
 
 export function meta() {

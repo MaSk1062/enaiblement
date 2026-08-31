@@ -65,7 +65,9 @@ export const decideUseCases = (
   sessionId: string,
   decisions: Record<string, "approved" | "rejected">,
 ) =>
-  call<{ state: AgentState }>(`/api/session/${encodeURIComponent(sessionId)}/use-cases`, {
-    method: "PATCH",
-    body: JSON.stringify({ decisions }),
-  });
+  // Returns replies as well as state: approving releases the rest of the pipeline, so the
+  // Architect, Project Manager and Change Coach all answer this one call.
+  call<{ replies: ChatMessage[]; state: AgentState }>(
+    `/api/session/${encodeURIComponent(sessionId)}/use-cases`,
+    { method: "PATCH", body: JSON.stringify({ decisions }) },
+  );
