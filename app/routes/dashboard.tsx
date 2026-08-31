@@ -121,8 +121,10 @@ export default function Dashboard() {
 
   return (
     <ConsultationContext.Provider value={consultation}>
-      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50">
-        <header className="border-b border-slate-200 bg-white">
+      {/* Fixed height with internal scroll containers on screen; print needs the opposite —
+          nothing clipped, everything flowing across pages — hence the print: overrides below. */}
+      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50 print:h-auto print:overflow-visible">
+        <header className="border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
               <span className="text-sm font-semibold tracking-tight text-slate-900">enaible</span>
@@ -138,7 +140,7 @@ export default function Dashboard() {
           <ProgressRail current={state.currentStage} />
         </header>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden print:overflow-visible">
           <Outlet />
         </div>
       </div>

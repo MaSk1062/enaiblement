@@ -33,14 +33,27 @@ export default function Chat() {
   }
 
   return (
-    <main className="flex flex-1 flex-col overflow-hidden lg:flex-row">
-      <div className="flex-1 overflow-y-auto px-6 py-8 lg:px-10">
+    <main className="flex flex-1 flex-col overflow-hidden lg:flex-row print:block print:overflow-visible">
+      <div className="flex-1 overflow-y-auto px-6 py-8 lg:px-10 print:overflow-visible print:p-0">
         <div className="mx-auto max-w-3xl">
+          {/* ponytail: duplicates the button on /dashboard/canvas — that route isn't linked
+              from anywhere yet (UI-4), and this is the completed view people actually land on.
+              Once UI-4 picks one canvas, one of these two copies goes away. */}
+          <div className="mb-6 flex items-center justify-between print:hidden">
+            <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            >
+              Download strategy (PDF)
+            </button>
+          </div>
           <CanvasPanel />
         </div>
       </div>
 
-      <aside className="flex shrink-0 flex-col overflow-hidden border-slate-200 lg:w-96 lg:border-l">
+      <aside className="flex shrink-0 flex-col overflow-hidden border-slate-200 lg:w-96 lg:border-l print:hidden">
         <p className="border-y border-slate-200 bg-white px-5 py-2.5 text-xs text-slate-500 lg:border-t-0">
           Ask about the strategy, or tell me what to change.
         </p>

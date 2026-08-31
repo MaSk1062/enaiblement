@@ -13,3 +13,12 @@ body {
     color-scheme: dark;
   }
 }
+
+/* The strategy document should read the same on paper regardless of the viewer's OS theme. */
+@media print {
+  html,
+  body {
+    background: #fff;
+    color-scheme: light;
+  }
+}
