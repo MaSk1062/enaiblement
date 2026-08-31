@@ -8,7 +8,12 @@ import {
   signInWithGoogle,
   signUpWithEmail,
 } from "../lib/firebase.client.ts";
+import { Threads } from "../lib/Threads.tsx";
 import { useAuth } from "../lib/useAuth.ts";
+
+// indigo-600 (#4f46e5) as [r, g, b] 0-1 — Threads defaults to white, which disappears against
+// this page's light background. Matches the brand color everything else uses (UI-14).
+const THREADS_COLOR: [number, number, number] = [79 / 255, 70 / 255, 229 / 255];
 
 export function meta() {
   return [{ title: "Sign in · Enaible" }];
@@ -181,8 +186,15 @@ export default function Login() {
  */
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
-      <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-slate-50 px-6 py-12">
+      {/* Decorative, and the only screen that gets it — this renders continuously while
+          mounted, and the rest of the app is functional UI someone is trying to read, not
+          look at (see the note on Threads.tsx). aria-hidden since it carries no information. */}
+      <div className="absolute inset-0" aria-hidden>
+        <Threads color={THREADS_COLOR} amplitude={1} distance={0} enableMouseInteraction />
+      </div>
+
+      <div className="relative grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div>
           <p className="text-5xl font-bold tracking-tight text-indigo-600 sm:text-6xl">Enaible</p>
           <p className="mt-5 text-lg leading-relaxed text-slate-800 sm:text-xl">
