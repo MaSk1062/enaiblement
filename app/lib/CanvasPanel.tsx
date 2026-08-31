@@ -14,7 +14,8 @@ import { useState } from "react";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
-import type { Level, UseCase } from "../types.ts";
+import { buildTimeline } from "./timeline.ts";
+import type { Level, RoadmapPhase, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
   const { state, profile, decide } = useConsultation();
@@ -114,7 +115,11 @@ export function CanvasPanel() {
 
       {roadmapPhases && roadmapPhases.length > 0 && (
         <Section title="Roadmap">
-          <ol className="space-y-3">
+          <RoadmapTimeline phases={roadmapPhases} />
+
+          {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
+              same phases as a plain list, nothing hidden behind a click. */}
+          <ol className="space-y-3 sm:hidden print:block!">
             {roadmapPhases.map((phase, i) => (
               <li
                 key={phase.phaseName}
@@ -300,6 +305,69 @@ function UseCaseCard({
         </button>
       </div>
     </article>
+  );
+}
+
+/**
+ * The roadmap as a week-ruled CSS grid — the "Gantt" the pitch promised, downgraded on
+ * purpose to a grid (IMPLEMENTATION_PLAN.md §7): one bar per phase, positioned by
+ * `timeline.ts`, expandable to the same detail the list shows. sm and up only; below that
+ * and for print, `CanvasPanel` falls back to the plain list right below this component.
+ */
+function RoadmapTimeline({ phases }: { phases: RoadmapPhase[] }) {
+  const { lanes, totalWeeks } = buildTimeline(phases);
+  const [expandedPhase, setExpandedPhase] = useState<string | null>(null);
+  const columns = { gridTemplateColumns: `repeat(${totalWeeks}, minmax(0, 1fr))` };
+
+  return (
+    <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 sm:block print:hidden!">
+      <div className="min-w-xl">
+        <div className="grid border-b border-slate-200 pb-2" style={columns}>
+          {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((week) => (
+            <div key={week} className="text-[10px] text-slate-400">
+              {week === 1 || week % 4 === 1 ? `Wk ${week}` : ""}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 space-y-2">
+          {lanes.map((lane, i) => {
+            const phase = phases[i];
+            const expanded = expandedPhase === phase.phaseName;
+            return (
+              <div key={phase.phaseName}>
+                <div className="grid" style={columns}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedPhase(expanded ? null : phase.phaseName)}
+                    style={{ gridColumn: `${lane.startWeek} / ${lane.endWeek + 1}` }}
+                    aria-expanded={expanded}
+                    className={[
+                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition",
+                      expanded ? "bg-slate-700" : "bg-slate-900 hover:bg-slate-800",
+                      lane.open ? "bg-linear-to-r from-slate-900 to-slate-900/50" : "",
+                    ].join(" ")}
+                  >
+                    <span className="truncate">{phase.phaseName}</span>
+                    <span className="shrink-0 text-[10px] whitespace-nowrap text-slate-300">
+                      {phase.keyDeliverables.length}d · {phase.resourcesRequired.length}r
+                    </span>
+                  </button>
+                </div>
+
+                {expanded && (
+                  <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">{phase.duration}</p>
+                    <Bullets label="Deliverables" items={phase.keyDeliverables} />
+                    <Bullets label="Resources" items={phase.resourcesRequired} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 
