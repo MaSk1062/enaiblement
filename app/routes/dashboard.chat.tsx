@@ -13,7 +13,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { agentStatus } from "../lib/agentStatus.ts";
+import { agentPersona, agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
 import { formatElapsed } from "../lib/pipelineView.ts";
@@ -268,25 +268,28 @@ function Bubble({ message, compact }: { message: ChatMessage; compact?: boolean 
   // Only the rail sits next to a visible Canvas — the single-pane, pre-gate conversation has
   // nothing on the page yet for the name to point at.
   const sectionId = compact && message.agentName ? AGENT_SECTION[message.agentName] : undefined;
+  const persona = message.agentName ? agentPersona(message.agentName) : null;
 
   return (
     <div className={compact ? "" : "max-w-[85%]"}>
-      {message.agentName &&
-        (sectionId ? (
-          <button
-            type="button"
-            onClick={() =>
-              document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-            className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
-          >
-            {message.agentName}
-          </button>
-        ) : (
-          <p className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
-            {message.agentName}
-          </p>
-        ))}
+      {message.agentName && persona && (
+        <div className={`mb-1.5 flex items-center gap-1.5 ${persona.accent.text}`}>
+          <persona.Icon className="h-3.5 w-3.5" />
+          {sectionId ? (
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className="text-xs font-medium tracking-wide uppercase underline decoration-current/30 underline-offset-2 transition hover:opacity-75"
+            >
+              {message.agentName}
+            </button>
+          ) : (
+            <p className="text-xs font-medium tracking-wide uppercase">{message.agentName}</p>
+          )}
+        </div>
+      )}
       <p className="rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-800">
         {message.text}
       </p>
