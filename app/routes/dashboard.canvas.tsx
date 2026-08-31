@@ -36,7 +36,18 @@ export default function Canvas() {
           </button>
         </div>
       )}
-      <CanvasPanel />
+      {/* Nav only links here once complete, but a direct URL can still land mid-pipeline —
+          the lifted "document" treatment is for the finished artifact (UI-12), not a
+          work-in-progress view, so it's gated on `ready` the same as the button above. */}
+      <div
+        className={
+          ready
+            ? "rounded-xl bg-white p-8 shadow-sm print:rounded-none print:bg-transparent print:p-0 print:shadow-none"
+            : ""
+        }
+      >
+        <CanvasPanel />
+      </div>
     </main>
   );
 }
