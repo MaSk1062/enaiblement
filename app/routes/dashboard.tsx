@@ -129,7 +129,7 @@ export default function Dashboard() {
         <header className="border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
-              <span className="text-sm font-semibold tracking-tight text-slate-900">enaible</span>
+              <span className="text-sm font-semibold tracking-tight text-indigo-600">enaible</span>
               <span className="text-xs text-slate-500">
                 {profile.industry} · {profile.role}
               </span>
@@ -262,7 +262,7 @@ function Centered({
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">
-        <p className="mb-6 text-lg font-semibold tracking-tight text-slate-900">enaible</p>
+        <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">enaible</p>
         {tone === "loading" && (
           <SpinnerIcon className="mx-auto mb-3 h-5 w-5 animate-spin text-slate-400" />
         )}

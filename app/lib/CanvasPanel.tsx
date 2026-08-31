@@ -235,7 +235,7 @@ export function UseCaseDecisions() {
           type="button"
           disabled={approved === 0 || sending}
           onClick={() => send("Design my stack around the use cases I approved.")}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
         >
           Design my stack →
         </button>
@@ -367,9 +367,9 @@ function RoadmapTimeline({ phases }: { phases: RoadmapPhase[] }) {
                     style={{ gridColumn: `${lane.startWeek} / ${lane.endWeek + 1}` }}
                     aria-expanded={expanded}
                     className={[
-                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900",
-                      expanded ? "bg-slate-700" : "bg-slate-900 hover:bg-slate-800",
-                      lane.open ? "bg-linear-to-r from-slate-900 to-slate-900/50" : "",
+                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+                      expanded ? "bg-indigo-800" : "bg-indigo-600 hover:bg-indigo-700",
+                      lane.open ? "bg-linear-to-r from-indigo-600 to-indigo-600/50" : "",
                     ].join(" ")}
                   >
                     <span className="truncate">{phase.phaseName}</span>

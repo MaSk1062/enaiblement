@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">
-        <p className="mb-6 text-lg font-semibold tracking-tight text-slate-900">enaible</p>
+        <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">enaible</p>
         <SpinnerIcon className="mx-auto h-5 w-5 animate-spin text-slate-400" />
       </div>
     </main>
