@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { planDeepDive } from "../capabilities.ts";
 import { Artifacts } from "./Artifacts.tsx";
 import { useConsultation } from "./consultation.ts";
 import type { Estimate, Level, Reliability, UseCase } from "../types.ts";
@@ -32,6 +33,8 @@ export function CanvasPanel() {
 
   return (
     <div className="space-y-10">
+      <DeepDiveCallToAction />
+
       {needs.identifiedBottleneck && (
         <Section title="The bottleneck">
           <p className="text-sm leading-relaxed text-slate-700">{needs.summary}</p>
@@ -147,6 +150,41 @@ export function CanvasPanel() {
           <Artifacts artifacts={artifacts} />
         </Section>
       )}
+    </div>
+  );
+}
+
+/**
+ * Offered, not started. Completion is the moment the depth is worth having, but three minutes
+ * and ~50k tokens should not begin because a consultation happened to finish. Disappears once
+ * the bench has produced anything, so it is a prompt rather than furniture.
+ */
+function DeepDiveCallToAction() {
+  const { state, artifacts, producing, deepDive } = useConsultation();
+
+  const alreadyRan = artifacts.length > 0 || Boolean(state.estimate) || Boolean(state.reliability);
+  if (state.currentStage !== "complete" || alreadyRan) return null;
+
+  const plan = planDeepDive(state);
+  if (plan.run.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-900 bg-slate-900 px-4 py-3.5">
+      <div>
+        <p className="text-sm font-medium text-white">Your strategy is ready.</p>
+        <p className="mt-0.5 text-xs text-slate-300">
+          A deep dive brings in {plan.run.length} more specialists — diagrams, cost and effort,
+          containers and infrastructure, reliability, and code. About three minutes.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => void deepDive()}
+        disabled={Boolean(producing)}
+        className="rounded-lg bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-slate-900 transition hover:bg-slate-100 disabled:opacity-50"
+      >
+        {producing ? "Running…" : "Run the deep dive"}
+      </button>
     </div>
   );
 }

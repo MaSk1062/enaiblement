@@ -9,7 +9,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CAPABILITIES, capability } from "./capabilities.ts";
+import { CAPABILITIES, DEEP_DIVE_ORDER, capability, planDeepDive } from "./capabilities.ts";
 import type { AgentState, UseCase } from "./types.ts";
 
 const useCase = (status: UseCase["status"]): UseCase => ({
@@ -81,4 +81,55 @@ test("a stack with no approvals blocks on the approval, not on the stack", () =>
 
   assert.equal(capability("diagram")!.requires(stackOnly), null, "a diagram needs only the stack");
   assert.match(capability("estimate")!.requires(stackOnly)!, /approve a use case/);
+});
+
+// --- the deep dive ------------------------------------------------------------
+// One button runs the bench, so this function decides what actually happens. Order is the part
+// worth pinning: it is dependency order, not menu order, and getting it wrong degrades output
+// silently rather than failing.
+
+test("a deep dive from a fresh state runs what it can and explains the rest", () => {
+  const plan = planDeepDive(fresh);
+
+  assert.deepEqual(plan.run, [], "nothing is ready before the interview");
+  assert.equal(plan.skipped.length, CAPABILITIES.length);
+  for (const s of plan.skipped) {
+    assert.ok(s.reason.length > 10, `${s.id} must say why, got: ${s.reason}`);
+  }
+});
+
+test("after the interview it runs the deep dive of the needs alone", () => {
+  const plan = planDeepDive(interviewed);
+
+  assert.deepEqual(plan.run, ["deep-needs"]);
+  assert.equal(plan.skipped.length, 5);
+});
+
+test("a finished strategy runs every specialist IN DEPENDENCY ORDER", () => {
+  const plan = planDeepDive(finished);
+
+  // Exact array, not a set. `estimate` after `platform` would silently cost the Platform
+  // Engineer the sizing input it is handed, and nothing would look broken.
+  assert.deepEqual(plan.run, [
+    "deep-needs",
+    "diagram",
+    "estimate",
+    "platform",
+    "sre",
+    "implementation",
+  ]);
+  assert.deepEqual(plan.skipped, []);
+  assert.deepEqual(plan.run, DEEP_DIVE_ORDER, "the order is the declared one");
+});
+
+test("a stack with no approvals runs the four that need only a stack", () => {
+  const stackOnly: AgentState = { ...interviewed, architectureStack: stack };
+  const plan = planDeepDive(stackOnly);
+
+  assert.deepEqual(plan.run, ["deep-needs", "diagram", "platform", "sre"]);
+  assert.deepEqual(
+    plan.skipped.map((s) => s.id),
+    ["estimate", "implementation"],
+  );
+  for (const s of plan.skipped) assert.match(s.reason, /approve a use case/);
 });

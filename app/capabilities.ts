@@ -107,3 +107,49 @@ export const CAPABILITIES: Capability[] = [
 ];
 
 export const capability = (id: string) => CAPABILITIES.find((c) => c.id === id);
+
+/**
+ * Dependency order, which is not menu order and not arbitrary.
+ *
+ * `deep-needs` first: it establishes the volumes the estimate does its arithmetic on.
+ * `diagram` second because it is cheap and visual — something appears within twenty seconds
+ * rather than three minutes. `estimate` before `platform` because the Platform Engineer is
+ * handed the estimate to size against (see brief() in app/agents/deep.ts), so the other way
+ * round silently costs it that input. The last two need the stack and nothing else.
+ */
+export const DEEP_DIVE_ORDER: CapabilityId[] = [
+  "deep-needs",
+  "diagram",
+  "estimate",
+  "platform",
+  "sre",
+  "implementation",
+];
+
+export interface DeepDivePlan {
+  run: CapabilityId[];
+  skipped: { id: CapabilityId; reason: string }[];
+}
+
+/**
+ * What a deep dive would do from here.
+ *
+ * The button is never disabled: it runs what the consultation is ready for and reports what it
+ * is not, using the same reasons the individual menu items show. Pressed before there is a
+ * stack that is one capability and five explanations; pressed on a finished strategy it is all
+ * six.
+ */
+export function planDeepDive(state: AgentState): DeepDivePlan {
+  const plan: DeepDivePlan = { run: [], skipped: [] };
+
+  for (const id of DEEP_DIVE_ORDER) {
+    const spec = capability(id);
+    if (!spec) continue;
+
+    const reason = spec.requires(state);
+    if (reason) plan.skipped.push({ id, reason });
+    else plan.run.push(id);
+  }
+
+  return plan;
+}

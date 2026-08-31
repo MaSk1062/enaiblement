@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
+import { planDeepDive } from "../capabilities.ts";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
@@ -17,7 +18,7 @@ export default function Dashboard() {
   const [state, setState] = useState<AgentState | null>(null);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [sending, setSending] = useState(false);
-  const [producing, setProducing] = useState<string | null>(null);
+  const [producing, setProducing] = useState<Consultation["producing"]>(null);
   const [error, setError] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
 
@@ -87,24 +88,67 @@ export default function Dashboard() {
   );
 
   // A capability is not a turn: it adds a reply and may add files, but never moves the stage.
-  const produce = useCallback(
-    async (capability: string) => {
-      if (!sessionId || producing) return;
-      setProducing(capability);
-      setError(null);
+  // Throws, so the deep dive can decide whether one failure should stop the rest. It does not.
+  const runCapability = useCallback(
+    async (capability: string, index: number, total: number) => {
+      if (!sessionId) return;
+      setProducing({ id: capability, index, total });
       try {
         const result = await api.produce(sessionId, capability);
         setMessages((m) => [...m, ...result.replies]);
         setState(result.state);
         setArtifacts(result.artifacts);
-      } catch (err) {
-        setError((err as Error).message);
       } finally {
         setProducing(null);
       }
     },
-    [sessionId, producing],
+    [sessionId],
   );
+
+  const produce = useCallback(
+    async (capability: string) => {
+      if (!sessionId || producing) return;
+      setError(null);
+      try {
+        await runCapability(capability, 1, 1);
+      } catch (err) {
+        setError((err as Error).message);
+      }
+    },
+    [sessionId, producing, runCapability],
+  );
+
+  /**
+   * The whole bench, in dependency order, one request each.
+   *
+   * Sequential on purpose: each specialist sees what the previous one wrote, every step
+   * persists on its own, and a failure at step four leaves the first three intact rather than
+   * losing three minutes of work. So a throw is collected and the loop carries on.
+   */
+  const deepDive = useCallback(async () => {
+    if (!sessionId || producing || !state) return;
+    setError(null);
+
+    const plan = planDeepDive(state);
+    const failed: string[] = [];
+
+    for (const [i, id] of plan.run.entries()) {
+      try {
+        await runCapability(id, i + 1, plan.run.length);
+      } catch (err) {
+        failed.push(`${id} (${(err as Error).message})`);
+      }
+    }
+
+    const notes = [
+      failed.length ? `Could not complete: ${failed.join(", ")}.` : "",
+      plan.skipped.length
+        ? `Not run yet — ${plan.skipped.map((s) => `${s.id}: ${s.reason}`).join("; ")}.`
+        : "",
+    ].filter(Boolean);
+
+    if (notes.length) setError(notes.join(" "));
+  }, [sessionId, producing, state, runCapability]);
 
   const decide = useCallback(
     async (decisions: Record<string, "approved" | "rejected">) => {
@@ -143,6 +187,7 @@ export default function Dashboard() {
     send,
     decide,
     produce,
+    deepDive,
   };
 
   return (

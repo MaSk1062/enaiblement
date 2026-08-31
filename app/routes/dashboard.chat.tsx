@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { CAPABILITIES, capability } from "../capabilities.ts";
+import { CAPABILITIES, capability, planDeepDive } from "../capabilities.ts";
 import { agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
@@ -68,10 +68,12 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
   }, [messages.length, sending, producing]);
 
   // While a specialist is running, the indicator names THEM, not whoever owns the current stage.
-  const running = producing ? capability(producing) : undefined;
+  const running = producing ? capability(producing.id) : undefined;
   const status = running
     ? { name: running.specialist, working: running.working, blurb: running.blurb }
     : agentStatus(state.currentStage);
+  // "· 3 of 6" only during a deep dive; a single capability is 1 of 1 and says nothing.
+  const step = producing && producing.total > 1 ? ` · ${producing.index} of ${producing.total}` : "";
   const busy = sending || Boolean(producing);
 
   async function onSubmit(event: React.FormEvent) {
@@ -96,6 +98,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
             <Dots />
             <span>
               <span className="font-medium text-slate-700">{status.name}</span> {status.working}…
+              {step}
             </span>
           </div>
         )}
@@ -157,20 +160,37 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
  * that is not ready says WHY, which teaches the shape of the consultation instead of hiding it.
  */
 function DeepBench({ compact }: { compact?: boolean }) {
-  const { state, producing, produce } = useConsultation();
+  const { state, producing, produce, deepDive } = useConsultation();
   const [open, setOpen] = useState(false);
+  const plan = planDeepDive(state);
+  const busy = Boolean(producing);
 
   return (
-    <div className="relative">
+    <div className="relative flex items-stretch">
+      {/* One action, not six decisions: nobody wants the Platform Engineer but not the
+          Reliability Engineer. The caret is for regenerating one stale thing later. */}
+      <button
+        type="button"
+        onClick={() => void deepDive()}
+        disabled={busy || plan.run.length === 0}
+        title={
+          plan.run.length
+            ? `Runs ${plan.run.length} specialist${plan.run.length > 1 ? "s" : ""}`
+            : "Nothing is ready yet — finish the discovery interview"
+        }
+        className="rounded-l-lg border border-r-0 border-slate-300 px-3 py-2 text-sm whitespace-nowrap text-slate-700 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+      >
+        Deep dive
+      </button>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        disabled={Boolean(producing)}
+        disabled={busy}
         aria-expanded={open}
-        title="Bring in a specialist"
-        className="rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-600 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+        aria-label="Run a single specialist"
+        className="rounded-r-lg border border-slate-300 px-1.5 py-2 text-xs text-slate-500 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
       >
-        +
+        ▾
       </button>
 
       {open && (
@@ -184,7 +204,7 @@ function DeepBench({ compact }: { compact?: boolean }) {
             ].join(" ")}
           >
             <p className="border-b border-slate-100 px-3 py-2 text-xs font-medium tracking-wide text-slate-500 uppercase">
-              Bring in a specialist
+              Or just one
             </p>
             {CAPABILITIES.map((c) => {
               const blocked = c.requires(state);
