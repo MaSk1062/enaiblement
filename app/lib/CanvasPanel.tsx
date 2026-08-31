@@ -13,6 +13,7 @@
 import { useState } from "react";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
+import { CheckIcon } from "./icons.tsx";
 import type { Level, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
@@ -275,7 +276,14 @@ function UseCaseCard({
               : "border border-slate-300 text-slate-700 hover:border-emerald-500 hover:text-emerald-700",
           ].join(" ")}
         >
-          {uc.status === "approved" ? "✓ Approved" : "Approve"}
+          {uc.status === "approved" ? (
+            <span className="flex items-center gap-1">
+              <CheckIcon className="h-3 w-3" />
+              Approved
+            </span>
+          ) : (
+            "Approve"
+          )}
         </button>
         <button
           type="button"

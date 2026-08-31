@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
+import { CanvasIcon, ChatIcon } from "../lib/icons.tsx";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
 import type { AgentState, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
@@ -162,15 +163,21 @@ function Nav({ pending }: { pending: number }) {
   return (
     <nav className="flex items-center gap-4">
       <NavLink to="/dashboard/chat" className={style}>
-        Chat
+        <span className="flex items-center gap-1.5">
+          <ChatIcon className="h-3.5 w-3.5" />
+          Chat
+        </span>
       </NavLink>
       <NavLink to="/dashboard/canvas" className={style}>
-        Canvas
-        {pending > 0 && (
-          <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-            {pending}
-          </span>
-        )}
+        <span className="flex items-center gap-1.5">
+          <CanvasIcon className="h-3.5 w-3.5" />
+          Canvas
+          {pending > 0 && (
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+              {pending}
+            </span>
+          )}
+        </span>
       </NavLink>
     </nav>
   );
