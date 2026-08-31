@@ -8,6 +8,7 @@
 
 import { CanvasPanel } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
+import { DownloadIcon } from "../lib/icons.tsx";
 
 export function meta() {
   return [{ title: "Strategy Canvas · enaible" }];
@@ -25,8 +26,9 @@ export default function Canvas() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
           >
+            <DownloadIcon className="h-4 w-4" />
             Download strategy (PDF)
           </button>
         </div>
