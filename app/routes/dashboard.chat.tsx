@@ -300,7 +300,7 @@ function DeepBench({ compact }: { compact?: boolean }) {
             ? `Runs ${plan.run.length} specialist${plan.run.length > 1 ? "s" : ""}`
             : "Nothing is ready yet — finish the discovery interview"
         }
-        className="rounded-l-lg border border-r-0 border-slate-300 px-3 py-2 text-sm whitespace-nowrap text-slate-700 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+        className="rounded-l-lg border border-r-0 border-slate-300 px-3 py-2 text-sm whitespace-nowrap text-slate-700 transition hover:border-slate-900 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
       >
         Deep dive
       </button>
@@ -310,7 +310,7 @@ function DeepBench({ compact }: { compact?: boolean }) {
         disabled={busy}
         aria-expanded={open}
         aria-label="Run a single specialist"
-        className="rounded-r-lg border border-slate-300 px-1.5 py-2 text-xs text-slate-500 transition hover:border-slate-900 hover:text-slate-900 disabled:opacity-40"
+        className="rounded-r-lg border border-slate-300 px-1.5 py-2 text-xs text-slate-500 transition hover:border-slate-900 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
       >
         ▾
       </button>
@@ -339,7 +339,7 @@ function DeepBench({ compact }: { compact?: boolean }) {
                     setOpen(false);
                     void produce(c.id);
                   }}
-                  className="block w-full border-b border-slate-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
+                  className="block w-full border-b border-slate-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
                 >
                   <span className="block text-sm text-slate-900">{c.label}</span>
                   <span className="mt-0.5 block text-xs text-slate-500">

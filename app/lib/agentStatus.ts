@@ -94,13 +94,16 @@ const STATUS: Record<Stage, AgentStatus> = {
     name: AGENT_NAMES.sourcing,
     working: "is finding partners who have done this before",
     blurb: "Shortlisting implementation partners and drafting a proposal",
-    // ponytail: reuses PeopleIcon — partners are people; own hue is what distinguishes the badge
+    // ponytail: reuses PeopleIcon — partners are people; own hue is what distinguishes the badge.
+    // That hue is cyan, not the emerald first drafted here — emerald already means "approved"
+    // on a use-case card (ui-identity-tasks.md UI-10 rules agent colors off status colors on
+    // purpose), and a sixth specialist sharing that hue would read as "already approved."
     Icon: PeopleIcon,
     accent: {
-      text: "text-emerald-600",
-      solid: "bg-emerald-600",
-      light: "bg-emerald-50",
-      lightText: "text-emerald-700",
+      text: "text-cyan-600",
+      solid: "bg-cyan-600",
+      light: "bg-cyan-50",
+      lightText: "text-cyan-700",
     },
   },
   complete: {
