@@ -82,7 +82,7 @@ export default function Login() {
         type="button"
         onClick={() => void attempt("google", signInWithGoogle)}
         disabled={disabled}
-        className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-50"
       >
         <GoogleMark />
         {busy === "google" ? "Opening Google…" : "Continue with Google"}
@@ -125,7 +125,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={disabled || !email || !password}
-          className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-40"
+          className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
         >
           {busy === "email"
             ? mode === "signin"
@@ -155,7 +155,7 @@ export default function Login() {
             type="button"
             onClick={onReset}
             disabled={disabled}
-            className="text-slate-400 underline-offset-2 transition hover:text-slate-700 hover:underline disabled:opacity-50"
+            className="text-slate-500 underline-offset-2 transition hover:text-slate-700 hover:underline disabled:opacity-50"
           >
             {busy === "reset" ? "Sending…" : "Reset password"}
           </button>
@@ -186,7 +186,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
         {children}
 
-        <p className="mt-8 text-xs text-slate-400">
+        <p className="mt-8 text-xs text-slate-500">
           Your consultation is private to your account.
         </p>
       </div>

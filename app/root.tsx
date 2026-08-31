@@ -1,5 +1,6 @@
 import {
   isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
@@ -62,14 +63,24 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
+      <div className="max-w-md text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900">{message}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">{details}</p>
+        {stack && (
+          <pre className="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white p-4 text-left text-xs text-slate-700">
+            <code>{stack}</code>
+          </pre>
+        )}
+        {/* Every dead end needs a way out (UI-6) — this one had none: a thrown route error
+            left the user on a page with nothing to click. */}
+        <Link
+          to="/"
+          className="mt-6 inline-block text-sm text-slate-600 underline underline-offset-2 transition hover:text-slate-900"
+        >
+          Back to enaible
+        </Link>
+      </div>
     </main>
   );
 }
