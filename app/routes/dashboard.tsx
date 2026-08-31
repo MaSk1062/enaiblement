@@ -5,7 +5,7 @@ import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
 import { DotGrid } from "../lib/DotGrid.tsx";
-import { AlertIcon, ChatIcon, DownloadIcon, SpinnerIcon, UserIcon } from "../lib/icons.tsx";
+import { AlertIcon, DownloadIcon, SpinnerIcon, UserIcon } from "../lib/icons.tsx";
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
@@ -79,7 +79,7 @@ export default function Dashboard() {
       try {
         const { replies, state: next } = await api.sendMessage(sessionId, text);
         setMessages((m) => [...m, ...replies]);
-        setState(next); // replaced wholesale — §8.1
+        setState(next); // replaced wholesale - §8.1
       } catch (err) {
         setError((err as Error).message);
         setMessages((m) => m.filter((msg) => msg.id !== optimistic.id));
@@ -146,7 +146,7 @@ export default function Dashboard() {
     const notes = [
       failed.length ? `Could not complete: ${failed.join(", ")}.` : "",
       plan.skipped.length
-        ? `Not run yet — ${plan.skipped.map((s) => `${s.id}: ${s.reason}`).join("; ")}.`
+        ? `Not run yet - ${plan.skipped.map((s) => `${s.id}: ${s.reason}`).join("; ")}.`
         : "",
     ].filter(Boolean);
 
@@ -203,10 +203,10 @@ export default function Dashboard() {
 
   return (
     <ConsultationContext.Provider value={consultation}>
-      {/* Fixed height with internal scroll containers on screen; print needs the opposite —
-          nothing clipped, everything flowing across pages — hence the print: overrides below. */}
+      {/* Fixed height with internal scroll containers on screen; print needs the opposite -
+          nothing clipped, everything flowing across pages - hence the print: overrides below. */}
       <div className="relative flex h-dvh flex-col overflow-hidden bg-slate-50 print:h-auto print:overflow-visible">
-        {/* Barely-there ambient texture, not the landing page's effect — every panel in the app
+        {/* Barely-there ambient texture, not the landing page's effect - every panel in the app
             (the header, the chat, the Canvas card) is opaque and paints over it; it only ever
             shows in the margins. A functional screen someone works in for minutes needs calm,
             not a focal point, so the dots stay small, sparse and low-contrast at rest. */}
@@ -226,20 +226,19 @@ export default function Dashboard() {
 
         <header className="relative border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
-            {/* The mark is a stylized "e" — pairing it with the full word would read as a
+            {/* The mark is a stylized "e" - pairing it with the full word would read as a
                 doubled E. Text picks up from "naible" so together it reads "enaible" once.
                 Both halves are aria-hidden and the label carries the whole name once, so a
-                screen reader hears "Enaible" rather than "naible" or "Enaible naible". */}
-            <span className="flex items-center gap-1.5" aria-label="Enaible">
+                screen reader hears "Enaible" rather than "naible" or "Enaible naible".
+                Links to /dashboard/chat - with the "Chat" nav item gone, the logo is the way
+                back from Export/Canvas, the same pattern most products use for "home". */}
+            <NavLink to="/dashboard/chat" className="flex items-center gap-1.5" aria-label="Enaible">
               <img src="/logo.png" alt="" aria-hidden className="h-6 w-6" />
               <span aria-hidden className="text-lg font-bold tracking-tight text-indigo-600">
                 naible
               </span>
-            </span>
-            <div className="flex items-center gap-4">
-              <ChatLink pending={state.useCases.filter((uc) => uc.status === "suggested").length} />
-              <UserMenu profile={profile} exportReady={state.currentStage === "complete"} />
-            </div>
+            </NavLink>
+            <UserMenu profile={profile} exportReady={state.currentStage === "complete"} />
           </div>
           <ProgressRail state={state} sending={sending} />
         </header>
@@ -252,35 +251,10 @@ export default function Dashboard() {
   );
 }
 
-/** The one persistent destination besides the menu — the only nav link that's always a link. */
-function ChatLink({ pending }: { pending: number }) {
-  const style = ({ isActive }: { isActive: boolean }) =>
-    [
-      "text-xs transition",
-      isActive ? "font-medium text-slate-900" : "text-slate-500 hover:text-slate-900",
-    ].join(" ");
-
-  return (
-    <nav>
-      <NavLink to="/dashboard/chat" className={style}>
-        <span className="flex items-center gap-1.5">
-          <ChatIcon className="h-3.5 w-3.5" />
-          Chat
-          {pending > 0 && (
-            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-              {pending}
-            </span>
-          )}
-        </span>
-      </NavLink>
-    </nav>
-  );
-}
-
 /**
- * Profile, Export and Sign out, under one icon — three separate header items were crowding the
+ * Profile, Export and Sign out, under one icon - three separate header items were crowding the
  * row (and clipping it on narrower screens) for information that is read once per session, not
- * per turn. Export keeps the same disabled-with-tooltip treatment it always had (UI-4) — it's
+ * per turn. Export keeps the same disabled-with-tooltip treatment it always had (UI-4) - it's
  * just inside the menu instead of beside it.
  */
 function UserMenu({ profile, exportReady }: { profile: SessionUserProfile; exportReady: boolean }) {
@@ -337,7 +311,7 @@ function UserMenu({ profile, exportReady }: { profile: SessionUserProfile; expor
 }
 
 /**
- * The five specialists, and which one has the file — live, not decorative (UI-2). A finished
+ * The five specialists, and which one has the file - live, not decorative (UI-2). A finished
  * chip says what it produced (`pipelineView.ts`), the active one spins and says what it's
  * doing, so the rail plus the chat's typing indicator (dashboard.chat.tsx) are what
  * IMPLEMENTATION_PLAN §7 calls the single highest-leverage piece of UI in the build.
@@ -393,7 +367,7 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
 }
 
 /**
- * Every screen with no header — a bootstrap failure, an empty session — used to be identical
+ * Every screen with no header - a bootstrap failure, an empty session - used to be identical
  * gray text on an empty page, so a real error looked exactly like an ordinary loading state
  * (UI-9). The wordmark, an icon per tone, and distinct color fix that at a glance.
  */
@@ -415,7 +389,7 @@ function Centered({
         <p className={tone === "error" ? "text-sm text-red-600" : "text-sm text-slate-500"}>
           {children}
         </p>
-        {/* Loading is transient, not a dead end — nothing to escape from yet, so no exit needed
+        {/* Loading is transient, not a dead end - nothing to escape from yet, so no exit needed
             until it actually becomes one (the error or empty tones below). */}
         {tone !== "loading" && (
           <div className="mt-4">

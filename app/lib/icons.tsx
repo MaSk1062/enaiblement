@@ -1,26 +1,13 @@
 /**
- * The app's whole icon set — inline SVG, no icon library or icon font (tasks.md design
+ * The app's whole icon set - inline SVG, no icon library or icon font (tasks.md design
  * language). Each one takes `currentColor` so it always matches the surrounding text, and a
  * `className` so the caller sets the size. Add an icon here only once something actually uses
  * it; there is no icon in this file that nothing renders.
  */
 
 type IconProps = { className?: string };
-/** For anywhere an icon is picked at runtime — e.g. agentStatus.ts's per-agent Icon field. */
+/** For anywhere an icon is picked at runtime - e.g. agentStatus.ts's per-agent Icon field. */
 export type IconComponent = (props: IconProps) => React.JSX.Element;
-
-export function ChatIcon({ className = "h-4 w-4" }: IconProps) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
-      <path
-        d="M3 5.5A1.5 1.5 0 0 1 4.5 4h11A1.5 1.5 0 0 1 17 5.5v6a1.5 1.5 0 0 1-1.5 1.5H8l-3.5 3v-3H4.5A1.5 1.5 0 0 1 3 11.5v-6Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function CheckIcon({ className = "h-3.5 w-3.5" }: IconProps) {
   return (
@@ -36,7 +23,7 @@ export function CheckIcon({ className = "h-3.5 w-3.5" }: IconProps) {
   );
 }
 
-/** Caller adds `animate-spin` — kept separate so a static render (e.g. print) can drop it. */
+/** Caller adds `animate-spin` - kept separate so a static render (e.g. print) can drop it. */
 export function SpinnerIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
@@ -56,10 +43,10 @@ export function AlertIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
-// Five agent personas (UI-10) — one icon each, reused everywhere that agent's name appears
+// Five agent personas (UI-10) - one icon each, reused everywhere that agent's name appears
 // (the progress rail, a chat bubble's agent label, a Canvas section header).
 
-/** Discovery Consultant — exploring, orienting. */
+/** Discovery Consultant - exploring, orienting. */
 export function CompassIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
@@ -76,7 +63,7 @@ export function CompassIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-/** Industry Analyst — trend, evidence. */
+/** Industry Analyst - trend, evidence. */
 export function ChartIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
@@ -92,7 +79,7 @@ export function ChartIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-/** Technical Architect — layers, stack. */
+/** Technical Architect - layers, stack. */
 export function LayersIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
@@ -115,7 +102,7 @@ export function LayersIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-/** Project Manager — plan, checklist. */
+/** Project Manager - plan, checklist. */
 export function ChecklistIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
@@ -134,7 +121,7 @@ export function ChecklistIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-/** Change Coach — people, the human side. */
+/** Change Coach - people, the human side. */
 export function PeopleIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
@@ -151,7 +138,7 @@ export function PeopleIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-/** The account menu trigger — one person, distinct from PeopleIcon's two (a persona, not you). */
+/** The account menu trigger - one person, distinct from PeopleIcon's two (a persona, not you). */
 export function UserIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
