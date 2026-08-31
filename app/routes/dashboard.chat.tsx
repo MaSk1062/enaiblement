@@ -65,7 +65,7 @@ export default function Chat() {
           </h1>
           {done && (
             <div className="mb-6 flex items-center justify-between print:hidden">
-              <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
+              <p className="text-lg font-medium text-slate-900">Your finished AI enablement strategy</p>
               {/* The one download button lives on /dashboard/canvas (UI-4) — this page is for
                   reading and revising it, not a second place the export action can drift from. */}
               <Link

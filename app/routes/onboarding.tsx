@@ -51,7 +51,7 @@ export default function Onboarding() {
       <form onSubmit={onSubmit} className="w-full max-w-md">
         {/* Same wordmark and voice as /login — nothing here should feel like a second product. */}
         <div className="flex items-start justify-between">
-          <p className="text-2xl font-semibold tracking-tight text-slate-900">enaible</p>
+          <p className="text-3xl font-semibold tracking-tight text-slate-900">enaible</p>
           {/* Signed in but no profile yet — without this there is no way back to /login. */}
           <SignOutButton />
         </div>

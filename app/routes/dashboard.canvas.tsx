@@ -25,7 +25,7 @@ export default function Canvas() {
     <main className="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-6 py-8 print:overflow-visible">
       {ready && (
         <div className="mb-6 flex items-center justify-between print:hidden">
-          <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
+          <p className="text-lg font-medium text-slate-900">Your finished AI enablement strategy</p>
           <button
             type="button"
             onClick={() => window.print()}
