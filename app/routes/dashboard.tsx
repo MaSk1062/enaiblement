@@ -4,7 +4,8 @@ import { planDeepDive } from "../capabilities.ts";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
-import { AlertIcon, ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
+import { DotGrid } from "../lib/DotGrid.tsx";
+import { AlertIcon, ChatIcon, DownloadIcon, SpinnerIcon, UserIcon } from "../lib/icons.tsx";
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
@@ -204,27 +205,46 @@ export default function Dashboard() {
     <ConsultationContext.Provider value={consultation}>
       {/* Fixed height with internal scroll containers on screen; print needs the opposite —
           nothing clipped, everything flowing across pages — hence the print: overrides below. */}
-      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50 print:h-auto print:overflow-visible">
-        <header className="border-b border-slate-200 bg-white print:hidden">
+      <div className="relative flex h-dvh flex-col overflow-hidden bg-slate-50 print:h-auto print:overflow-visible">
+        {/* Barely-there ambient texture, not the landing page's effect — every panel in the app
+            (the header, the chat, the Canvas card) is opaque and paints over it; it only ever
+            shows in the margins. A functional screen someone works in for minutes needs calm,
+            not a focal point, so the dots stay small, sparse and low-contrast at rest. */}
+        <div className="absolute inset-0 print:hidden">
+          <DotGrid
+            dotSize={3}
+            gap={34}
+            baseColor="#E2E8F0"
+            activeColor="#818CF8"
+            proximity={110}
+            shockRadius={180}
+            shockStrength={3}
+            resistance={750}
+            returnDuration={1.5}
+          />
+        </div>
+
+        <header className="relative border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
-            <div className="flex items-baseline gap-3">
-              <span className="text-lg font-bold tracking-tight text-indigo-600">Enaible</span>
-              <span className="text-xs text-slate-500">
-                {profile.industry} · {profile.role}
+            {/* The mark is a stylized "e" — pairing it with the full word would read as a
+                doubled E. Text picks up from "naible" so together it reads "enaible" once.
+                Both halves are aria-hidden and the label carries the whole name once, so a
+                screen reader hears "Enaible" rather than "naible" or "Enaible naible". */}
+            <span className="flex items-center gap-1.5" aria-label="Enaible">
+              <img src="/logo.png" alt="" aria-hidden className="h-6 w-6" />
+              <span aria-hidden className="text-lg font-bold tracking-tight text-indigo-600">
+                naible
               </span>
-            </div>
-            <div className="flex items-center gap-5">
-              <Nav
-                pending={state.useCases.filter((uc) => uc.status === "suggested").length}
-                exportReady={state.currentStage === "complete"}
-              />
-              <SignOutButton />
+            </span>
+            <div className="flex items-center gap-4">
+              <ChatLink pending={state.useCases.filter((uc) => uc.status === "suggested").length} />
+              <UserMenu profile={profile} exportReady={state.currentStage === "complete"} />
             </div>
           </div>
           <ProgressRail state={state} sending={sending} />
         </header>
 
-        <div className="flex flex-1 overflow-hidden print:overflow-visible">
+        <div className="relative flex flex-1 overflow-hidden print:overflow-visible">
           <Outlet />
         </div>
       </div>
@@ -232,21 +252,8 @@ export default function Dashboard() {
   );
 }
 
-/**
- * Chat, plus Export (UI-4 — one canvas, not two: the strategy itself lives only in the chat
- * route now; /dashboard/canvas is the distraction-free print destination that route points at,
- * never a second place to see the same thing).
- *
- * Export used to disappear from the nav entirely until the strategy was complete, which made a
- * one-item "nav" pre-completion — it always showed as active, went nowhere else, and read as
- * broken rather than as navigation. It's always present now; before it's ready it's a disabled,
- * titled placeholder that tells you what unlocks it, the same pattern as a locked step in a
- * wizard — present and legible, not just absent.
- *
- * The pending-count badge stays on Chat, not Export, because Chat is where the gate that badge
- * describes actually lives — the only signal pointing at the decision blocking the pipeline.
- */
-function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }) {
+/** The one persistent destination besides the menu — the only nav link that's always a link. */
+function ChatLink({ pending }: { pending: number }) {
   const style = ({ isActive }: { isActive: boolean }) =>
     [
       "text-xs transition",
@@ -254,7 +261,7 @@ function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }
     ].join(" ");
 
   return (
-    <nav className="flex items-center gap-4">
+    <nav>
       <NavLink to="/dashboard/chat" className={style}>
         <span className="flex items-center gap-1.5">
           <ChatIcon className="h-3.5 w-3.5" />
@@ -266,23 +273,66 @@ function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }
           )}
         </span>
       </NavLink>
-      {exportReady ? (
-        <NavLink to="/dashboard/canvas" className={style}>
-          <span className="flex items-center gap-1.5">
-            <DownloadIcon className="h-3.5 w-3.5" />
-            Export
-          </span>
-        </NavLink>
-      ) : (
-        <span
-          className="flex cursor-not-allowed items-center gap-1.5 text-xs text-slate-300"
-          title="Unlocks once your strategy is complete"
-        >
-          <DownloadIcon className="h-3.5 w-3.5" />
-          Export
-        </span>
-      )}
     </nav>
+  );
+}
+
+/**
+ * Profile, Export and Sign out, under one icon — three separate header items were crowding the
+ * row (and clipping it on narrower screens) for information that is read once per session, not
+ * per turn. Export keeps the same disabled-with-tooltip treatment it always had (UI-4) — it's
+ * just inside the menu instead of beside it.
+ */
+function UserMenu({ profile, exportReady }: { profile: SessionUserProfile; exportReady: boolean }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label="Account menu"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <UserIcon className="h-4 w-4" />
+      </button>
+
+      {open && (
+        <>
+          {/* Click-away. A dropdown that traps you is worse than one that closes too eagerly. */}
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
+          <div className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+            <p className="border-b border-slate-100 px-3.5 py-2.5 text-xs text-slate-500">
+              {profile.industry} · {profile.role}
+            </p>
+
+            {exportReady ? (
+              <NavLink
+                to="/dashboard/canvas"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-3.5 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
+              >
+                <DownloadIcon className="h-3.5 w-3.5" />
+                Export
+              </NavLink>
+            ) : (
+              <span
+                className="flex cursor-not-allowed items-center gap-2 px-3.5 py-2.5 text-sm text-slate-300"
+                title="Unlocks once your strategy is complete"
+              >
+                <DownloadIcon className="h-3.5 w-3.5" />
+                Export
+              </span>
+            )}
+
+            <div className="border-t border-slate-100">
+              <SignOutButton className="block w-full px-3.5 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50" />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -359,15 +409,19 @@ function Centered({
       <div className="text-center">
         <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">Enaible</p>
         {tone === "loading" && (
-          <SpinnerIcon className="mx-auto mb-3 h-5 w-5 animate-spin text-slate-400" />
+          <SpinnerIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-indigo-600" />
         )}
         {tone === "error" && <AlertIcon className="mx-auto mb-3 h-5 w-5 text-red-500" />}
         <p className={tone === "error" ? "text-sm text-red-600" : "text-sm text-slate-500"}>
           {children}
         </p>
-        <div className="mt-4">
-          <SignOutButton className="text-xs text-slate-500 underline transition hover:text-slate-900" />
-        </div>
+        {/* Loading is transient, not a dead end — nothing to escape from yet, so no exit needed
+            until it actually becomes one (the error or empty tones below). */}
+        {tone !== "loading" && (
+          <div className="mt-4">
+            <SignOutButton className="text-xs text-slate-500 underline transition hover:text-slate-900" />
+          </div>
+        )}
       </div>
     </main>
   );

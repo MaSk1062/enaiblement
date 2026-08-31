@@ -23,7 +23,7 @@ export default function Home() {
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">
         <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">Enaible</p>
-        <SpinnerIcon className="mx-auto h-5 w-5 animate-spin text-slate-400" />
+        <SpinnerIcon className="mx-auto h-10 w-10 animate-spin text-indigo-600" />
       </div>
     </main>
   );
