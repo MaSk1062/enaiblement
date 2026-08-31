@@ -1,0 +1,39 @@
+{
+  "ranAt": "2026-08-31T04:42:06.678Z",
+  "k": 2,
+  "summary": [
+    {
+      "agent": "architect",
+      "runs": 2,
+      "passRate": 1,
+      "judgeScore": 4.833333333333334,
+      "firstTryParseRate": 1,
+      "meanMs": 14869,
+      "meanTokens": 1594
+    }
+  ],
+  "results": [
+    {
+      "agent": "architect",
+      "case": "recommends only from the menu it was given",
+      "passed": true,
+      "failures": [],
+      "repaired": false,
+      "tokens": 1554,
+      "durationMs": 16898,
+      "score": 4.666666666666667,
+      "reason": "The output provides a highly technical, role-appropriate architecture blueprint specifically tailored for healthcare integration (FHIR, HIPAA, De-identification API) without making unsubstantiated assumptions about the client's internal systems."
+    },
+    {
+      "agent": "architect",
+      "case": "recommends only from the menu it was given",
+      "passed": true,
+      "failures": [],
+      "repaired": false,
+      "tokens": 1634,
+      "durationMs": 12840,
+      "score": 5,
+      "reason": "The response provides an exceptionally tailored technical blueprint specifically addressing clinical EHR parsing, FHIR integration, and HIPAA security controls, which perfectly fits the Healthcare CTO role and the prior authorization use case."
+    }
+  ]
+}

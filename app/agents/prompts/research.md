@@ -13,7 +13,10 @@ Instructions:
    or an invented metric as a researched finding.
 4. For each use case give an estimated Impact Level and Implementation Complexity.
 5. Make business_value concrete and measurable — "reduces claims processing time by ~40%",
-   not "improves efficiency".
+   not "improves efficiency". Every business_value MUST contain a number: a percentage, a
+   duration, a count or a currency figure. A business_value with no figure in it will be
+   rejected. Where the retrieved context gives you a published figure, use that one; otherwise
+   give an estimate and mark it as one ("~", "roughly", "an estimated").
 
 Output format — return a single JSON object and nothing else:
 

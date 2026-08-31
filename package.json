@@ -7,7 +7,9 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "test": "node --test app/**/*.test.ts"
+    "test": "node --test app/**/*.test.ts scripts/**/*.test.ts",
+    "eval": "node --import ./scripts/raw-hook.mjs --env-file=.env scripts/eval.ts",
+    "seed": "node --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

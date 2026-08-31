@@ -70,7 +70,11 @@ export const UseCasesOutput = z
           description: z.string().min(1),
           impact: Level,
           complexity: Level,
-          business_value: z.string().min(1),
+          // A figure is required, not requested. The prompt asks for "reduces processing time
+          // by 40%" and not "improves efficiency", and one run in six ignored it — caught by
+          // scripts/eval.ts, scored 5/5 by the judge. Enforcing it here routes the failure into
+          // the repair re-prompt, which fixes it with the exact error rather than by hoping.
+          business_value: z.string().min(1).regex(/\d/, "business_value must contain a figure"),
         }),
       )
       .min(1),
@@ -86,6 +90,25 @@ export const UseCasesOutput = z
       status: "suggested",
     })),
   );
+
+// --- eval judge ---------------------------------------------------------------
+// Not a product path: scripts/eval.ts scores agent output with it. It lives here because this
+// is where snake_case is translated, and `role_fit` is snake_case like everything else.
+
+export const JudgeOutput = z
+  .object({
+    specificity: z.number().min(1).max(5),
+    grounding: z.number().min(1).max(5),
+    role_fit: z.number().min(1).max(5),
+    reason: z.string().min(1),
+  })
+  .transform((r) => ({
+    specificity: r.specificity,
+    grounding: r.grounding,
+    roleFit: r.role_fit,
+    reason: r.reason,
+    score: (r.specificity + r.grounding + r.role_fit) / 3,
+  }));
 
 // --- architecture -------------------------------------------------------------
 
