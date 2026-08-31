@@ -56,7 +56,7 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
             <button
               type="button"
               onClick={() => setShowSource((v) => !v)}
-              className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 transition hover:border-slate-500"
+              className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 transition hover:border-slate-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               {showSource ? "Diagram" : "Source"}
             </button>
@@ -64,14 +64,14 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
           <button
             type="button"
             onClick={copy}
-            className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 transition hover:border-slate-500"
+            className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 transition hover:border-slate-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             {copied ? "Copied" : "Copy"}
           </button>
           <button
             type="button"
             onClick={download}
-            className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 transition hover:border-slate-500"
+            className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 transition hover:border-slate-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Download
           </button>
@@ -86,7 +86,7 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
         </pre>
       )}
 
-      <p className="border-t border-slate-100 px-4 py-1.5 text-right text-xs text-slate-400">
+      <p className="border-t border-slate-100 px-4 py-1.5 text-right text-xs text-slate-500">
         {artifact.producedBy}
       </p>
     </article>
