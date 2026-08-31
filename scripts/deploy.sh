@@ -61,6 +61,13 @@ fi
 if [ -n "${GCP_LOCATION:-}" ]; then
   ENV_VARS="${ENV_VARS},GCP_LOCATION=${GCP_LOCATION}"
 fi
+
+# The Architect's menu, when pinned. Left unset it is looked up by live search, which has twice
+# returned models that no longer exist. The value must not contain a comma: --set-env-vars
+# splits on them.
+if [ -n "${ARCHITECT_MODEL_MENU:-}" ]; then
+  ENV_VARS="${ENV_VARS},ARCHITECT_MODEL_MENU=${ARCHITECT_MODEL_MENU}"
+fi
 ENV_VARS="${ENV_VARS},EMBEDDING_DIMENSIONS=${EMBEDDING_DIMENSIONS:-768}"
 ENV_VARS="${ENV_VARS},RAG_TOP_K=${RAG_TOP_K:-3}"
 ENV_VARS="${ENV_VARS},MAX_TURNS_PER_MINUTE=${MAX_TURNS_PER_MINUTE:-20}"

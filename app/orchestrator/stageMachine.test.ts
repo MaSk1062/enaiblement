@@ -19,6 +19,7 @@ function deps(over: Partial<StageDeps> = {}): StageDeps {
     projectManager: notCalled("projectManager"),
     changeCoach: notCalled("changeCoach"),
     reviser: notCalled("reviser"),
+    sourcing: notCalled("sourcing"),
     retrieve: notCalled("retrieve"),
     ...over,
   } as StageDeps;
@@ -46,6 +47,29 @@ const useCase = (id: string, status: UseCase["status"]): UseCase => ({
   status,
 });
 
+const sourcingResult = {
+  reply: "Two firms in the region have delivered claims automation. Proposal attached.",
+  sourcing: {
+    partners: [
+      {
+        name: "Example Integrators",
+        country: "Kenya",
+        delivered: "Claims automation for a regional insurer",
+        fit: "Same use case, same regulatory environment",
+        sourceUrl: "https://example.com/case-study",
+      },
+    ],
+    proposal: {
+      scope: "Build and hand over the packet assembly pipeline",
+      phases: [{ phaseName: "Pilot", personWeeks: 8, partnerRole: "Lead build" }],
+      budgetRange: "KES 6M-9M",
+      currency: "KES",
+      nextStep: "Send the shortlist a scoped RFP",
+    },
+    grounded: true,
+  },
+};
+
 const stack = {
   models: ["Gemini 3.5 Flash"],
   infrastructure: ["Vertex AI"],
@@ -65,23 +89,65 @@ test("discovery: an 'asking' result does not advance the stage", async () => {
   assert.equal(replies[0].agentName, "Discovery Consultant");
 });
 
-test("discovery: a 'complete' result advances to research and stores the assessment", async () => {
-  const needsAssessment = {
-    summary: "Manual claims triage throughout.",
-    primaryObjective: "Cut claims cycle time",
-    dataReadiness: "Medium" as const,
-    identifiedBottleneck: "Manual claims triage",
-  };
+const needsAssessment = {
+  summary: "Manual claims triage throughout.",
+  primaryObjective: "Cut claims cycle time",
+  dataReadiness: "Medium" as const,
+  identifiedBottleneck: "Manual claims triage",
+};
 
+test("one message carries the consultation from a finished interview to the gate", async () => {
+  // The change that matters: a completed interview no longer waits to be told to continue. It
+  // runs research too, and stops where a human is genuinely needed — the approval gate.
   const { replies, state } = await runTurn(
     session("discovery"),
     "mostly claims",
-    deps({ discovery: async () => ({ status: "complete", needsAssessment }) }),
+    deps({
+      discovery: async () => ({ status: "complete", needsAssessment }),
+      retrieve: async () => ({
+        documents: [{ id: "kb-1", title: "A case study", content: "…" }],
+        sources: [{ title: "example.com", url: "https://example.com" }],
+        grounded: true,
+        source: "knowledge_base",
+      }),
+      analyst: async () => [useCase("uc-1", "suggested")],
+      architect: notCalled("architect"), // the gate must hold before the Architect is reached
+    }),
   );
 
-  assert.equal(state.currentStage, "research");
+  assert.equal(state.currentStage, "architecture", "stopped at the gate, not at research");
   assert.deepEqual(state.needsAssessment, needsAssessment);
-  assert.match(replies[0].text, /Manual claims triage/);
+  assert.deepEqual(state.useCases.map((u) => u.id), ["uc-1"]);
+
+  assert.deepEqual(
+    replies.map((r) => r.agentName),
+    ["Discovery Consultant", "Industry Analyst", "Technical Architect"],
+    "every specialist that ran gets its own message, so the handoffs are still visible",
+  );
+  assert.match(replies.at(-1)!.text, /approve at least one/i);
+});
+
+test("approving carries it the rest of the way, without another message", async () => {
+  const { replies, state } = await runTurn(
+    session("architecture", { useCases: [useCase("uc-1", "approved")] }),
+    "Approved: Use case uc-1.",
+    deps({
+      architect: async () => stack,
+      projectManager: async () => phases,
+      changeCoach: async () => changePlan,
+      sourcing: async () => sourcingResult,
+    }),
+  );
+
+  assert.equal(state.currentStage, "complete", "one approval finishes the strategy");
+  assert.deepEqual(state.architectureStack, stack);
+  assert.deepEqual(state.roadmapPhases, phases);
+  assert.deepEqual(state.changeManagementPlan, changePlan);
+  assert.deepEqual(
+    replies.map((r) => r.agentName),
+    ["Technical Architect", "Project Manager", "Change Coach", "Sourcing Lead"],
+  );
+  assert.equal(state.sourcing?.partners.length, 1);
 });
 
 test("research: an ungrounded retrieval is marked and disclosed, never hidden", async () => {
@@ -233,6 +299,7 @@ test("complete: a rerun clears everything downstream, rebuilds it, and every age
       reviser: async () => ({ action: "rerun", reply: "Rebuilding from the roadmap.", from: "roadmap" }),
       projectManager: async () => rebuiltPhases,
       changeCoach: async () => rebuiltPlan,
+      sourcing: async () => sourcingResult,
     }),
   );
 
@@ -243,7 +310,7 @@ test("complete: a rerun clears everything downstream, rebuilds it, and every age
 
   assert.deepEqual(
     replies.map((r) => r.agentName),
-    ["Project Manager", "Project Manager", "Change Coach"],
+    ["Project Manager", "Project Manager", "Change Coach", "Sourcing Lead"],
     "the Reviser's reply, then each specialist that re-engaged",
   );
 });
@@ -267,4 +334,44 @@ test("complete: a rerun from research stops at the approval gate instead of loop
   assert.equal(state.roadmapPhases, undefined);
   assert.equal(state.changeManagementPlan, undefined);
   assert.match(replies.at(-1)!.text, /approve at least one/i);
+});
+
+test("sourcing: an ungrounded search names no partner and says so", async () => {
+  // The whole risk of this feature in one assertion. A shortlist is worth having only because
+  // every firm on it is real; the moment it invents one, everything else the product said
+  // becomes suspect too. The agent returns grounded:false with an empty list, and the stage
+  // must store that as-is rather than treating it as a failure.
+  const { replies, state } = await runTurn(
+    session("sourcing", {
+      useCases: [useCase("uc-1", "approved")],
+      architectureStack: stack,
+      roadmapPhases: phases,
+      changeManagementPlan: changePlan,
+    }),
+    "who builds this?",
+    deps({
+      sourcing: async () => ({
+        reply:
+          "I could not find verifiable implementation partners for this in your region. Here is " +
+          "how I would run that search, and the proposal stands on its own.",
+        sourcing: {
+          partners: [],
+          proposal: {
+            scope: "Build and hand over the packet assembly pipeline",
+            phases: [{ phaseName: "Pilot", personWeeks: 8, partnerRole: "Lead build" }],
+            budgetRange: "KES 6M-9M",
+            currency: "KES",
+            nextStep: "Run the shortlist search with a procurement lead",
+          },
+          grounded: false,
+        },
+      }),
+    }),
+  );
+
+  assert.equal(state.currentStage, "complete", "no partners is a result, not a failure");
+  assert.deepEqual(state.sourcing?.partners, [], "nothing invented to fill the gap");
+  assert.equal(state.sourcing?.grounded, false);
+  assert.ok(state.sourcing?.proposal, "the proposal survives — it derives from the roadmap");
+  assert.match(replies[0].text, /could not find/i, "the user is told, not left to notice");
 });

@@ -16,5 +16,6 @@ export default [
   route("api/session/start", "routes/api.session.start.ts"),
   route("api/session/:id", "routes/api.session.$id.ts"),
   route("api/session/:id/use-cases", "routes/api.session.$id.use-cases.ts"),
+  route("api/session/:id/produce", "routes/api.session.$id.produce.ts"),
   route("api/chat", "routes/api.chat.ts"),
 ] satisfies RouteConfig;

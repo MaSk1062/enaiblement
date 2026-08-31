@@ -144,12 +144,31 @@ function readCache(industry: Industry): SeedDocument[] {
   return JSON.parse(readFileSync(file, "utf8")) as SeedDocument[];
 }
 
+/**
+ * The same bottlenecks, asked about on the continent the product is positioned for.
+ *
+ * Nothing in the corpus said Africa: every seeded case study was a US health system, so the
+ * Analyst could only ever ground a Lagos client in Alabama. These run through `research()` like
+ * every other document, which means they are dropped if the search returns no citation — a
+ * hand-written African case study would be exactly the fabrication the drop rule exists to
+ * prevent.
+ */
+const AFRICA_THEMES: Record<Industry, string[]> = {
+  Healthcare: ["patient record digitisation and claims processing at a hospital group in Africa"],
+  Finance: ["mobile money fraud detection at an African bank or fintech"],
+  Manufacturing: ["production quality inspection at an African manufacturer"],
+  Retail: ["demand forecasting and stockouts at an African retailer or e-commerce platform"],
+  SaaS: ["customer support automation at an African technology company"],
+};
+
+const themesFor = (industry: Industry) => [...THEMES[industry], ...AFRICA_THEMES[industry]];
+
 async function collect(industry: Industry): Promise<SeedDocument[]> {
   const cached = readCache(industry);
   const have = new Set(cached.map((d) => d.id));
   const documents = [...cached];
 
-  for (const theme of THEMES[industry]) {
+  for (const theme of themesFor(industry)) {
     if (have.has(`${slug(industry)}-${slug(theme)}`)) continue;
 
     // Sequential on purpose: 25 grounded searches in parallel is a quota incident, and this

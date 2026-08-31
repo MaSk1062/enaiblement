@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
+import { planDeepDive } from "../capabilities.ts";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
@@ -7,7 +8,7 @@ import { AlertIcon, ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
-import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
+import type { AgentState, Artifact, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -17,7 +18,9 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<SessionUserProfile | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [state, setState] = useState<AgentState | null>(null);
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [sending, setSending] = useState(false);
+  const [producing, setProducing] = useState<Consultation["producing"]>(null);
   const [error, setError] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
 
@@ -44,6 +47,7 @@ export default function Dashboard() {
         setProfile(session.userProfile);
         setMessages(session.messages);
         setState(session.state);
+        setArtifacts(session.artifacts ?? []);
       } catch (err) {
         if (!cancelled) setError((err as Error).message);
       } finally {
@@ -85,17 +89,88 @@ export default function Dashboard() {
     [sessionId, sending],
   );
 
-  const decide = useCallback(
-    async (decisions: Record<string, "approved" | "rejected">) => {
+  // A capability is not a turn: it adds a reply and may add files, but never moves the stage.
+  // Throws, so the deep dive can decide whether one failure should stop the rest. It does not.
+  const runCapability = useCallback(
+    async (capability: string, index: number, total: number) => {
       if (!sessionId) return;
+      setProducing({ id: capability, index, total });
       try {
-        const { state: next } = await api.decideUseCases(sessionId, decisions);
-        setState(next);
+        const result = await api.produce(sessionId, capability);
+        setMessages((m) => [...m, ...result.replies]);
+        setState(result.state);
+        setArtifacts(result.artifacts);
+      } finally {
+        setProducing(null);
+      }
+    },
+    [sessionId],
+  );
+
+  const produce = useCallback(
+    async (capability: string) => {
+      if (!sessionId || producing) return;
+      setError(null);
+      try {
+        await runCapability(capability, 1, 1);
       } catch (err) {
         setError((err as Error).message);
       }
     },
-    [sessionId],
+    [sessionId, producing, runCapability],
+  );
+
+  /**
+   * The whole bench, in dependency order, one request each.
+   *
+   * Sequential on purpose: each specialist sees what the previous one wrote, every step
+   * persists on its own, and a failure at step four leaves the first three intact rather than
+   * losing three minutes of work. So a throw is collected and the loop carries on.
+   */
+  const deepDive = useCallback(async () => {
+    if (!sessionId || producing || !state) return;
+    setError(null);
+
+    const plan = planDeepDive(state);
+    const failed: string[] = [];
+
+    for (const [i, id] of plan.run.entries()) {
+      try {
+        await runCapability(id, i + 1, plan.run.length);
+      } catch (err) {
+        failed.push(`${id} (${(err as Error).message})`);
+      }
+    }
+
+    const notes = [
+      failed.length ? `Could not complete: ${failed.join(", ")}.` : "",
+      plan.skipped.length
+        ? `Not run yet — ${plan.skipped.map((s) => `${s.id}: ${s.reason}`).join("; ")}.`
+        : "",
+    ].filter(Boolean);
+
+    if (notes.length) setError(notes.join(" "));
+  }, [sessionId, producing, state, runCapability]);
+
+  // Approving releases the rest of the pipeline, so this call can take as long as a chat turn
+  // and comes back with several replies. `sending` drives the same typing indicator, because
+  // from the user's side it is the same thing: the specialists are working.
+  const decide = useCallback(
+    async (decisions: Record<string, "approved" | "rejected">) => {
+      if (!sessionId || sending) return;
+      setSending(true);
+      setError(null);
+      try {
+        const { replies, state: next } = await api.decideUseCases(sessionId, decisions);
+        setMessages((m) => [...m, ...replies]);
+        setState(next);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setSending(false);
+      }
+    },
+    [sessionId, sending],
   );
 
   if (authLoading || booting) {
@@ -115,10 +190,14 @@ export default function Dashboard() {
     profile,
     messages,
     state,
+    artifacts,
     sending,
+    producing,
     error,
     send,
     decide,
+    produce,
+    deepDive,
   };
 
   return (
@@ -219,7 +298,9 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
   return (
     <div className="overflow-x-auto px-6 pb-3">
       <ol className="flex min-w-max items-center gap-2">
-        {STAGES.slice(0, 5).map((stage, i) => {
+        {/* Every stage but `complete`, which is a conversation rather than a step. Derived
+            rather than sliced to a count, so adding a stage does not silently drop one. */}
+        {STAGES.filter((s) => s !== "complete").map((stage, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
           const working = active && sending;

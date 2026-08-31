@@ -90,6 +90,19 @@ const STATUS: Record<Stage, AgentStatus> = {
       lightText: "text-fuchsia-700",
     },
   },
+  sourcing: {
+    name: AGENT_NAMES.sourcing,
+    working: "is finding partners who have done this before",
+    blurb: "Shortlisting implementation partners and drafting a proposal",
+    // ponytail: reuses PeopleIcon — partners are people; own hue is what distinguishes the badge
+    Icon: PeopleIcon,
+    accent: {
+      text: "text-emerald-600",
+      solid: "bg-emerald-600",
+      light: "bg-emerald-50",
+      lightText: "text-emerald-700",
+    },
+  },
   complete: {
     name: AGENT_NAMES.changeCoach,
     working: "is thinking",
@@ -123,5 +136,6 @@ export const STAGES: Stage[] = [
   "architecture",
   "roadmap",
   "training",
+  "sourcing",
   "complete",
 ];

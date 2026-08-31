@@ -12,15 +12,17 @@
 
 import { useState } from "react";
 import { AGENT_NAMES } from "../agents/names.ts";
+import { planDeepDive } from "../capabilities.ts";
 import { agentPersona } from "./agentStatus.ts";
+import { Artifacts } from "./Artifacts.tsx";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
 import { buildTimeline } from "./timeline.ts";
-import type { AgentName, Level, RoadmapPhase, UseCase } from "../types.ts";
+import type { AgentName, Estimate, Level, Reliability, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
-  const { state, profile, decide, error } = useConsultation();
+  const { state, profile, artifacts, decide, error } = useConsultation();
   const { needsAssessment: needs, useCases, architectureStack, roadmapPhases } = state;
   const plan = state.changeManagementPlan;
   const pending = useCases.filter((uc) => uc.status === "suggested").length;
@@ -61,6 +63,7 @@ export function CanvasPanel() {
           })}
         </p>
       </header>
+      <DeepDiveCallToAction />
 
       {needs.identifiedBottleneck && (
         <Section id="section-bottleneck" title="The bottleneck" agent={AGENT_NAMES.discovery}>
@@ -195,7 +198,271 @@ export function CanvasPanel() {
           </Section>
         </div>
       )}
+
+      {state.sourcing && (
+        <div className="animate-section-enter">
+          <PartnersAndProposal sourcing={state.sourcing} />
+        </div>
+      )}
+
+      {state.estimate && <EstimateSection estimate={state.estimate} />}
+      {state.reliability && <ReliabilitySection reliability={state.reliability} />}
+
+      {artifacts.length > 0 && (
+        <Section title="Handover" aside={<span className="text-xs text-slate-400">{artifacts.length} files</span>}>
+          <Artifacts artifacts={artifacts} />
+        </Section>
+      )}
     </div>
+  );
+}
+
+/**
+ * Who could build it, and what it would take.
+ *
+ * Every firm carries a clickable citation, for the same reason the use cases do: this is the
+ * one section naming real organisations, and a name without a source is indistinguishable from
+ * an invented one. When the search found nothing the list is empty and says so — the proposal
+ * still stands, because it derives from the approved roadmap rather than from any partner.
+ */
+function PartnersAndProposal({ sourcing }: { sourcing: Sourcing }) {
+  const { partners, proposal } = sourcing;
+
+  return (
+    <Section
+      id="section-partners"
+      title="Partners and proposal"
+      aside={
+        <span className="text-xs text-slate-400">
+          {partners.length > 0 ? `${partners.length} shortlisted` : "no verified partners"}
+        </span>
+      }
+    >
+      {partners.length === 0 ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
+          The search returned no implementation partners we could verify, so none are listed. An
+          unverified shortlist would be worse than an empty one — the proposal below is derived
+          from your approved roadmap and does not depend on a partner being named.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {partners.map((partner) => (
+            <div
+              key={partner.sourceUrl}
+              className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium text-slate-900">{partner.name}</h3>
+                <span className="text-xs whitespace-nowrap text-slate-500">{partner.country}</span>
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{partner.delivered}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{partner.fit}</p>
+              <a
+                href={partner.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block truncate text-xs text-slate-500 underline decoration-slate-300 hover:text-slate-900"
+              >
+                {partner.sourceUrl}
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
+        <p className="text-sm leading-relaxed text-slate-700">{proposal.scope}</p>
+
+        <dl className="mt-3 space-y-1.5">
+          {proposal.phases.map((phase) => (
+            <div key={phase.phaseName} className="flex items-baseline justify-between gap-3">
+              <dt className="text-sm text-slate-800">{phase.phaseName}</dt>
+              <dd className="text-xs whitespace-nowrap text-slate-500">
+                {phase.personWeeks} person-weeks · {phase.partnerRole}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-3 text-sm font-medium text-slate-900">{proposal.budgetRange}</p>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          <span className="font-medium">Next · </span>
+          {proposal.nextStep}
+        </p>
+      </div>
+    </Section>
+  );
+}
+
+/**
+ * Offered, not started. Completion is the moment the depth is worth having, but three minutes
+ * and ~50k tokens should not begin because a consultation happened to finish. Disappears once
+ * the bench has produced anything, so it is a prompt rather than furniture.
+ */
+function DeepDiveCallToAction() {
+  const { state, artifacts, producing, deepDive } = useConsultation();
+
+  const alreadyRan = artifacts.length > 0 || Boolean(state.estimate) || Boolean(state.reliability);
+  if (state.currentStage !== "complete" || alreadyRan) return null;
+
+  const plan = planDeepDive(state);
+  if (plan.run.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-900 bg-slate-900 px-4 py-3.5">
+      <div>
+        <p className="text-sm font-medium text-white">Your strategy is ready.</p>
+        <p className="mt-0.5 text-xs text-slate-300">
+          A deep dive brings in {plan.run.length} more specialists — diagrams, cost and effort,
+          containers and infrastructure, reliability, and code. About three minutes.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => void deepDive()}
+        disabled={Boolean(producing)}
+        className="rounded-lg bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-slate-900 transition hover:bg-slate-100 disabled:opacity-50"
+      >
+        {producing ? "Running…" : "Run the deep dive"}
+      </button>
+    </div>
+  );
+}
+
+const money = (n: number, currency: string) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+
+function EstimateSection({ estimate }: { estimate: Estimate }) {
+  const { currency } = estimate;
+
+  return (
+    <Section
+      title="Cost and effort"
+      aside={
+        <span className="text-xs text-slate-500">
+          {money(estimate.effort.totalCost, currency)} to build ·{" "}
+          {money(estimate.runRate.monthlyTotal, currency)}/mo to run
+        </span>
+      }
+    >
+      {!estimate.pricesVerified && (
+        <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+          The unit prices behind these figures are unverified list prices from
+          <span className="font-mono"> knowledge/pricing.json</span>. Check them against the
+          source URLs before quoting this to anyone.
+        </p>
+      )}
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-slate-100 text-xs text-slate-500">
+            <tr>
+              <th className="px-3 py-2 font-medium">Component</th>
+              <th className="px-3 py-2 font-medium">Basis</th>
+              <th className="px-3 py-2 text-right font-medium whitespace-nowrap">Per month</th>
+            </tr>
+          </thead>
+          <tbody>
+            {estimate.runRate.lines.map((line) => (
+              <tr key={line.component} className="border-b border-slate-50 last:border-0">
+                <td className="px-3 py-2 align-top text-slate-800">{line.component}</td>
+                <td className="px-3 py-2 align-top text-xs text-slate-500">{line.basis}</td>
+                <td className="px-3 py-2 text-right align-top whitespace-nowrap text-slate-900">
+                  {money(line.monthlyCost, currency)}
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-slate-50 font-medium">
+              <td className="px-3 py-2 text-slate-900" colSpan={2}>
+                Monthly run rate
+              </td>
+              <td className="px-3 py-2 text-right whitespace-nowrap text-slate-900">
+                {money(estimate.runRate.monthlyTotal, currency)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-slate-100 text-xs text-slate-500">
+            <tr>
+              <th className="px-3 py-2 font-medium">Phase</th>
+              <th className="px-3 py-2 font-medium">Role</th>
+              <th className="px-3 py-2 text-right font-medium">Days</th>
+              <th className="px-3 py-2 text-right font-medium whitespace-nowrap">Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {estimate.effort.lines.map((line, i) => (
+              <tr key={`${line.phase}-${line.role}-${i}`} className="border-b border-slate-50 last:border-0">
+                <td className="px-3 py-2 text-slate-800">{line.phase}</td>
+                <td className="px-3 py-2 text-slate-600">{line.role}</td>
+                <td className="px-3 py-2 text-right text-slate-600">{line.days}</td>
+                <td className="px-3 py-2 text-right whitespace-nowrap text-slate-900">
+                  {money(line.cost, currency)}
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-slate-50 font-medium">
+              <td className="px-3 py-2 text-slate-900" colSpan={2}>
+                Build
+              </td>
+              <td className="px-3 py-2 text-right text-slate-900">{estimate.effort.totalDays}</td>
+              <td className="px-3 py-2 text-right whitespace-nowrap text-slate-900">
+                {money(estimate.effort.totalCost, currency)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <Bullets label="Assumptions" items={estimate.assumptions} />
+    </Section>
+  );
+}
+
+function ReliabilitySection({ reliability }: { reliability: Reliability }) {
+  return (
+    <Section title="Reliability">
+      <div className="space-y-3">
+        {reliability.slos.map((slo) => (
+          <div key={slo.name} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="text-sm font-medium text-slate-900">{slo.name}</h3>
+              <span className="text-xs whitespace-nowrap text-slate-500">
+                {slo.objective} over {slo.window}
+              </span>
+            </div>
+            <p className="mt-1 font-mono text-xs text-slate-500">{slo.sli}</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">{slo.rationale}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-700">
+        <span className="font-medium">Error budget · </span>
+        {reliability.errorBudget}
+      </p>
+
+      <div className="mt-3 space-y-1.5">
+        {reliability.alerts.map((alert) => (
+          <div key={alert.name} className="flex items-baseline gap-2 text-sm">
+            <span
+              className={[
+                "rounded-full px-2 py-0.5 text-xs font-medium",
+                alert.severity === "page" ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-600",
+              ].join(" ")}
+            >
+              {alert.severity}
+            </span>
+            <span className="text-slate-800">{alert.name}</span>
+            <span className="text-xs text-slate-500">{alert.condition}</span>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 

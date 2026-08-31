@@ -25,6 +25,10 @@ export function stageSummary(stage: Stage, state: AgentState): string | null {
     }
     case "training":
       return state.changeManagementPlan ? "Plan ready" : null;
+    case "sourcing": {
+      const n = state.sourcing?.partners.length ?? 0;
+      return n > 0 ? `${n} partner${n === 1 ? "" : "s"}` : null;
+    }
     case "complete":
       return null;
   }

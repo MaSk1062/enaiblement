@@ -14,4 +14,5 @@ export const AGENT_NAMES = {
   architect: "Technical Architect",
   projectManager: "Project Manager",
   changeCoach: "Change Coach",
+  sourcing: "Sourcing Lead",
 } as const satisfies Record<string, AgentName>;
