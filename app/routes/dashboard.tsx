@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
-import { ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
+import { AlertIcon, ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
@@ -99,7 +99,7 @@ export default function Dashboard() {
   );
 
   if (authLoading || booting) {
-    return <Centered>Loading your consultation…</Centered>;
+    return <Centered tone="loading">Loading your consultation…</Centered>;
   }
   // Both of these are dead ends without a way out: no header renders here, so sign out is the
   // only route back to a working state.
@@ -107,7 +107,7 @@ export default function Dashboard() {
     return <Centered tone="error">{error}</Centered>;
   }
   if (!sessionId || !profile || !state) {
-    return <Centered>No active consultation.</Centered>;
+    return <Centered tone="empty">No active consultation.</Centered>;
   }
 
   const consultation: Consultation = {
@@ -237,16 +237,26 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
   );
 }
 
+/**
+ * Every screen with no header — a bootstrap failure, an empty session — used to be identical
+ * gray text on an empty page, so a real error looked exactly like an ordinary loading state
+ * (UI-9). The wordmark, an icon per tone, and distinct color fix that at a glance.
+ */
 function Centered({
   children,
   tone,
 }: {
   children: React.ReactNode;
-  tone?: "error";
+  tone: "loading" | "error" | "empty";
 }) {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">
+        <p className="mb-6 text-lg font-semibold tracking-tight text-slate-900">enaible</p>
+        {tone === "loading" && (
+          <SpinnerIcon className="mx-auto mb-3 h-5 w-5 animate-spin text-slate-400" />
+        )}
+        {tone === "error" && <AlertIcon className="mx-auto mb-3 h-5 w-5 text-red-500" />}
         <p className={tone === "error" ? "text-sm text-red-600" : "text-sm text-slate-500"}>
           {children}
         </p>

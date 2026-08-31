@@ -44,6 +44,16 @@ export function SpinnerIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+export function AlertIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
+      <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 6.5v4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="10" cy="13.5" r="0.9" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function DownloadIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
