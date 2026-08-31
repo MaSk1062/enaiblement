@@ -8,10 +8,13 @@
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
+import { greeting, memoryBlock, remember, summarise } from "./memory.ts";
 import type {
   AgentState,
   Artifact,
   ChatMessage,
+  ClientMemory,
+  Declined,
   SessionDocument,
   SessionUserProfile,
 } from "../types.ts";
@@ -72,13 +75,18 @@ export async function createSession(
   userId: string,
   profile: SessionUserProfile,
 ): Promise<SessionDocument> {
+  // Starting a new consultation is what turns the current one into history, so this is where
+  // memory accumulates - before the pointer moves, and nowhere else.
+  const existing = await getUser(userId);
+  const previous = existing.activeSessionId ? await getSession(existing.activeSessionId) : null;
+  const memory = remember(existing.memory, previous ? summarise(previous) : null);
+  const recalled = memoryBlock(memory);
+
   const sessionId = newSessionId();
-  const greeting = message({
+  const opener = message({
     sender: "agent",
     agentName: GREETING_AGENT,
-    text:
-      `Welcome, ${profile.name}. I'm your Discovery Consultant. As a ${profile.role} in ` +
-      `${profile.industry}, what's the business bottleneck you're most hoping AI can solve?`,
+    text: greeting(profile, memory),
   });
 
   const now = Timestamp.now();
@@ -88,30 +96,65 @@ export async function createSession(
     userProfile: profile,
     createdAt: now,
     updatedAt: now,
-    messages: [greeting],
+    messages: [opener],
     state: { currentStage: "discovery", needsAssessment: {}, useCases: [] },
+    // Frozen here rather than looked up per turn: the agents reach it through the session they
+    // already receive. Omitted when empty - Firestore rejects undefined, and a stored empty
+    // string would put a blank line at the top of every prompt.
+    ...(recalled ? { memoryBlock: recalled } : {}),
   };
 
   await sessions().doc(sessionId).set(doc);
   // So /dashboard/* can rehydrate, and a returning user skips onboarding.
   await users().doc(userId).set(
-    { uid: userId, ...profile, activeSessionId: sessionId, lastLoginAt: now },
+    { uid: userId, ...profile, activeSessionId: sessionId, lastLoginAt: now, memory },
     { merge: true },
   );
   return doc;
 }
 
-/** What the dashboard needs on load: is there a profile, and is there a session to resume? */
-export async function getUser(
-  uid: string,
-): Promise<{ profile: SessionUserProfile | null; activeSessionId: string | null }> {
+/** What the dashboard needs on load: is there a profile, is there a session, what is remembered? */
+export async function getUser(uid: string): Promise<{
+  profile: SessionUserProfile | null;
+  activeSessionId: string | null;
+  memory?: ClientMemory;
+}> {
   const snap = await users().doc(uid).get();
   const data = snap.data();
   if (!data?.name) return { profile: null, activeSessionId: null };
   return {
-    profile: { name: data.name, role: data.role, industry: data.industry },
+    profile: {
+      name: data.name,
+      role: data.role,
+      industry: data.industry,
+      // Conditional because this profile is written straight back out by "New consultation",
+      // and an explicit `region: undefined` is a rejected Firestore write. Dropping the key
+      // here is also how the region went missing once already, one layer up.
+      ...(data.region ? { region: data.region } : {}),
+    },
     activeSessionId: data.activeSessionId ?? null,
+    ...(data.memory ? { memory: data.memory as ClientMemory } : {}),
   };
+}
+
+/**
+ * Durable notes about a client, written by the Reviser at the end of a consultation.
+ *
+ * Deliberately NOT inside the turn's batch. A note is a nice-to-have; the turn is the product,
+ * and coupling them would let a failed memory write discard a reply the user waited forty
+ * seconds for. `arrayUnion` dedupes identical notes for free, and the cap lives on the read
+ * side in memory.ts, so this write stays small and is always safe to repeat.
+ */
+export async function rememberNotes(uid: string, notes: string[]) {
+  if (!notes.length) return;
+  await users()
+    .doc(uid)
+    .set({ memory: { notes: FieldValue.arrayUnion(...notes) } }, { merge: true });
+}
+
+/** Switching back to an earlier consultation. Ownership is the caller's to check. */
+export async function setActiveSession(uid: string, sessionId: string) {
+  await users().doc(uid).set({ activeSessionId: sessionId }, { merge: true });
 }
 
 export async function getSession(sessionId: string): Promise<SessionDocument | null> {
@@ -197,18 +240,51 @@ export function applyArtifacts(existing: Artifact[], incoming: Artifact[]): Arti
   return { artifacts: [...byPath.values()], written, rejected };
 }
 
-/** The approval gate (ARCHITECTURE.md §6.2). Only touches `status`, never regenerates. */
+export interface Decision {
+  status: "approved" | "rejected";
+  /** Optional: a rejection with no explanation is still a rejection. */
+  reason?: string;
+}
+
+/**
+ * The approval gate (ARCHITECTURE.md §6.2). Only touches `status` and the reason, never
+ * regenerates.
+ *
+ * A rejection is recorded twice on purpose. `UseCase.feedback` belongs to the card the user is
+ * looking at; `state.declined` is the copy that survives a rewind, so a rebuilt list cannot
+ * re-propose something the client has already turned down.
+ */
 export async function setUseCaseStatuses(
   sessionId: string,
-  decisions: Record<string, "approved" | "rejected">,
+  decisions: Record<string, Decision>,
 ): Promise<SessionDocument | null> {
   const session = await getSession(sessionId);
   if (!session) return null;
 
-  const useCases = session.state.useCases.map((uc) =>
-    decisions[uc.id] ? { ...uc, status: decisions[uc.id] } : uc,
-  );
-  const state: AgentState = { ...session.state, useCases };
+  const useCases = session.state.useCases.map((uc) => {
+    const decision = decisions[uc.id];
+    if (!decision) return uc;
+    // The key is omitted rather than set undefined - Firestore rejects the whole write.
+    return {
+      ...uc,
+      status: decision.status,
+      ...(decision.reason ? { feedback: decision.reason } : {}),
+    };
+  });
+
+  const alreadyDeclined = new Set((session.state.declined ?? []).map((d) => d.title));
+  const declined: Declined[] = [
+    ...(session.state.declined ?? []),
+    ...useCases
+      .filter((uc) => uc.status === "rejected" && !alreadyDeclined.has(uc.title))
+      .map((uc) => ({ title: uc.title, ...(uc.feedback ? { reason: uc.feedback } : {}) })),
+  ];
+
+  const state: AgentState = {
+    ...session.state,
+    useCases,
+    ...(declined.length ? { declined } : {}),
+  };
 
   await sessions().doc(sessionId).update({ state, updatedAt: FieldValue.serverTimestamp() });
   return { ...session, state };

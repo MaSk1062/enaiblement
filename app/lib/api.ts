@@ -35,9 +35,18 @@ export interface Me {
   uid: string;
   profile: SessionUserProfile | null;
   activeSessionId: string | null;
+  /** Earlier consultations, newest first, so one can be reopened. */
+  consultations: { sessionId: string; completedAt: string; bottleneck: string }[];
 }
 
 export const getMe = () => call<Me>("/api/me");
+
+/** Reopen an earlier consultation. Starting a new one would otherwise bury it. */
+export const setActiveSession = (activeSessionId: string) =>
+  call<{ activeSessionId: string }>("/api/me", {
+    method: "PATCH",
+    body: JSON.stringify({ activeSessionId }),
+  });
 
 export interface SessionView {
   sessionId: string;
@@ -69,10 +78,13 @@ export const produce = (sessionId: string, capability: string, request?: string)
     { method: "POST", body: JSON.stringify({ capability, request }) },
   );
 
-export const decideUseCases = (
-  sessionId: string,
-  decisions: Record<string, "approved" | "rejected">,
-) =>
+export interface Decision {
+  status: "approved" | "rejected";
+  /** Why, when the user said. It is what stops a rebuild re-proposing the same thing. */
+  reason?: string;
+}
+
+export const decideUseCases = (sessionId: string, decisions: Record<string, Decision>) =>
   // Returns replies as well as state: approving releases the rest of the pipeline, so the
   // Architect, Project Manager and Change Coach all answer this one call.
   call<{ replies: ChatMessage[]; state: AgentState }>(

@@ -7,6 +7,7 @@
  */
 
 import { createContext, useContext } from "react";
+import type { Decision } from "./api.ts";
 import type { AgentState, Artifact, ChatMessage, SessionUserProfile } from "../types.ts";
 
 export interface Consultation {
@@ -25,10 +26,16 @@ export interface Consultation {
   producing: { id: string; index: number; total: number } | null;
   error: string | null;
   send: (text: string) => Promise<void>;
-  decide: (decisions: Record<string, "approved" | "rejected">) => Promise<void>;
+  decide: (decisions: Record<string, Decision>) => Promise<void>;
   produce: (capability: string) => Promise<void>;
   /** Runs every capability the consultation is ready for, in dependency order. */
   deepDive: () => Promise<void>;
+  /** Earlier consultations, newest first. Reopening one is navigation, not memory. */
+  consultations: { sessionId: string; completedAt: string; bottleneck: string }[];
+  /** Archives the current consultation into memory and opens a fresh one. */
+  newConsultation: () => Promise<void>;
+  /** Reopens a finished consultation without disturbing what is remembered. */
+  openConsultation: (sessionId: string) => Promise<void>;
 }
 
 export const ConsultationContext = createContext<Consultation | null>(null);

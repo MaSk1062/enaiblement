@@ -65,6 +65,8 @@ export interface EventFields {
   source?: string;
   documents?: number;
   sources?: number;
+  /** How many durable notes a turn produced. The count only - never the notes. */
+  notes?: number;
   // sizes, never contents
   queryChars?: number;
   textChars?: number;
@@ -79,7 +81,8 @@ export interface EventFields {
 const ALLOWED = new Set<keyof EventFields>([
   "severity", "durationMs", "ok", "model", "promptTokens", "outputTokens", "thoughtTokens",
   "totalTokens", "repaired", "stage", "from", "to", "nextStage", "reason", "source",
-  "documents", "sources", "queryChars", "textChars", "status", "error", "stack", "issuePaths",
+  "documents", "sources", "notes", "queryChars", "textChars", "status", "error", "stack",
+  "issuePaths",
 ]);
 
 /** One event, one line. Never throws: instrumentation must not be able to fail a turn. */

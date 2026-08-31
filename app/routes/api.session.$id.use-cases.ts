@@ -16,8 +16,17 @@ import { getSession, message, saveTurn, setUseCaseStatuses } from "../services/f
 import { agentForStage, runTurn } from "../orchestrator/stageMachine.ts";
 import { event, newTurnId, traceFrom, withTurn } from "../services/telemetry.ts";
 
+// A decision may carry the client's reason. That reason is the only feedback signal in the
+// product that says anything more than yes or no, and it is what stops a rebuilt list from
+// re-proposing what was just refused - see AgentState.declined.
 const Body = z.object({
-  decisions: z.record(z.string(), z.enum(["approved", "rejected"])),
+  decisions: z.record(
+    z.string(),
+    z.object({
+      status: z.enum(["approved", "rejected"]),
+      reason: z.string().min(1).max(300).optional(),
+    }),
+  ),
 });
 
 export async function action({ request, params }: { request: Request; params: { id?: string } }) {
@@ -29,7 +38,12 @@ export async function action({ request, params }: { request: Request; params: { 
     if (!session || session.userId !== token.uid) return errorResponse(404, "Session not found");
 
     const parsed = Body.safeParse(await request.json().catch(() => null));
-    if (!parsed.success) return errorResponse(400, "Expected { decisions: { [useCaseId]: 'approved' | 'rejected' } }");
+    if (!parsed.success) {
+      return errorResponse(
+        400,
+        "Expected { decisions: { [useCaseId]: { status: 'approved' | 'rejected', reason?: string } } }",
+      );
+    }
 
     const known = new Set(session.state.useCases.map((uc) => uc.id));
     const unknown = Object.keys(parsed.data.decisions).filter((id) => !known.has(id));

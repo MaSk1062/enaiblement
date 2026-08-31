@@ -8,7 +8,7 @@
 
 import { z } from "zod";
 import { errorResponse, handle, json, rateLimit, requireUser } from "../middleware/requireUser.ts";
-import { getSession, message, saveTurn } from "../services/firestore.ts";
+import { getSession, message, rememberNotes, saveTurn } from "../services/firestore.ts";
 import { agentForStage, runTurn } from "../orchestrator/stageMachine.ts";
 import { event, newTurnId, traceFrom, withTurn } from "../services/telemetry.ts";
 import type { ChatTurnResponse } from "../types.ts";
@@ -54,10 +54,19 @@ export async function action({ request }: { request: Request }) {
 
       try {
         const userMessage = message({ sender: "user", text: parsed.data.message });
-        const { replies, state } = await runTurn(session, parsed.data.message);
+        const { replies, state, remember } = await runTurn(session, parsed.data.message);
 
         // Still ONE write, however many replies the turn produced.
         await saveTurn(session.sessionId, [...session.messages, userMessage, ...replies], state);
+
+        // Separate, and after. What the Reviser learned about this client belongs to the user,
+        // not the session, and it must not be able to take the turn down with it: the reply is
+        // already paid for and already persisted by the time this runs.
+        if (remember?.length) {
+          await rememberNotes(token.uid, remember).catch((err) =>
+            event("memory.failed", { severity: "ERROR", error: (err as Error).message }),
+          );
+        }
 
         // Derived here rather than at four return sites inside the stage machine - the machine
         // is pure and the before/after comparison is exact.

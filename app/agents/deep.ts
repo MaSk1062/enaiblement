@@ -16,7 +16,7 @@ import estimatePrompt from "./prompts/estimate.md?raw";
 import srePrompt from "./prompts/sre.md?raw";
 import deepNeedsPrompt from "./prompts/deepNeeds.md?raw";
 import pricing from "../../knowledge/pricing.json";
-import { fillPrompt } from "./prompt.ts";
+import { fillPrompt, transcript } from "./prompt.ts";
 import { generateStructured } from "../services/gemini.ts";
 import {
   ArtifactsOutput,
@@ -33,14 +33,6 @@ export interface DeepInput {
   /** What the user asked, when they asked in prose rather than pressing a button. */
   request?: string;
 }
-
-const HISTORY_TURNS = 6;
-
-const transcript = (messages: ChatMessage[]) =>
-  messages
-    .slice(-HISTORY_TURNS)
-    .map((m) => `${m.sender === "user" ? "User" : (m.agentName ?? "Agent")}: ${m.text}`)
-    .join("\n");
 
 const approved = (state: AgentState) => state.useCases.filter((uc) => uc.status === "approved");
 

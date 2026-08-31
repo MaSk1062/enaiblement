@@ -75,6 +75,8 @@ export interface UserProfile {
   lastLoginAt: Timestamp;
   /** Set at session start so /dashboard/* can rehydrate without a session list endpoint. */
   activeSessionId?: string;
+  /** What survives between consultations. See ClientMemory. */
+  memory?: ClientMemory;
 }
 
 export interface ChatMessage {
@@ -94,6 +96,18 @@ export interface UseCase {
   businessValue: string;
   /** The Analyst never emits this; the parse boundary defaults it to "suggested". */
   status: "suggested" | "approved" | "rejected";
+  /**
+   * Why the client rejected it, when they said. Optional - a rejection with no explanation is
+   * still a rejection. Shown on the card; `AgentState.declined` is the copy that outlives a
+   * rewind, and the reason it exists twice is written up there.
+   */
+  feedback?: string;
+}
+
+/** A use case the client turned down, and why. */
+export interface Declined {
+  title: string;
+  reason?: string;
 }
 
 export interface ArchitectureStack {
@@ -248,6 +262,41 @@ export interface AgentState {
   /** Produced on demand, not by the pipeline. */
   estimate?: Estimate;
   reliability?: Reliability;
+  /**
+   * Everything the client has turned down in this consultation, with their reasons.
+   *
+   * Deliberately NOT cleared by `rewind()`, which is the whole point: a rerun wipes `useCases`
+   * and rebuilds them, and a rebuilt list that re-proposes what was just refused is the exact
+   * failure this field prevents. `UseCase.feedback` is the same fact attached to the card the
+   * user is looking at; this is the copy that survives the rebuild.
+   */
+  declined?: Declined[];
+}
+
+/** One finished consultation, compressed to what is worth carrying into the next one. */
+export interface ConsultationMemory {
+  sessionId: string;
+  /** ISO. Written when the NEXT consultation starts, which is when this one became history. */
+  completedAt: string;
+  industry: Industry;
+  bottleneck: string;
+  /** Titles only. The full strategy is still in the session document. */
+  approved: string[];
+  rejected: Declined[];
+}
+
+/**
+ * What the product remembers about a client between consultations.
+ *
+ * Lives on `users/{uid}.memory`. Invisible by design: it shapes the opening message and the
+ * prompts rather than being displayed, so the adaptation shows up as the agent behaving
+ * differently, not as a panel the user has to read.
+ */
+export interface ClientMemory {
+  /** Newest first. */
+  consultations: ConsultationMemory[];
+  /** Durable observations about how this client works, written by the Reviser. */
+  notes: string[];
 }
 
 /** Denormalised onto the session: a consultation reflects the profile as it was at start. */
@@ -266,6 +315,12 @@ export interface SessionDocument {
   updatedAt: Timestamp;
   messages: ChatMessage[];
   state: AgentState;
+  /**
+   * The client's memory as prose, frozen at session start - same reasoning as `userProfile`:
+   * a consultation reflects what was known when it began, and the stage machine already holds
+   * the session, so no agent needs a new argument to reach it.
+   */
+  memoryBlock?: string;
 }
 
 export interface KnowledgeDocument {

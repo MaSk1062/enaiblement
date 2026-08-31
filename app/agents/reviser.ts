@@ -10,15 +10,13 @@
  */
 
 import template from "./prompts/revise.md?raw";
-import { fillPrompt } from "./prompt.ts";
+import { fillPrompt, transcript } from "./prompt.ts";
 import { AGENT_NAMES } from "./names.ts";
 import { generateStructured } from "../services/gemini.ts";
 import { ReviseOutput, type ReviseResult } from "../services/schemas.ts";
 import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
 
 export const AGENT_NAME = AGENT_NAMES.changeCoach;
-
-const HISTORY_TURNS = 6;
 
 export interface ReviserInput {
   profile: SessionUserProfile;
@@ -28,10 +26,7 @@ export interface ReviserInput {
 }
 
 export async function run(input: ReviserInput): Promise<ReviseResult> {
-  const history = input.messages
-    .slice(-HISTORY_TURNS)
-    .map((m) => `${m.sender === "user" ? "User" : (m.agentName ?? "Agent")}: ${m.text}`)
-    .join("\n");
+  const history = transcript(input.messages);
 
   // The full strategy, minus the bookkeeping. `currentStage` is always "complete" here and
   // saying so invites the model to reason about stages instead of about the client's request.
