@@ -3,21 +3,15 @@ import { useNavigate } from "react-router";
 import { startSession } from "../lib/api.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
+import { REGION_CONTEXT } from "../types.ts";
 import type { Industry, Region, Role } from "../types.ts";
 
 const ROLES: Role[] = ["CEO/Founder", "CTO/CIO", "Department Head", "Developer"];
 const INDUSTRIES: Industry[] = ["Healthcare", "Finance", "Manufacturing", "Retail", "SaaS"];
-// Africa first, and not as a courtesy: the regime the Architect designs against and the currency
-// a budget is quoted in both come from here.
-const REGIONS: Region[] = [
-  "West Africa",
-  "East Africa",
-  "Southern Africa",
-  "North Africa",
-  "Europe",
-  "North America",
-  "Other",
-];
+// Derived from the one place regions are defined, so the form and the API can never disagree
+// about what is valid. Africa first, and not as a courtesy: the regime the Architect designs
+// against and the currency a budget is quoted in both come from here.
+const REGIONS = Object.keys(REGION_CONTEXT) as Region[];
 
 export function meta() {
   return [{ title: "Set up · enaible" }];
