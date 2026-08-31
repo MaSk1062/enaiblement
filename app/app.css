@@ -45,3 +45,28 @@ body {
     animation: none;
   }
 }
+
+/* The one motion moment 2026 AI-agent UX guidance actually calls load-bearing for trust: a
+   visible handoff, not a static swap (UI-13, ui-identity-tasks.md). Plays once, on mount —
+   ProgressRail forces a remount by keying the active chip on its own active-ness. */
+@keyframes handoff-pulse {
+  0% {
+    transform: scale(0.92);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-handoff-pulse {
+  animation: handoff-pulse 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-handoff-pulse {
+    animation: none;
+  }
+}

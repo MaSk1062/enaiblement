@@ -215,8 +215,13 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
             <li key={stage} className="flex items-center gap-2">
               {i > 0 && <span aria-hidden className="h-px w-5 bg-slate-200" />}
               <span
+                // Keyed on active-ness, not just the stage: when a stage first becomes active,
+                // this remounts and the handoff pulse plays. Re-renders while it stays active
+                // (sending toggling, a summary landing) keep the same key and don't retrigger it.
+                key={`${stage}-${active}`}
                 className={[
                   "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
+                  active ? "animate-handoff-pulse" : "",
                   active
                     ? `${accent.solid} font-medium text-white ${working ? "shadow-sm" : ""}`
                     : done
