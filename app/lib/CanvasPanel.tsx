@@ -12,13 +12,15 @@
 
 import { useState } from "react";
 import { useConsultation } from "./consultation.ts";
+import { selectExportUseCases } from "./exportView.ts";
 import type { Level, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
-  const { state, decide } = useConsultation();
+  const { state, profile, decide } = useConsultation();
   const { needsAssessment: needs, useCases, architectureStack, roadmapPhases } = state;
   const plan = state.changeManagementPlan;
   const pending = useCases.filter((uc) => uc.status === "suggested").length;
+  const approvedIds = new Set(selectExportUseCases(useCases).approved.map((uc) => uc.id));
 
   if (useCases.length === 0) {
     return (
@@ -31,6 +33,22 @@ export function CanvasPanel() {
 
   return (
     <div className="space-y-10">
+      {/* Screen never needs to know who is looking — the export does, since it leaves the
+          product. Invisible until @media print picks it up. */}
+      <header className="hidden border-b border-slate-300 pb-4 print:block">
+        <p className="text-lg font-semibold text-slate-900">AI Enablement Strategy</p>
+        <p className="mt-1 text-sm text-slate-600">
+          {profile.name} · {profile.role} · {profile.industry}
+        </p>
+        <p className="text-xs text-slate-400">
+          {new Date().toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
+      </header>
+
       {needs.identifiedBottleneck && (
         <Section title="The bottleneck">
           <p className="text-sm leading-relaxed text-slate-700">{needs.summary}</p>
@@ -58,9 +76,16 @@ export function CanvasPanel() {
       >
         <Provenance ungrounded={state.ungrounded} sources={state.sources} />
 
+        {/* The screen keeps every use case, at whatever status, revisable. The export is the
+            artifact, not the audit log: only what shipped gets a page (exportView.ts). */}
         <div className="mt-4 space-y-3">
           {useCases.map((uc) => (
-            <UseCaseCard key={uc.id} useCase={uc} decide={decide} />
+            <UseCaseCard
+              key={uc.id}
+              useCase={uc}
+              decide={decide}
+              printHidden={!approvedIds.has(uc.id)}
+            />
           ))}
         </div>
 
@@ -92,7 +117,7 @@ export function CanvasPanel() {
             {roadmapPhases.map((phase, i) => (
               <li
                 key={phase.phaseName}
-                className="rounded-xl border border-slate-200 bg-white p-4"
+                className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
               >
                 <div className="flex items-baseline justify-between gap-3">
                   <h3 className="text-sm font-medium text-slate-900">
@@ -113,7 +138,10 @@ export function CanvasPanel() {
         <Section title="People and change">
           <div className="space-y-3">
             {plan.upskillingPaths.map((path) => (
-              <div key={path.role} className="rounded-xl border border-slate-200 bg-white p-4">
+              <div
+                key={path.role}
+                className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+              >
                 <div className="flex items-baseline justify-between gap-3">
                   <h3 className="text-sm font-medium text-slate-900">{path.role}</h3>
                   <span className="text-xs whitespace-nowrap text-slate-500">
@@ -128,7 +156,7 @@ export function CanvasPanel() {
             ))}
           </div>
 
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
             <p className="text-sm leading-relaxed text-slate-700">
               {plan.communicationStrategy.leadershipNarrative}
             </p>
@@ -194,9 +222,12 @@ export function UseCaseDecisions() {
 function UseCaseCard({
   useCase: uc,
   decide,
+  printHidden = false,
 }: {
   useCase: UseCase;
   decide: (d: Record<string, "approved" | "rejected">) => Promise<void>;
+  /** Not part of the exported artifact — the case wasn't approved (exportView.ts). */
+  printHidden?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -212,7 +243,8 @@ function UseCaseCard({
   return (
     <article
       className={[
-        "rounded-xl border bg-white p-4 transition",
+        "rounded-xl border bg-white p-4 break-inside-avoid transition",
+        printHidden ? "print:hidden" : "",
         uc.status === "approved"
           ? "border-emerald-300 bg-emerald-50/40"
           : uc.status === "rejected"
@@ -231,7 +263,7 @@ function UseCaseCard({
       <p className="mt-2 text-sm leading-relaxed text-slate-600">{uc.description}</p>
       <p className="mt-2 text-sm font-medium text-slate-900">{uc.businessValue}</p>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2 print:hidden">
         <button
           type="button"
           disabled={busy}
