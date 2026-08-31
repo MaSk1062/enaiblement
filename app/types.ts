@@ -156,8 +156,13 @@ export interface KnowledgeDocument {
   };
 }
 
-/** Every /api/chat turn returns this; the client replaces its AgentState wholesale. */
+/**
+ * Every /api/chat turn returns this; the client replaces its AgentState wholesale.
+ *
+ * `replies` is plural because a post-completion follow-up can rerun several stages, and each
+ * specialist that re-engages gets its own message.
+ */
 export interface ChatTurnResponse {
-  reply: ChatMessage;
+  replies: ChatMessage[];
   state: AgentState;
 }

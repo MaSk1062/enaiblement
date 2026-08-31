@@ -56,7 +56,7 @@ export const startSession = (profile: SessionUserProfile) =>
   });
 
 export const sendMessage = (sessionId: string, message: string) =>
-  call<{ reply: ChatMessage; state: AgentState }>("/api/chat", {
+  call<{ replies: ChatMessage[]; state: AgentState }>("/api/chat", {
     method: "POST",
     body: JSON.stringify({ sessionId, message }),
   });

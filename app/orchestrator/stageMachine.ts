@@ -16,6 +16,7 @@ import type * as architect from "../agents/architect.ts";
 import type * as changeCoach from "../agents/changeCoach.ts";
 import type * as discovery from "../agents/discovery.ts";
 import type * as projectManager from "../agents/projectManager.ts";
+import type * as reviser from "../agents/reviser.ts";
 import type { retrieve } from "../services/rag.ts";
 import { AGENT_NAMES } from "../agents/names.ts";
 import { event } from "../services/telemetry.ts";
@@ -27,6 +28,7 @@ export interface StageDeps {
   architect: typeof architect.run;
   projectManager: typeof projectManager.run;
   changeCoach: typeof changeCoach.run;
+  reviser: typeof reviser.run;
   retrieve: typeof retrieve;
 }
 
@@ -37,11 +39,17 @@ export const defaultDeps: StageDeps = {
   architect: (i) => import("../agents/architect").then((m) => m.run(i)),
   projectManager: (i) => import("../agents/projectManager").then((m) => m.run(i)),
   changeCoach: (i) => import("../agents/changeCoach").then((m) => m.run(i)),
+  reviser: (i) => import("../agents/reviser").then((m) => m.run(i)),
   retrieve: (...args) => import("../services/rag").then((m) => m.retrieve(...args)),
 };
 
 export interface TurnResult {
-  reply: ChatMessage;
+  /**
+   * Usually one. A follow-up that reruns stages produces one per specialist that re-engages,
+   * and collapsing those into a single message would throw away the handoff badges at the
+   * exact moment the product is showing off.
+   */
+  replies: ChatMessage[];
   state: AgentState;
 }
 
@@ -55,11 +63,12 @@ function agentMessage(agentName: AgentName, text: string): ChatMessage {
   };
 }
 
-export async function runTurn(
+/** One stage, one agent, one reply. The `complete` stage is handled by followUp() instead. */
+async function runStage(
   session: SessionDocument,
   userMessage: string,
-  deps: StageDeps = defaultDeps,
-): Promise<TurnResult> {
+  deps: StageDeps,
+): Promise<{ reply: ChatMessage; state: AgentState }> {
   const { state, userProfile } = session;
 
   try {
@@ -184,13 +193,13 @@ export async function runTurn(
         };
       }
 
-      // ----------------------------------------------------------------- complete
+      // `complete` never reaches here — runTurn routes it to followUp(). This is the guard for
+      // a session that somehow holds a stage this machine does not know.
       default:
         return {
           reply: agentMessage(
             AGENT_NAMES.changeCoach,
-            "Your strategy is complete. Export it from the dashboard, or ask me anything " +
-              "about the implementation details.",
+            "Your strategy is complete. Ask me anything about it, or tell me what to change.",
           ),
           state,
         };
@@ -208,6 +217,160 @@ export async function runTurn(
         agentForStage(state.currentStage),
         "That step did not complete — please send that again.",
       ),
+      state,
+    };
+  }
+}
+
+/**
+ * One turn. Every stage but the last runs a single agent; `complete` is a conversation about
+ * the finished strategy, and may rebuild parts of it.
+ */
+export async function runTurn(
+  session: SessionDocument,
+  userMessage: string,
+  deps: StageDeps = defaultDeps,
+): Promise<TurnResult> {
+  if (session.state.currentStage === "complete") return followUp(session, userMessage, deps);
+
+  const step = await runStage(session, userMessage, deps);
+  return { replies: [step.reply], state: step.state };
+}
+
+const ORDER: Stage[] = ["discovery", "research", "architecture", "roadmap", "training", "complete"];
+
+/**
+ * Rewinding to a stage clears everything produced at or after it.
+ *
+ * This is what makes an inconsistent strategy impossible rather than something to remember: a
+ * roadmap built on a stack that no longer exists cannot survive, because rewinding past the
+ * stack deletes the roadmap too. Written out rather than derived from a table — four lines that
+ * are obviously right beat a generic mechanism that needs checking.
+ */
+export function rewind(state: AgentState, from: Stage): AgentState {
+  const clears = (stage: Stage) => ORDER.indexOf(stage) >= ORDER.indexOf(from);
+  const next: AgentState = { ...state, currentStage: from };
+
+  if (clears("research")) {
+    next.useCases = [];
+    delete next.sources;
+    delete next.ungrounded;
+  }
+  if (clears("architecture")) delete next.architectureStack;
+  if (clears("roadmap")) delete next.roadmapPhases;
+  if (clears("training")) delete next.changeManagementPlan;
+
+  return next;
+}
+
+const MAX_REPLAY_STAGES = 5;
+
+/**
+ * Runs stages forward from a rewound state until the strategy is whole again.
+ *
+ * It stops when nothing advanced, which is the approval gate doing its job: regenerated use
+ * cases arrive as `suggested`, so `architecture` blocks and the decision goes back to the user
+ * rather than the loop guessing on their behalf. A failed agent stops it the same way.
+ */
+async function replay(
+  session: SessionDocument,
+  start: AgentState,
+  userMessage: string,
+  deps: StageDeps,
+  first: ChatMessage,
+): Promise<TurnResult> {
+  const replies = [first];
+  let state = start;
+
+  for (let i = 0; i < MAX_REPLAY_STAGES && state.currentStage !== "complete"; i++) {
+    const before = state.currentStage;
+    const step = await runStage({ ...session, state }, userMessage, deps);
+    replies.push(step.reply);
+    state = step.state;
+    if (state.currentStage === before) break;
+  }
+
+  return { replies, state };
+}
+
+/** Which specialist owns the section a revision touched. */
+function agentForPatch(patch: Partial<AgentState>): AgentName {
+  if (patch.architectureStack) return AGENT_NAMES.architect;
+  if (patch.roadmapPhases) return AGENT_NAMES.projectManager;
+  if (patch.changeManagementPlan) return AGENT_NAMES.changeCoach;
+  return AGENT_NAMES.analyst;
+}
+
+/** Keeps the client's approvals across a use-case revision, matched by id. */
+function carryStatus(previous: AgentState["useCases"], revised: AgentState["useCases"]) {
+  const was = new Map(previous.map((uc) => [uc.id, uc.status]));
+  return revised.map((uc) => ({ ...uc, status: was.get(uc.id) ?? uc.status }));
+}
+
+/** The `complete` stage: a question, an edit, or a rebuild. */
+async function followUp(
+  session: SessionDocument,
+  question: string,
+  deps: StageDeps,
+): Promise<TurnResult> {
+  const { state, userProfile } = session;
+
+  try {
+    const decision = await deps.reviser({
+      profile: userProfile,
+      state,
+      messages: session.messages,
+      question,
+    });
+
+    if (decision.action === "answer") {
+      return { replies: [agentMessage(AGENT_NAMES.changeCoach, decision.reply)], state };
+    }
+
+    if (decision.action === "revise") {
+      const revised: AgentState = { ...state, ...decision.patch };
+
+      // Changing the use cases invalidates the stack, the roadmap and the people plan, all of
+      // which were built around the old set — so this edit is applied and then replayed, never
+      // left to sit next to work that assumed something else.
+      if (decision.patch.useCases) {
+        revised.useCases = carryStatus(state.useCases, decision.patch.useCases);
+        event("stage.rewind", { from: "complete", to: "architecture", reason: "use cases revised" });
+        return replay(
+          session,
+          rewind(revised, "architecture"),
+          question,
+          deps,
+          agentMessage(AGENT_NAMES.analyst, decision.reply),
+        );
+      }
+
+      // Attributed to whoever owns that section, not to whoever happened to take the message —
+      // the named specialist is the product, and a roadmap edit signed by the Change Coach is a
+      // small lie the demo does not need.
+      return { replies: [agentMessage(agentForPatch(decision.patch), decision.reply)], state: revised };
+    }
+
+    event("stage.rewind", { from: "complete", to: decision.from, reason: "follow-up" });
+    return replay(
+      session,
+      rewind(state, decision.from),
+      question,
+      deps,
+      agentMessage(agentForStage(decision.from), decision.reply),
+    );
+  } catch (err) {
+    // Same rule as a stage: a failed turn changes nothing and stays replayable.
+    event("agent.failed", {
+      severity: "ERROR",
+      stage: "complete",
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    });
+    return {
+      replies: [
+        agentMessage(AGENT_NAMES.changeCoach, "That did not complete — please send that again."),
+      ],
       state,
     };
   }

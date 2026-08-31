@@ -54,9 +54,10 @@ export async function action({ request }: { request: Request }) {
 
       try {
         const userMessage = message({ sender: "user", text: parsed.data.message });
-        const { reply, state } = await runTurn(session, parsed.data.message);
+        const { replies, state } = await runTurn(session, parsed.data.message);
 
-        await saveTurn(session.sessionId, [...session.messages, userMessage, reply], state);
+        // Still ONE write, however many replies the turn produced.
+        await saveTurn(session.sessionId, [...session.messages, userMessage, ...replies], state);
 
         // Derived here rather than at four return sites inside the stage machine — the machine
         // is pure and the before/after comparison is exact.
@@ -79,7 +80,7 @@ export async function action({ request }: { request: Request }) {
           ok: true,
         });
 
-        return json({ reply, state } satisfies ChatTurnResponse);
+        return json({ replies, state } satisfies ChatTurnResponse);
       } catch (err) {
         event("turn.end", {
           severity: "ERROR",

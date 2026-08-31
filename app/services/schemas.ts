@@ -11,6 +11,7 @@
 
 import { z } from "zod";
 import type {
+  AgentState,
   ArchitectureStack,
   ChangeManagementPlan,
   NeedsAssessment,
@@ -187,3 +188,46 @@ export const ChangePlanOutput = z
     },
     adoptionKpis: p.adoption_kpis,
   }));
+
+// --- post-completion follow-ups -----------------------------------------------
+// The `complete` stage used to be a dead end. The Reviser decides what a follow-up actually
+// is: a question, an edit to one section, or a request that invalidates work upstream. Each
+// patch reuses the schema its original agent emits, so a revised section crosses exactly the
+// same translation boundary as a generated one.
+
+const REWIND_STAGES = ["research", "architecture", "roadmap", "training"] as const;
+
+const Patch = z.discriminatedUnion("target", [
+  z.object({ target: z.literal("use_cases"), patch: UseCasesOutput }),
+  z.object({ target: z.literal("architecture"), patch: ArchitectureOutput }),
+  z.object({ target: z.literal("roadmap"), patch: RoadmapOutput }),
+  z.object({ target: z.literal("training"), patch: ChangePlanOutput }),
+]);
+
+const ReviseRaw = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("answer"), reply: z.string().min(1) }),
+  z.object({ action: z.literal("revise"), reply: z.string().min(1), revision: Patch }),
+  z.object({ action: z.literal("rerun"), reply: z.string().min(1), from: z.enum(REWIND_STAGES) }),
+]);
+
+export type ReviseResult =
+  | { action: "answer"; reply: string }
+  /** A partial state, so the caller applies it by spreading — no field names to keep in step. */
+  | { action: "revise"; reply: string; patch: Partial<AgentState> }
+  | { action: "rerun"; reply: string; from: (typeof REWIND_STAGES)[number] };
+
+export const ReviseOutput = ReviseRaw.transform((r): ReviseResult => {
+  if (r.action !== "revise") return r;
+
+  const { revision } = r;
+  const patch: Partial<AgentState> =
+    revision.target === "use_cases"
+      ? { useCases: revision.patch }
+      : revision.target === "architecture"
+        ? { architectureStack: revision.patch }
+        : revision.target === "roadmap"
+          ? { roadmapPhases: revision.patch }
+          : { changeManagementPlan: revision.patch };
+
+  return { action: "revise", reply: r.reply, patch };
+});

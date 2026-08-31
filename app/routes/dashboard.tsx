@@ -70,8 +70,8 @@ export default function Dashboard() {
       setError(null);
 
       try {
-        const { reply, state: next } = await api.sendMessage(sessionId, text);
-        setMessages((m) => [...m, reply]);
+        const { replies, state: next } = await api.sendMessage(sessionId, text);
+        setMessages((m) => [...m, ...replies]);
         setState(next); // replaced wholesale — §8.1
       } catch (err) {
         setError((err as Error).message);
@@ -121,9 +121,9 @@ export default function Dashboard() {
 
   return (
     <ConsultationContext.Provider value={consultation}>
-      <div className="flex min-h-dvh flex-col bg-slate-50">
+      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50">
         <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-3.5">
+          <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
               <span className="text-sm font-semibold tracking-tight text-slate-900">enaible</span>
               <span className="text-xs text-slate-400">
@@ -138,7 +138,9 @@ export default function Dashboard() {
           <ProgressRail current={state.currentStage} />
         </header>
 
-        <Outlet />
+        <div className="flex flex-1 overflow-hidden">
+          <Outlet />
+        </div>
       </div>
     </ConsultationContext.Provider>
   );
@@ -180,7 +182,7 @@ function ProgressRail({ current }: { current: Stage }) {
   const currentIndex = STAGES.indexOf(current);
 
   return (
-    <div className="mx-auto max-w-4xl overflow-x-auto px-6 pb-3">
+    <div className="overflow-x-auto px-6 pb-3">
       <ol className="flex min-w-max items-center gap-2">
         {STAGES.slice(0, 5).map((stage, i) => {
           const done = i < currentIndex;
