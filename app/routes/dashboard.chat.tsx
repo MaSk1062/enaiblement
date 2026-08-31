@@ -14,7 +14,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CAPABILITIES, capability, planDeepDive } from "../capabilities.ts";
 import { Link } from "react-router";
-import { agentStatus } from "../lib/agentStatus.ts";
+import { agentPersona, agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
 import { formatElapsed } from "../lib/pipelineView.ts";
@@ -31,7 +31,7 @@ const AGENT_SECTION: Partial<Record<AgentName, string>> = {
 };
 
 export function meta() {
-  return [{ title: "Consultation · enaible" }];
+  return [{ title: "Consultation · Enaible" }];
 }
 
 export default function Chat() {
@@ -67,7 +67,7 @@ export default function Chat() {
           </h1>
           {done && (
             <div className="mb-6 flex items-center justify-between print:hidden">
-              <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
+              <p className="text-lg font-medium text-slate-900">Your finished AI enablement strategy</p>
               {/* The one download button lives on /dashboard/canvas (UI-4) — this page is for
                   reading and revising it, not a second place the export action can drift from. */}
               <Link
@@ -78,7 +78,17 @@ export default function Chat() {
               </Link>
             </div>
           )}
-          <CanvasPanel />
+          {/* Finished, it's the artifact, not a form — a document deserves to look lifted off
+              the page (UI-12). Mid-build-out it's still in progress, so it stays flat. */}
+          <div
+            className={
+              done
+                ? "rounded-xl bg-white p-8 shadow-sm print:rounded-none print:bg-transparent print:p-0 print:shadow-none"
+                : ""
+            }
+          >
+            <CanvasPanel />
+          </div>
         </div>
       </div>
 
@@ -137,7 +147,7 @@ function StageContinue() {
         type="button"
         disabled={sending}
         onClick={() => send(cta.message)}
-        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+        className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
       >
         {cta.label}
       </button>
@@ -254,7 +264,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
           <button
             type="submit"
             disabled={busy || !draft.trim()}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-30"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-30"
           >
             Send
           </button>
@@ -349,7 +359,7 @@ function Bubble({ message, compact }: { message: ChatMessage; compact?: boolean 
   if (message.sender === "user") {
     return (
       <div className="flex justify-end">
-        <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-slate-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-white">
+        <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-white">
           {message.text}
         </p>
       </div>
@@ -359,25 +369,28 @@ function Bubble({ message, compact }: { message: ChatMessage; compact?: boolean 
   // Only the rail sits next to a visible Canvas — the single-pane, pre-gate conversation has
   // nothing on the page yet for the name to point at.
   const sectionId = compact && message.agentName ? AGENT_SECTION[message.agentName] : undefined;
+  const persona = message.agentName ? agentPersona(message.agentName) : null;
 
   return (
     <div className={compact ? "" : "max-w-[85%]"}>
-      {message.agentName &&
-        (sectionId ? (
-          <button
-            type="button"
-            onClick={() =>
-              document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-            className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
-          >
-            {message.agentName}
-          </button>
-        ) : (
-          <p className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
-            {message.agentName}
-          </p>
-        ))}
+      {message.agentName && persona && (
+        <div className={`mb-1.5 flex items-center gap-1.5 ${persona.accent.text}`}>
+          <persona.Icon className="h-3.5 w-3.5" />
+          {sectionId ? (
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className="text-xs font-medium tracking-wide uppercase underline decoration-current/30 underline-offset-2 transition hover:opacity-75"
+            >
+              {message.agentName}
+            </button>
+          ) : (
+            <p className="text-xs font-medium tracking-wide uppercase">{message.agentName}</p>
+          )}
+        </div>
+      )}
       <p className="rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-800">
         {message.text}
       </p>

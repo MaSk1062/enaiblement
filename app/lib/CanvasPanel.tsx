@@ -11,13 +11,16 @@
  */
 
 import { useState } from "react";
+import { AGENT_NAMES } from "../agents/names.ts";
 import { planDeepDive } from "../capabilities.ts";
+import { agentPersona } from "./agentStatus.ts";
 import { Artifacts } from "./Artifacts.tsx";
+import type { Decision } from "./api.ts";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
 import { buildTimeline } from "./timeline.ts";
-import type { Estimate, Level, Reliability, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
+import type { AgentName, Estimate, Level, Reliability, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
   const { state, profile, artifacts, decide, error } = useConsultation();
@@ -64,7 +67,7 @@ export function CanvasPanel() {
       <DeepDiveCallToAction />
 
       {needs.identifiedBottleneck && (
-        <Section id="section-bottleneck" title="The bottleneck">
+        <Section id="section-bottleneck" title="The bottleneck" agent={AGENT_NAMES.discovery}>
           <p className="text-sm leading-relaxed text-slate-700">{needs.summary}</p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-3">
             <Fact label="Bottleneck" value={needs.identifiedBottleneck} />
@@ -77,6 +80,7 @@ export function CanvasPanel() {
       <Section
         id="section-use-cases"
         title="Use cases"
+        agent={AGENT_NAMES.analyst}
         aside={
           pending > 0 ? (
             <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
@@ -114,7 +118,7 @@ export function CanvasPanel() {
 
       {architectureStack && (
         <div className="animate-section-enter">
-          <Section id="section-stack" title="Recommended stack">
+          <Section id="section-stack" title="Recommended stack" agent={AGENT_NAMES.architect}>
             <dl className="grid gap-4 sm:grid-cols-3">
               <Fact label="Models" value={architectureStack.models.join(", ")} />
               <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
@@ -130,7 +134,7 @@ export function CanvasPanel() {
 
       {roadmapPhases && roadmapPhases.length > 0 && (
         <div className="animate-section-enter">
-          <Section id="section-roadmap" title="Roadmap">
+          <Section id="section-roadmap" title="Roadmap" agent={AGENT_NAMES.projectManager}>
             <RoadmapTimeline phases={roadmapPhases} />
 
             {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
@@ -161,7 +165,7 @@ export function CanvasPanel() {
 
       {plan && (
         <div className="animate-section-enter">
-          <Section id="section-people" title="People and change">
+          <Section id="section-people" title="People and change" agent={AGENT_NAMES.changeCoach}>
             <div className="space-y-3">
               {plan.upskillingPaths.map((path) => (
                 <div
@@ -499,7 +503,7 @@ export function UseCaseDecisions() {
           type="button"
           disabled={approved === 0 || sending}
           onClick={() => send("Design my stack around the use cases I approved.")}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
         >
           Design my stack →
         </button>
@@ -519,19 +523,35 @@ function UseCaseCard({
   printHidden = false,
 }: {
   useCase: UseCase;
-  decide: (d: Record<string, "approved" | "rejected">) => Promise<void>;
+  decide: (d: Record<string, Decision>) => Promise<void>;
   /** Not part of the exported artifact — the case wasn't approved (exportView.ts). */
   printHidden?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [reason, setReason] = useState("");
 
-  async function set(status: "approved" | "rejected") {
+  async function set(status: "approved" | "rejected", why?: string) {
     setBusy(true);
     try {
-      await decide({ [uc.id]: status });
+      await decide({ [uc.id]: { status, ...(why ? { reason: why } : {}) } });
     } finally {
       setBusy(false);
     }
+  }
+
+  // The rejection lands on the first click; the reason is asked for afterwards and is always
+  // skippable. Gating a rejection behind typing would make the fast path slower for everyone
+  // to collect a field most people will leave empty.
+  async function reject() {
+    await set("rejected");
+    setAsking(true);
+  }
+
+  async function submitReason() {
+    const why = reason.trim();
+    setAsking(false);
+    if (why) await set("rejected", why);
   }
 
   return (
@@ -581,7 +601,7 @@ function UseCaseCard({
         <button
           type="button"
           disabled={busy}
-          onClick={() => set("rejected")}
+          onClick={reject}
           className={[
             "rounded-lg px-3 py-1.5 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40",
             uc.status === "rejected"
@@ -592,6 +612,38 @@ function UseCaseCard({
           {uc.status === "rejected" ? "Rejected" : "Reject"}
         </button>
       </div>
+
+      {/* The only feedback in the product that says more than yes or no. It reaches the
+          Architect, and it survives a rebuild — so the same idea does not come back. */}
+      {asking && (
+        <form
+          className="mt-2 flex items-center gap-2 print:hidden"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submitReason();
+          }}
+        >
+          <input
+            autoFocus
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={300}
+            placeholder="Why not? Optional — it stops this coming back."
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          />
+          <button
+            type="submit"
+            disabled={busy}
+            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-600 transition hover:border-slate-500 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          >
+            {reason.trim() ? "Save" : "Skip"}
+          </button>
+        </form>
+      )}
+
+      {!asking && uc.feedback && (
+        <p className="mt-2 text-xs text-slate-500 italic">Your note: {uc.feedback}</p>
+      )}
     </article>
   );
 }
@@ -631,9 +683,9 @@ function RoadmapTimeline({ phases }: { phases: RoadmapPhase[] }) {
                     style={{ gridColumn: `${lane.startWeek} / ${lane.endWeek + 1}` }}
                     aria-expanded={expanded}
                     className={[
-                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900",
-                      expanded ? "bg-slate-700" : "bg-slate-900 hover:bg-slate-800",
-                      lane.open ? "bg-linear-to-r from-slate-900 to-slate-900/50" : "",
+                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+                      expanded ? "bg-indigo-800" : "bg-indigo-600 hover:bg-indigo-700",
+                      lane.open ? "bg-linear-to-r from-indigo-600 to-indigo-600/50" : "",
                     ].join(" ")}
                   >
                     <span className="truncate">{phase.phaseName}</span>
@@ -704,19 +756,26 @@ function Provenance({
 function Section({
   id,
   title,
+  agent,
   aside,
   children,
 }: {
   /** Anchor the chat rail deep-links to when a reply is attributed to this section's agent. */
   id?: string;
   title: string;
+  /** Whose section this is (UI-10) — renders that agent's icon in their color next to the title. */
+  agent?: AgentName;
   aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const persona = agent ? agentPersona(agent) : null;
   return (
     <section id={id} className="scroll-mt-4">
       <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="text-xs font-medium tracking-wide text-slate-500 uppercase">{title}</h2>
+        <h2 className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
+          {persona && <persona.Icon className={`h-3.5 w-3.5 ${persona.accent.text}`} />}
+          {title}
+        </h2>
         {aside}
       </div>
       {children}

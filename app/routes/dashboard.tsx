@@ -4,7 +4,7 @@ import { planDeepDive } from "../capabilities.ts";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
-import { ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
+import { AlertIcon, ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [producing, setProducing] = useState<Consultation["producing"]>(null);
   const [error, setError] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
+  const [consultations, setConsultations] = useState<api.Me["consultations"]>([]);
 
   // Bootstrap: who is this, have they onboarded, is there a session to resume?
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function Dashboard() {
           navigate("/onboarding", { replace: true });
           return;
         }
+        setConsultations(me.consultations ?? []);
         const session = await api.getSession(me.activeSessionId);
         if (cancelled) return;
         setSessionId(session.sessionId);
@@ -156,7 +158,7 @@ export default function Dashboard() {
   // and comes back with several replies. `sending` drives the same typing indicator, because
   // from the user's side it is the same thing: the specialists are working.
   const decide = useCallback(
-    async (decisions: Record<string, "approved" | "rejected">) => {
+    async (decisions: Record<string, api.Decision>) => {
       if (!sessionId || sending) return;
       setSending(true);
       setError(null);
@@ -173,8 +175,49 @@ export default function Dashboard() {
     [sessionId, sending],
   );
 
+  /**
+   * A new consultation is what turns the current one into history: the server folds it into
+   * the client's memory before it moves the pointer, which is the only place memory
+   * accumulates.
+   *
+   * A full reload rather than re-deriving state by hand — every piece of local state above
+   * belongs to the session being left, and rebuilding it here would be the bootstrap effect
+   * written a second time.
+   */
+  const newConsultation = useCallback(async () => {
+    if (!profile) return;
+    // Only a FINISHED consultation becomes a reopenable memory, so leaving an unfinished one
+    // really does bury it. Say so rather than discovering it afterwards.
+    if (
+      state?.currentStage !== "complete" &&
+      !window.confirm(
+        "This consultation is not finished, so it will not appear in your history and you " +
+          "will not be able to reopen it. Start a new one anyway?",
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    try {
+      await api.startSession(profile);
+      window.location.assign("/dashboard/chat");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }, [profile, state]);
+
+  const openConsultation = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      await api.setActiveSession(id);
+      window.location.assign("/dashboard/chat");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }, []);
+
   if (authLoading || booting) {
-    return <Centered>Loading your consultation…</Centered>;
+    return <Centered tone="loading">Loading your consultation…</Centered>;
   }
   // Both of these are dead ends without a way out: no header renders here, so sign out is the
   // only route back to a working state.
@@ -182,7 +225,7 @@ export default function Dashboard() {
     return <Centered tone="error">{error}</Centered>;
   }
   if (!sessionId || !profile || !state) {
-    return <Centered>No active consultation.</Centered>;
+    return <Centered tone="empty">No active consultation.</Centered>;
   }
 
   const consultation: Consultation = {
@@ -198,6 +241,9 @@ export default function Dashboard() {
     decide,
     produce,
     deepDive,
+    consultations,
+    newConsultation,
+    openConsultation,
   };
 
   return (
@@ -208,7 +254,7 @@ export default function Dashboard() {
         <header className="border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
-              <span className="text-sm font-semibold tracking-tight text-slate-900">enaible</span>
+              <span className="text-lg font-bold tracking-tight text-indigo-600">Enaible</span>
               <span className="text-xs text-slate-500">
                 {profile.industry} · {profile.role}
               </span>
@@ -217,6 +263,11 @@ export default function Dashboard() {
               <Nav
                 pending={state.useCases.filter((uc) => uc.status === "suggested").length}
                 exportReady={state.currentStage === "complete"}
+              />
+              <Consultations
+                consultations={consultations}
+                onNew={newConsultation}
+                onOpen={openConsultation}
               />
               <SignOutButton />
             </div>
@@ -233,13 +284,79 @@ export default function Dashboard() {
 }
 
 /**
- * Chat, plus Export once there is something to export (UI-4 — one canvas, not two: the
- * strategy itself lives only in the chat route now; /dashboard/canvas is the distraction-free
- * print destination that route points at, never a second place to see the same thing).
+ * Chat, plus Export (UI-4 — one canvas, not two: the strategy itself lives only in the chat
+ * route now; /dashboard/canvas is the distraction-free print destination that route points at,
+ * never a second place to see the same thing).
  *
- * The pending-count badge sits on Chat, not Export, because Chat is where the gate that badge
+ * Export used to disappear from the nav entirely until the strategy was complete, which made a
+ * one-item "nav" pre-completion — it always showed as active, went nowhere else, and read as
+ * broken rather than as navigation. It's always present now; before it's ready it's a disabled,
+ * titled placeholder that tells you what unlocks it, the same pattern as a locked step in a
+ * wizard — present and legible, not just absent.
+ *
+ * The pending-count badge stays on Chat, not Export, because Chat is where the gate that badge
  * describes actually lives — the only signal pointing at the decision blocking the pipeline.
  */
+/**
+ * Start a new engagement, or reopen a finished one.
+ *
+ * This exists because `activeSessionId` is a single field: without a way back, beginning a
+ * second consultation would make the first one's finished strategy unreachable forever. It is
+ * navigation only. What the product *remembers* about the client — how they budget, what they
+ * refuse, what they scoped last time — is deliberately not shown here; it shows up in how the
+ * agents behave, which is the point of it.
+ *
+ * ponytail: a native <details>, so there is no open state, no click-outside listener and no
+ * menu library. Two viewport caveats that come with that: it does not close on outside click,
+ * and a long history scrolls inside its own box rather than flipping above the header.
+ */
+function Consultations({
+  consultations,
+  onNew,
+  onOpen,
+}: {
+  consultations: { sessionId: string; completedAt: string; bottleneck: string }[];
+  onNew: () => void;
+  onOpen: (sessionId: string) => void;
+}) {
+  const item =
+    "block w-full rounded px-3 py-2 text-left text-xs text-slate-600 transition hover:bg-slate-50 hover:text-slate-900";
+
+  return (
+    <details className="relative">
+      <summary className="cursor-pointer list-none text-xs text-slate-500 transition hover:text-slate-900">
+        Consultations
+      </summary>
+      <div className="absolute right-0 z-20 mt-2 max-h-80 w-72 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+        <button type="button" onClick={onNew} className={`${item} font-medium text-slate-900`}>
+          New consultation
+        </button>
+
+        {consultations.length > 0 && (
+          <>
+            <p className="px-3 pt-2 pb-1 text-[11px] tracking-wide text-slate-400 uppercase">
+              Earlier
+            </p>
+            {consultations.map((c) => (
+              <button
+                key={c.sessionId}
+                type="button"
+                onClick={() => onOpen(c.sessionId)}
+                className={item}
+              >
+                <span className="block truncate">{c.bottleneck}</span>
+                <span className="block text-[11px] text-slate-400">
+                  {c.completedAt.slice(0, 10)}
+                </span>
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+    </details>
+  );
+}
+
 function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }) {
   const style = ({ isActive }: { isActive: boolean }) =>
     [
@@ -260,13 +377,21 @@ function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }
           )}
         </span>
       </NavLink>
-      {exportReady && (
+      {exportReady ? (
         <NavLink to="/dashboard/canvas" className={style}>
           <span className="flex items-center gap-1.5">
             <DownloadIcon className="h-3.5 w-3.5" />
             Export
           </span>
         </NavLink>
+      ) : (
+        <span
+          className="flex cursor-not-allowed items-center gap-1.5 text-xs text-slate-300"
+          title="Unlocks once your strategy is complete"
+        >
+          <DownloadIcon className="h-3.5 w-3.5" />
+          Export
+        </span>
       )}
     </nav>
   );
@@ -291,24 +416,34 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
           const active = i === currentIndex;
           const working = active && sending;
           const summary = done ? stageSummary(stage, state) : null;
+          const { Icon, accent } = agentStatus(stage);
           return (
             <li key={stage} className="flex items-center gap-2">
               {i > 0 && <span aria-hidden className="h-px w-5 bg-slate-200" />}
               <span
+                // Keyed on active-ness, not just the stage: when a stage first becomes active,
+                // this remounts and the handoff pulse plays. Re-renders while it stays active
+                // (sending toggling, a summary landing) keep the same key and don't retrigger it.
+                key={`${stage}-${active}`}
                 className={[
                   "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
+                  active ? "animate-handoff-pulse" : "",
                   active
-                    ? "bg-slate-900 font-medium text-white"
+                    ? `${accent.solid} font-medium text-white ${working ? "shadow-sm" : ""}`
                     : done
-                      ? "bg-slate-100 text-slate-500"
+                      ? `${accent.light} ${accent.lightText}`
                       : "text-slate-400",
                 ].join(" ")}
               >
-                {working && <SpinnerIcon className="h-3 w-3 animate-spin" />}
+                {working ? (
+                  <SpinnerIcon className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Icon className={`h-3.5 w-3.5 ${active || done ? "" : "opacity-50"}`} />
+                )}
                 {done && <span aria-hidden>✓</span>}
                 {agentStatus(stage).name}
-                {done && summary && <span className="text-slate-600">· {summary}</span>}
-                {working && <span className="text-slate-300">· {agentStatus(stage).working}</span>}
+                {done && summary && <span className="opacity-70">· {summary}</span>}
+                {working && <span className="text-white/80">· {agentStatus(stage).working}</span>}
               </span>
             </li>
           );
@@ -318,16 +453,26 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
   );
 }
 
+/**
+ * Every screen with no header — a bootstrap failure, an empty session — used to be identical
+ * gray text on an empty page, so a real error looked exactly like an ordinary loading state
+ * (UI-9). The wordmark, an icon per tone, and distinct color fix that at a glance.
+ */
 function Centered({
   children,
   tone,
 }: {
   children: React.ReactNode;
-  tone?: "error";
+  tone: "loading" | "error" | "empty";
 }) {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">
+        <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">Enaible</p>
+        {tone === "loading" && (
+          <SpinnerIcon className="mx-auto mb-3 h-5 w-5 animate-spin text-slate-400" />
+        )}
+        {tone === "error" && <AlertIcon className="mx-auto mb-3 h-5 w-5 text-red-500" />}
         <p className={tone === "error" ? "text-sm text-red-600" : "text-sm text-slate-500"}>
           {children}
         </p>

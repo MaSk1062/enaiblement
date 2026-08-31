@@ -78,7 +78,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           to="/"
           className="mt-6 inline-block text-sm text-slate-600 underline underline-offset-2 transition hover:text-slate-900"
         >
-          Back to enaible
+          Back to Enaible
         </Link>
       </div>
     </main>

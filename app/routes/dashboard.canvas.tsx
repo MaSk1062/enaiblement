@@ -14,7 +14,7 @@ import { useConsultation } from "../lib/consultation.ts";
 import { DownloadIcon } from "../lib/icons.tsx";
 
 export function meta() {
-  return [{ title: "Strategy Canvas · enaible" }];
+  return [{ title: "Strategy Canvas · Enaible" }];
 }
 
 export default function Canvas() {
@@ -25,18 +25,29 @@ export default function Canvas() {
     <main className="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-6 py-8 print:overflow-visible">
       {ready && (
         <div className="mb-6 flex items-center justify-between print:hidden">
-          <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
+          <p className="text-lg font-medium text-slate-900">Your finished AI enablement strategy</p>
           <button
             type="button"
             onClick={() => window.print()}
-            className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             <DownloadIcon className="h-4 w-4" />
             Download strategy (PDF)
           </button>
         </div>
       )}
-      <CanvasPanel />
+      {/* Nav only links here once complete, but a direct URL can still land mid-pipeline —
+          the lifted "document" treatment is for the finished artifact (UI-12), not a
+          work-in-progress view, so it's gated on `ready` the same as the button above. */}
+      <div
+        className={
+          ready
+            ? "rounded-xl bg-white p-8 shadow-sm print:rounded-none print:bg-transparent print:p-0 print:shadow-none"
+            : ""
+        }
+      >
+        <CanvasPanel />
+      </div>
     </main>
   );
 }

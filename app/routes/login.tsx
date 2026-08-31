@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import {
   authErrorMessage,
   resetPassword,
@@ -10,7 +11,7 @@ import {
 import { useAuth } from "../lib/useAuth.ts";
 
 export function meta() {
-  return [{ title: "Sign in · enaible" }];
+  return [{ title: "Sign in · Enaible" }];
 }
 
 type Mode = "signin" | "signup";
@@ -125,7 +126,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={disabled || !email || !password}
-          className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
         >
           {busy === "email"
             ? mode === "signin"
@@ -172,23 +173,54 @@ export default function Login() {
   );
 }
 
+/**
+ * The landing page — this and /onboarding are the only screens a first-time visitor (a judge,
+ * most of the time) ever sees before deciding whether the product is worth a second look. It
+ * used to be a single narrow card with one sentence of copy; this is the whole pitch, not just
+ * the login form.
+ */
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-8">
-          <p className="text-2xl font-semibold tracking-tight text-slate-900">enaible</p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+      <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div>
+          <p className="text-5xl font-bold tracking-tight text-indigo-600 sm:text-6xl">Enaible</p>
+          <p className="mt-5 text-lg leading-relaxed text-slate-800 sm:text-xl">
             A consulting team of five AI specialists that turns your bottleneck into a funded,
-            phased adoption plan.
+            phased AI adoption plan.
           </p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500">
+            Built around African compliance regimes and cost realities — not retrofitted from a
+            US or EU playbook.
+          </p>
+
+          <ul className="mt-10 space-y-4">
+            {STAGES.slice(0, 5).map((stage) => {
+              const { name, blurb, Icon, accent } = agentStatus(stage);
+              return (
+                <li key={stage} className="flex items-start gap-3">
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${accent.light}`}
+                  >
+                    <Icon className={`h-4 w-4 ${accent.text}`} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">{name}</p>
+                    <p className="text-xs text-slate-500">{blurb}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
-        {children}
+        <div className="w-full max-w-sm justify-self-center lg:justify-self-end">
+          {children}
 
-        <p className="mt-8 text-xs text-slate-500">
-          Your consultation is private to your account.
-        </p>
+          <p className="mt-8 text-xs text-slate-500">
+            Your consultation is private to your account.
+          </p>
+        </div>
       </div>
     </main>
   );

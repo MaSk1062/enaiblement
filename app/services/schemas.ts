@@ -213,17 +213,36 @@ const Patch = z.discriminatedUnion("target", [
   z.object({ target: z.literal("training"), patch: ChangePlanOutput }),
 ]);
 
+/**
+ * Durable observations about the client, carried to the NEXT consultation.
+ *
+ * On every action, because the sentence worth keeping is as likely to arrive attached to a
+ * question ("why is this in dollars? we budget in KES") as to an edit. Optional and usually
+ * absent — most follow-ups teach nothing.
+ */
+const Remember = z.array(z.string().min(1).max(200)).max(5).optional();
+
 const ReviseRaw = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("answer"), reply: z.string().min(1) }),
-  z.object({ action: z.literal("revise"), reply: z.string().min(1), revision: Patch }),
-  z.object({ action: z.literal("rerun"), reply: z.string().min(1), from: z.enum(REWIND_STAGES) }),
+  z.object({ action: z.literal("answer"), reply: z.string().min(1), remember: Remember }),
+  z.object({
+    action: z.literal("revise"),
+    reply: z.string().min(1),
+    revision: Patch,
+    remember: Remember,
+  }),
+  z.object({
+    action: z.literal("rerun"),
+    reply: z.string().min(1),
+    from: z.enum(REWIND_STAGES),
+    remember: Remember,
+  }),
 ]);
 
 export type ReviseResult =
-  | { action: "answer"; reply: string }
+  | { action: "answer"; reply: string; remember?: string[] }
   /** A partial state, so the caller applies it by spreading — no field names to keep in step. */
-  | { action: "revise"; reply: string; patch: Partial<AgentState> }
-  | { action: "rerun"; reply: string; from: (typeof REWIND_STAGES)[number] };
+  | { action: "revise"; reply: string; patch: Partial<AgentState>; remember?: string[] }
+  | { action: "rerun"; reply: string; from: (typeof REWIND_STAGES)[number]; remember?: string[] };
 
 export const ReviseOutput = ReviseRaw.transform((r): ReviseResult => {
   if (r.action !== "revise") return r;
@@ -238,7 +257,7 @@ export const ReviseOutput = ReviseRaw.transform((r): ReviseResult => {
           ? { roadmapPhases: revision.patch }
           : { changeManagementPlan: revision.patch };
 
-  return { action: "revise", reply: r.reply, patch };
+  return { action: "revise", reply: r.reply, patch, remember: r.remember };
 });
 
 // --- sourcing -----------------------------------------------------------------

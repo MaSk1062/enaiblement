@@ -54,6 +54,12 @@ export interface TurnResult {
    */
   replies: ChatMessage[];
   state: AgentState;
+  /**
+   * Durable observations about the client, for the NEXT consultation. Only the Reviser produces
+   * these, so only a post-completion turn ever carries any. The caller persists them against
+   * the user, not the session — this machine stays pure and writes nothing.
+   */
+  remember?: string[];
 }
 
 function agentMessage(agentName: AgentName, text: string): ChatMessage {
@@ -82,6 +88,7 @@ async function runStage(
           profile: userProfile,
           messages: session.messages,
           latest: userMessage,
+          memory: session.memoryBlock,
         });
 
         if (result.status === "asking") {
@@ -108,6 +115,7 @@ async function runStage(
           role: userProfile.role,
           bottleneck,
           retrieval,
+          declined: state.declined,
         });
 
         // Where the evidence came from changes what we are allowed to claim about it.
@@ -157,6 +165,8 @@ async function runStage(
           role: userProfile.role,
           approvedUseCases: approved,
           region: userProfile.region,
+          memory: session.memoryBlock,
+          declined: state.declined,
         });
         return {
           reply: agentMessage(
@@ -372,8 +382,14 @@ async function followUp(
       question,
     });
 
+    // Anything worth carrying to the NEXT consultation, attached to whichever shape this turn
+    // takes. A question teaches as often as an edit does — "why is this in dollars, we budget
+    // in KES" is a durable fact about the client and arrives as an `answer`.
+    const kept = decision.remember?.length ? { remember: decision.remember } : {};
+    if (decision.remember?.length) event("memory.note", { notes: decision.remember.length });
+
     if (decision.action === "answer") {
-      return { replies: [agentMessage(AGENT_NAMES.changeCoach, decision.reply)], state };
+      return { replies: [agentMessage(AGENT_NAMES.changeCoach, decision.reply)], state, ...kept };
     }
 
     if (decision.action === "revise") {
@@ -385,21 +401,27 @@ async function followUp(
       if (decision.patch.useCases) {
         revised.useCases = carryStatus(state.useCases, decision.patch.useCases);
         event("stage.rewind", { from: "complete", to: "architecture", reason: "use cases revised" });
-        return advance(session, rewind(revised, "architecture"), question, deps, [
+        const replayed = await advance(session, rewind(revised, "architecture"), question, deps, [
           agentMessage(AGENT_NAMES.analyst, decision.reply),
         ]);
+        return { ...replayed, ...kept };
       }
 
       // Attributed to whoever owns that section, not to whoever happened to take the message —
       // the named specialist is the product, and a roadmap edit signed by the Change Coach is a
       // small lie the demo does not need.
-      return { replies: [agentMessage(agentForPatch(decision.patch), decision.reply)], state: revised };
+      return {
+        replies: [agentMessage(agentForPatch(decision.patch), decision.reply)],
+        state: revised,
+        ...kept,
+      };
     }
 
     event("stage.rewind", { from: "complete", to: decision.from, reason: "follow-up" });
-    return advance(session, rewind(state, decision.from), question, deps, [
+    const replayed = await advance(session, rewind(state, decision.from), question, deps, [
       agentMessage(agentForStage(decision.from), decision.reply),
     ]);
+    return { ...replayed, ...kept };
   } catch (err) {
     // Same rule as a stage: a failed turn changes nothing and stays replayable.
     event("agent.failed", {

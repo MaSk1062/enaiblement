@@ -14,7 +14,7 @@ const INDUSTRIES: Industry[] = ["Healthcare", "Finance", "Manufacturing", "Retai
 const REGIONS = Object.keys(REGION_CONTEXT) as Region[];
 
 export function meta() {
-  return [{ title: "Set up · enaible" }];
+  return [{ title: "Set up · Enaible" }];
 }
 
 // ponytail: one form, not the three-step wizard in FRD §2.1. Three fields do not need three
@@ -57,7 +57,7 @@ export default function Onboarding() {
       <form onSubmit={onSubmit} className="w-full max-w-md">
         {/* Same wordmark and voice as /login — nothing here should feel like a second product. */}
         <div className="flex items-start justify-between">
-          <p className="text-2xl font-semibold tracking-tight text-slate-900">enaible</p>
+          <p className="text-3xl font-semibold tracking-tight text-indigo-600">Enaible</p>
           {/* Signed in but no profile yet — without this there is no way back to /login. */}
           <SignOutButton />
         </div>
@@ -145,7 +145,7 @@ export default function Onboarding() {
         <button
           type="submit"
           disabled={busy || !name || !role || !industry || !region}
-          className="mt-8 w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          className="mt-8 w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
         >
           {busy
             ? "Setting up your consultation…"
