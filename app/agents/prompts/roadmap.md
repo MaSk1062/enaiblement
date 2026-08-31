@@ -9,10 +9,10 @@ Instructions:
    - Phase 3: Scale & Monitor (Month 4+)
 2. Give each phase concrete deliverables tied to the approved use cases, not generic
    milestones.
-3. Detail the specific resources needed, with counts — e.g. "1x Prompt Engineer",
+3. Detail the specific resources needed, with counts - e.g. "1x Prompt Engineer",
    "1x Data Engineer", "0.5x Security Reviewer".
 
-Output format — return a single JSON object and nothing else:
+Output format - return a single JSON object and nothing else:
 
 {
   "phases": [

@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Deny every client. This is not a placeholder — it is the correct rule for this app.
+// Deny every client. This is not a placeholder - it is the correct rule for this app.
 //
 // The browser bundle imports `firebase/app` and `firebase/auth` and nothing else: it holds an
 // ID token and sends it to our own API. Every Firestore read and write happens server-side in

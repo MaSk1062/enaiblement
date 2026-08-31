@@ -1,10 +1,10 @@
 /**
- * The ambient dot-grid background (UI-15, replacing the Threads shader — same brief, different
+ * The ambient dot-grid background (UI-15, replacing the Threads shader - same brief, different
  * effect: a still grid whose dots lean away from the pointer and scatter on click, via gsap's
  * inertia physics, rather than a continuously flowing noise field.
  *
  * Canvas + gsap rather than one DOM node per dot: a screen-filling grid at a useful dot density
- * is thousands of dots, and gsap only ever tweens the few dots near the pointer or a click —
+ * is thousands of dots, and gsap only ever tweens the few dots near the pointer or a click -
  * everything else is a cheap per-frame canvas redraw, not thousands of live DOM/tween objects.
  */
 
@@ -103,7 +103,7 @@ export function DotGrid({
   const baseRgb = useMemo(() => hexToRgb(baseColor), [baseColor]);
   const activeRgb = useMemo(() => hexToRgb(activeColor), [activeColor]);
 
-  // Guarded for SSR — Path2D does not exist during the server render.
+  // Guarded for SSR - Path2D does not exist during the server render.
   const circlePath = useMemo(() => {
     if (typeof window === "undefined" || !window.Path2D) return null;
     const p = new window.Path2D();
@@ -163,7 +163,7 @@ export function DotGrid({
       if (!ctx) return;
 
       rafId = requestAnimationFrame(draw);
-      // Nothing to see on a hidden tab — skip the redraw rather than pay for it.
+      // Nothing to see on a hidden tab - skip the redraw rather than pay for it.
       if (document.hidden) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);

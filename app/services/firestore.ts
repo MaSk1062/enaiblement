@@ -1,7 +1,7 @@
 /**
  * Every Firestore read and write. No product rules live here (ARCHITECTURE.md §5.1).
  *
- * Credentials are ADC — the runtime service account on Cloud Run, `gcloud auth
+ * Credentials are ADC - the runtime service account on Cloud Run, `gcloud auth
  * application-default login` locally. There is no service-account JSON to mount.
  */
 
@@ -30,7 +30,7 @@ const databaseId = process.env.FIRESTORE_DATABASE_ID ?? "(default)";
 // there is only one.
 const authProjectId = process.env.FIREBASE_AUTH_PROJECT_ID ?? projectId;
 
-// Look apps up by name, not getApps()[0] — whichever is initialised first would otherwise be
+// Look apps up by name, not getApps()[0] - whichever is initialised first would otherwise be
 // handed to both.
 function app() {
   return getApps().find((a) => a.name === "[DEFAULT]") ?? initializeApp({ projectId });
@@ -161,7 +161,7 @@ export interface ArtifactMerge {
   artifacts: Artifact[];
   /** Only what changed, so the caller writes the minimum. */
   written: Artifact[];
-  /** Paths dropped, with why — surfaced to the user rather than silently truncated. */
+  /** Paths dropped, with why - surfaced to the user rather than silently truncated. */
   rejected: { path: string; reason: string }[];
 }
 
@@ -169,7 +169,7 @@ export interface ArtifactMerge {
  * Merges freshly generated files into what a session already holds.
  *
  * Keyed by `path`: regenerating infra/main.tf replaces it instead of leaving three versions
- * behind. Over-cap content is REJECTED rather than truncated — half a Terraform file that looks
+ * behind. Over-cap content is REJECTED rather than truncated - half a Terraform file that looks
  * complete is worse than an honest refusal.
  */
 export function applyArtifacts(existing: Artifact[], incoming: Artifact[]): ArtifactMerge {

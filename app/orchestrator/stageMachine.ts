@@ -113,7 +113,7 @@ async function runStage(
         // Where the evidence came from changes what we are allowed to claim about it.
         const caveat = {
           knowledge_base: `, grounded in ${retrieval.documents.length} ${userProfile.industry} case studies from our knowledge base`,
-          web: `, grounded in ${retrieval.sources.length} sources I found on the web — they are cited on the Canvas`,
+          web: `, grounded in ${retrieval.sources.length} sources I found on the web - they are cited on the Canvas`,
           none:
             ". Note: our knowledge base and a web search both returned no matches, so these are " +
             "reasoned from your bottleneck rather than from retrieved case studies",
@@ -149,7 +149,7 @@ async function runStage(
               "Before I recommend a stack, approve at least one use case on the Strategy " +
                 "Canvas. I will design around the ones you pick.",
             ),
-            state, // unchanged — this is the gate
+            state, // unchanged - this is the gate
           };
         }
 
@@ -222,7 +222,7 @@ async function runStage(
         };
       }
 
-      // `complete` never reaches here — runTurn routes it to followUp(). This is the guard for
+      // `complete` never reaches here - runTurn routes it to followUp(). This is the guard for
       // a session that somehow holds a stage this machine does not know.
       default:
         return {
@@ -244,7 +244,7 @@ async function runStage(
     return {
       reply: agentMessage(
         agentForStage(state.currentStage),
-        "That step did not complete — please send that again.",
+        "That step did not complete - please send that again.",
       ),
       state,
     };
@@ -256,7 +256,7 @@ async function runStage(
  *
  * The consultation used to advance exactly one stage per message, so a user who had finished
  * the interview still had to type "ok, continue" to get research, again for architecture, again
- * for the roadmap. Those messages carried no information — the agent already had everything it
+ * for the roadmap. Those messages carried no information - the agent already had everything it
  * needed and was waiting to be told to proceed.
  *
  * Now it proceeds. The loop stops where a human is genuinely required, and that stop is not a
@@ -289,7 +289,7 @@ const ORDER: Stage[] = [
  *
  * This is what makes an inconsistent strategy impossible rather than something to remember: a
  * roadmap built on a stack that no longer exists cannot survive, because rewinding past the
- * stack deletes the roadmap too. Written out rather than derived from a table — four lines that
+ * stack deletes the roadmap too. Written out rather than derived from a table - four lines that
  * are obviously right beat a generic mechanism that needs checking.
  */
 export function rewind(state: AgentState, from: Stage): AgentState {
@@ -315,7 +315,7 @@ const MAX_REPLAY_STAGES = 5;
  * Runs stages forward until the consultation needs a human again.
  *
  * One loop, two callers: the forward path after a user message, and `followUp()` replaying
- * after a rewind. It stops when nothing advanced — which is the approval gate doing its job,
+ * after a rewind. It stops when nothing advanced - which is the approval gate doing its job,
  * because a blocked stage returns its state unchanged and a failed agent does the same. So the
  * gate needs no special handling here and neither does failure.
  *
@@ -380,7 +380,7 @@ async function followUp(
       const revised: AgentState = { ...state, ...decision.patch };
 
       // Changing the use cases invalidates the stack, the roadmap and the people plan, all of
-      // which were built around the old set — so this edit is applied and then replayed, never
+      // which were built around the old set - so this edit is applied and then replayed, never
       // left to sit next to work that assumed something else.
       if (decision.patch.useCases) {
         revised.useCases = carryStatus(state.useCases, decision.patch.useCases);
@@ -390,7 +390,7 @@ async function followUp(
         ]);
       }
 
-      // Attributed to whoever owns that section, not to whoever happened to take the message —
+      // Attributed to whoever owns that section, not to whoever happened to take the message -
       // the named specialist is the product, and a roadmap edit signed by the Change Coach is a
       // small lie the demo does not need.
       return { replies: [agentMessage(agentForPatch(decision.patch), decision.reply)], state: revised };
@@ -410,7 +410,7 @@ async function followUp(
     });
     return {
       replies: [
-        agentMessage(AGENT_NAMES.changeCoach, "That did not complete — please send that again."),
+        agentMessage(AGENT_NAMES.changeCoach, "That did not complete - please send that again."),
       ],
       state,
     };

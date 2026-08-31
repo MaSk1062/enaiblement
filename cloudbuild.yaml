@@ -4,7 +4,7 @@
 # --build-arg, and the VITE_* values must reach `npm run build` or the client bundle ships
 # with no Firebase config.
 #
-# Driven by scripts/deploy.sh — you should not need to run it by hand.
+# Driven by scripts/deploy.sh - you should not need to run it by hand.
 
 substitutions:
   _IMAGE: ""

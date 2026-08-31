@@ -1,5 +1,5 @@
 /**
- * POST /api/chat — one turn through the stage machine. The hot path.
+ * POST /api/chat - one turn through the stage machine. The hot path.
  *
  * Three hops: one Firestore read, one or two Gemini calls, one Firestore write. The write
  * carries the user message, the agent reply, and the new state together, so a turn is
@@ -46,7 +46,7 @@ export async function action({ request }: { request: Request }) {
       tokens: { total: 0 },
     };
 
-    // One scope per turn. Everything below — agents, the model seam, retrieval — logs with the
+    // One scope per turn. Everything below - agents, the model seam, retrieval - logs with the
     // session, stage and agent already attached, without any of them taking a context argument.
     return withTurn(ctx, async () => {
       const started = Date.now();
@@ -59,12 +59,12 @@ export async function action({ request }: { request: Request }) {
         // Still ONE write, however many replies the turn produced.
         await saveTurn(session.sessionId, [...session.messages, userMessage, ...replies], state);
 
-        // Derived here rather than at four return sites inside the stage machine — the machine
+        // Derived here rather than at four return sites inside the stage machine - the machine
         // is pure and the before/after comparison is exact.
         if (state.currentStage !== stage) {
           event("stage.advance", { from: stage, to: state.currentStage });
 
-          // The Architect's model menu is a live search — measured at 12-22s on a cold process,
+          // The Architect's model menu is a live search - measured at 12-22s on a cold process,
           // and it would land on the user's next message. Warm it now instead, while they are
           // reading the Analyst's reply and approving use cases on the Canvas. Fire and forget:
           // modelMenu() already falls back to a constant, so there is nothing to fail.

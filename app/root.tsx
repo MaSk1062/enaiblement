@@ -73,7 +73,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             <code>{stack}</code>
           </pre>
         )}
-        {/* Every dead end needs a way out (UI-6) — this one had none: a thrown route error
+        {/* Every dead end needs a way out (UI-6) - this one had none: a thrown route error
             left the user on a page with nothing to click. */}
         <Link
           to="/"

@@ -1,5 +1,5 @@
 /**
- * Seeds `knowledge_base` — the curated corpus the Analyst retrieves from.
+ * Seeds `knowledge_base` - the curated corpus the Analyst retrieves from.
  *
  *   node --env-file=.env scripts/seed.ts             # research what is missing, then write
  *   node --env-file=.env scripts/seed.ts --refresh   # re-research everything, overwrite
@@ -9,7 +9,7 @@
  * hole that exists only to be secured. The Admin SDK needs no auth, no admin claim, no route.
  *
  * WHY THIS SCRIPT SEARCHES INSTEAD OF WRITING FROM MEMORY. The plan allotted three hours to
- * "author 20-30 seed documents", which at that rate means generating them — and generated case
+ * "author 20-30 seed documents", which at that rate means generating them - and generated case
  * studies with invented companies and invented metrics are worse than no corpus at all, because
  * RAG then presents the invention as a researched finding. So every document here is written
  * from a live Google Search through Gemini's grounding tool, and a document that comes back
@@ -32,7 +32,7 @@ const KNOWLEDGE_DIR = join(ROOT, "knowledge");
 const REFRESH = process.argv.includes("--refresh");
 
 /**
- * Five bottlenecks per industry — the ones a real user actually arrives with. The Analyst
+ * Five bottlenecks per industry - the ones a real user actually arrives with. The Analyst
  * retrieves with an industry equality filter, so coverage matters per industry, not overall.
  */
 const THEMES: Record<Industry, string[]> = {
@@ -87,7 +87,7 @@ const RESEARCH_INSTRUCTION = [
   "search results contain no suitable example, reply with exactly: NONE",
   "",
   "When you have the results, reply in this format and nothing else:",
-  "TITLE: <organisation> — <what they deployed>, under 12 words",
+  "TITLE: <organisation> - <what they deployed>, under 12 words",
   "BODY: <150-250 words: the organisation, their problem, what they built, the technique, and",
   "the outcome they published including the published figure>",
   "No markdown, no bullets, no preamble.",
@@ -113,7 +113,7 @@ async function research(industry: Industry, theme: string): Promise<SeedDocument
   const title = text.match(/^TITLE:\s*(.+)$/m)?.[1]?.trim();
   const body = text.match(/^BODY:\s*([\s\S]+)$/m)?.[1]?.trim();
 
-  // A citation is the whole point. No citation, no document — an uncited "case study" in the
+  // A citation is the whole point. No citation, no document - an uncited "case study" in the
   // corpus is indistinguishable from a fabricated one the moment the Analyst retrieves it.
   if (!title || !body || sources.length === 0 || /^NONE$/m.test(text)) return null;
 
@@ -125,7 +125,7 @@ async function research(industry: Industry, theme: string): Promise<SeedDocument
     content: body,
     sourceUrl: sources[0].url,
     metadata: {
-      // ponytail: nothing reads these yet — retrieval filters on `industry` alone. They are
+      // ponytail: nothing reads these yet - retrieval filters on `industry` alone. They are
       // here because the schema declares them, and they are what a re-ranker would use.
       targetRoles: ["CEO/Founder", "CTO/CIO", "Department Head"],
       impactScore: 0.8,
@@ -149,7 +149,7 @@ function readCache(industry: Industry): SeedDocument[] {
  *
  * Nothing in the corpus said Africa: every seeded case study was a US health system, so the
  * Analyst could only ever ground a Lagos client in Alabama. These run through `research()` like
- * every other document, which means they are dropped if the search returns no citation — a
+ * every other document, which means they are dropped if the search returns no citation - a
  * hand-written African case study would be exactly the fabrication the drop rule exists to
  * prevent.
  */
@@ -183,7 +183,7 @@ async function collect(industry: Industry): Promise<SeedDocument[]> {
       console.log(`      + ${doc.title}`);
       console.log(`        ${doc.sourceUrl}`);
     } else {
-      console.log(`      - no citable example for "${theme}" — dropped`);
+      console.log(`      - no citable example for "${theme}" - dropped`);
     }
   }
 
@@ -213,7 +213,7 @@ async function main() {
       if (values.length !== EMBEDDING_DIMENSIONS) {
         throw new Error(
           `Embedding is ${values.length}-d but the index declares ${EMBEDDING_DIMENSIONS}. ` +
-            "Rebuild the index or set EMBEDDING_DIMENSIONS to match — do not seed either way.",
+            "Rebuild the index or set EMBEDDING_DIMENSIONS to match - do not seed either way.",
         );
       }
       console.log(`  vector length ${values.length} matches the index`);

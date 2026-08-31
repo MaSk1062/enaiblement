@@ -1,5 +1,5 @@
 /**
- * PATCH /api/session/:id/use-cases — the approval gate (ARCHITECTURE.md §6.2).
+ * PATCH /api/session/:id/use-cases - the approval gate (ARCHITECTURE.md §6.2).
  *
  * PRD Epic 2 requires it and the reference orchestrator skips it. This is the moment the
  * product stops being a chatbot and starts being a consultation: the Architect only ever sees

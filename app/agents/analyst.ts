@@ -1,5 +1,5 @@
 /**
- * FR-A2 — the Industry Analyst. Owns the `research` stage, writes `useCases[]`.
+ * FR-A2 - the Industry Analyst. Owns the `research` stage, writes `useCases[]`.
  * The only agent that retrieves.
  */
 

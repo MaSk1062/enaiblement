@@ -39,7 +39,7 @@ export function CanvasPanel() {
 
   return (
     <div className="space-y-10">
-      {/* A failed decide() sets this same error the chat's banner reads — but /dashboard/canvas
+      {/* A failed decide() sets this same error the chat's banner reads - but /dashboard/canvas
           has no chat next to it, so without this an approve/reject click that failed here
           would fail silently (UI-6). */}
       {error && (
@@ -48,7 +48,7 @@ export function CanvasPanel() {
         </p>
       )}
 
-      {/* Screen never needs to know who is looking — the export does, since it leaves the
+      {/* Screen never needs to know who is looking - the export does, since it leaves the
           product. Invisible until @media print picks it up. */}
       <header className="hidden border-b border-slate-300 pb-4 print:block">
         <p className="text-lg font-semibold text-slate-900">AI Enablement Strategy</p>
@@ -109,7 +109,7 @@ export function CanvasPanel() {
 
         {pending === 0 && !architectureStack && (
           <p className="mt-4 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
-            Reviewed — send a message and your Technical Architect will design around the ones
+            Reviewed - send a message and your Technical Architect will design around the ones
             you approved.
           </p>
         )}
@@ -121,7 +121,7 @@ export function CanvasPanel() {
             <dl className="grid gap-4 sm:grid-cols-3">
               <Fact label="Models" value={architectureStack.models.join(", ")} />
               <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
-              <Fact label="Frameworks" value={architectureStack.frameworks.join(", ") || "—"} />
+              <Fact label="Frameworks" value={architectureStack.frameworks.join(", ") || "-"} />
             </dl>
             <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900">
               <span className="font-medium">Compliance risk · </span>
@@ -222,7 +222,7 @@ export function CanvasPanel() {
  *
  * Every firm carries a clickable citation, for the same reason the use cases do: this is the
  * one section naming real organisations, and a name without a source is indistinguishable from
- * an invented one. When the search found nothing the list is empty and says so — the proposal
+ * an invented one. When the search found nothing the list is empty and says so - the proposal
  * still stands, because it derives from the approved roadmap rather than from any partner.
  */
 function PartnersAndProposal({ sourcing }: { sourcing: Sourcing }) {
@@ -242,7 +242,7 @@ function PartnersAndProposal({ sourcing }: { sourcing: Sourcing }) {
       {partners.length === 0 ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
           The search returned no implementation partners we could verify, so none are listed. An
-          unverified shortlist would be worse than an empty one — the proposal below is derived
+          unverified shortlist would be worse than an empty one - the proposal below is derived
           from your approved roadmap and does not depend on a partner being named.
         </p>
       ) : (
@@ -314,7 +314,7 @@ function DeepDiveCallToAction() {
       <div>
         <p className="text-sm font-medium text-white">Your strategy is ready.</p>
         <p className="mt-0.5 text-xs text-indigo-100">
-          A deep dive brings in {plan.run.length} more specialists — diagrams, cost and effort,
+          A deep dive brings in {plan.run.length} more specialists - diagrams, cost and effort,
           containers and infrastructure, reliability, and code. About three minutes.
         </p>
       </div>
@@ -524,7 +524,7 @@ function UseCaseCard({
 }: {
   useCase: UseCase;
   decide: (d: Record<string, "approved" | "rejected">) => Promise<void>;
-  /** Not part of the exported artifact — the case wasn't approved (exportView.ts). */
+  /** Not part of the exported artifact - the case wasn't approved (exportView.ts). */
   printHidden?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
@@ -601,7 +601,7 @@ function UseCaseCard({
 }
 
 /**
- * The roadmap as a week-ruled CSS grid — the "Gantt" the pitch promised, downgraded on
+ * The roadmap as a week-ruled CSS grid - the "Gantt" the pitch promised, downgraded on
  * purpose to a grid (IMPLEMENTATION_PLAN.md §7): one bar per phase, positioned by
  * `timeline.ts`, expandable to the same detail the list shows. sm and up only; below that
  * and for print, `CanvasPanel` falls back to the plain list right below this component.
@@ -677,7 +677,7 @@ function Provenance({
   if (ungrounded) {
     return (
       <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-        Reasoned from your stated bottleneck — no case studies were retrieved, so treat the
+        Reasoned from your stated bottleneck - no case studies were retrieved, so treat the
         figures below as estimates rather than researched findings.
       </p>
     );
@@ -715,7 +715,7 @@ function Section({
   /** Anchor the chat rail deep-links to when a reply is attributed to this section's agent. */
   id?: string;
   title: string;
-  /** Whose section this is (UI-10) — renders that agent's icon in their color next to the title. */
+  /** Whose section this is (UI-10) - renders that agent's icon in their color next to the title. */
   agent?: AgentName;
   aside?: React.ReactNode;
   children: React.ReactNode;
@@ -739,7 +739,7 @@ function Fact({ label, value }: { label: string; value?: string }) {
   return (
     <div>
       <dt className="text-xs text-slate-500">{label}</dt>
-      <dd className="mt-0.5 text-sm text-slate-800">{value ?? "—"}</dd>
+      <dd className="mt-0.5 text-sm text-slate-800">{value ?? "-"}</dd>
     </div>
   );
 }

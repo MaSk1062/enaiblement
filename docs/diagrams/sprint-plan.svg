@@ -8,7 +8,7 @@
   </marker>
 </defs>
 <rect width="1460" height="760" fill="#ffffff"/>
-<text x="48" y="46" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="21" font-weight="750" fill="#0f172a" text-anchor="start" opacity="1.0">48-hour sprint plan — workstream timeline</text>
+<text x="48" y="46" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="21" font-weight="750" fill="#0f172a" text-anchor="start" opacity="1.0">48-hour sprint plan - workstream timeline</text>
 <text x="48" y="69" font-family="'Inter','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="12" font-weight="450" fill="#64748b" text-anchor="start" opacity="1.0">T0 = kickoff. Hard freeze at T+44h; the last 4 hours are demo rehearsal only.</text>
 <line x1="48" y1="84" x2="1412" y2="84" stroke="#e2e8f0" stroke-width="1.5"/>
 <line x1="300.0" y1="118" x2="300.0" y2="600" stroke="#e2e8f0" stroke-width="1"/>

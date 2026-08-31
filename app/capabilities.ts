@@ -6,11 +6,11 @@
  * near-identical blocks; as a registry it is one table and one handler.
  *
  * `requires` is the interesting part. A capability is offered from the first message, but it can
- * only run once the consultation has produced what it needs — so the button is visible from the
+ * only run once the consultation has produced what it needs - so the button is visible from the
  * start and says WHY it is not available yet, rather than appearing out of nowhere later.
  *
  * This module is imported by the browser (for the buttons) and by the server (to run them), so
- * it holds no prompts and no agent imports — `load()` reaches those lazily, server-side only.
+ * it holds no prompts and no agent imports - `load()` reaches those lazily, server-side only.
  */
 
 import type { AgentName, AgentState } from "./types.ts";
@@ -62,7 +62,7 @@ export const CAPABILITIES: Capability[] = [
     requires: (state) =>
       state.needsAssessment.identifiedBottleneck
         ? null
-        : "finish the discovery interview first — there is no bottleneck to dig into yet",
+        : "finish the discovery interview first - there is no bottleneck to dig into yet",
   },
   {
     id: "diagram",
@@ -112,7 +112,7 @@ export const capability = (id: string) => CAPABILITIES.find((c) => c.id === id);
  * Dependency order, which is not menu order and not arbitrary.
  *
  * `deep-needs` first: it establishes the volumes the estimate does its arithmetic on.
- * `diagram` second because it is cheap and visual — something appears within twenty seconds
+ * `diagram` second because it is cheap and visual - something appears within twenty seconds
  * rather than three minutes. `estimate` before `platform` because the Platform Engineer is
  * handed the estimate to size against (see brief() in app/agents/deep.ts), so the other way
  * round silently costs it that input. The last two need the stack and nothing else.

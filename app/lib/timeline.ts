@@ -2,7 +2,7 @@
  * Turns a roadmap phase's free-text `duration` into lane geometry a CSS grid can place.
  *
  * The Project Manager's prompt (`app/agents/prompts/roadmap.md`) asks for exactly three
- * phases shaped like "Weeks 1-4", "Weeks 5-12", "Month 4+" — but it is still a model
+ * phases shaped like "Weeks 1-4", "Weeks 5-12", "Month 4+" - but it is still a model
  * generating prose, not a schema, and a duration phrased slightly differently is a live-demo
  * risk, not a hypothetical. Every phase gets a lane no matter what the string says: a phase
  * that fails to parse falls in line right after whichever phase came before it, rather than
@@ -12,7 +12,7 @@
 export interface DurationSpan {
   startWeek: number;
   endWeek: number;
-  /** No end was stated ("Month 4+") — the lane fades out rather than closing off. */
+  /** No end was stated ("Month 4+") - the lane fades out rather than closing off. */
   open: boolean;
 }
 
@@ -36,7 +36,7 @@ const monthEndWeek = (month: number) => month * 4;
 export function parseDuration(duration: string): DurationSpan | null {
   const s = duration.trim();
 
-  let m = s.match(/weeks?\s*(\d+)\s*[-–—]\s*(\d+)/i);
+  let m = s.match(/weeks?\s*(\d+)\s*[-–-]\s*(\d+)/i);
   if (m) return { startWeek: Number(m[1]), endWeek: Number(m[2]), open: false };
 
   m = s.match(/weeks?\s*(\d+)\s*\+/i);
@@ -51,7 +51,7 @@ export function parseDuration(duration: string): DurationSpan | null {
     return { startWeek: week, endWeek: week, open: false };
   }
 
-  m = s.match(/months?\s*(\d+)\s*[-–—]\s*(\d+)/i);
+  m = s.match(/months?\s*(\d+)\s*[-–-]\s*(\d+)/i);
   if (m) return { startWeek: monthStartWeek(Number(m[1])), endWeek: monthEndWeek(Number(m[2])), open: false };
 
   m = s.match(/months?\s*(\d+)\s*\+/i);

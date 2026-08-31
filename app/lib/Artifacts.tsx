@@ -1,8 +1,8 @@
 /**
  * The handover: the files the specialists produced.
  *
- * A consultation that ends in prose is a document. This is the part that is a deliverable —
- * diagrams, Terraform, manifests, a runbook, a scaffold — so it gets copy and download rather
+ * A consultation that ends in prose is a document. This is the part that is a deliverable -
+ * diagrams, Terraform, manifests, a runbook, a scaffold - so it gets copy and download rather
  * than being something to read on a screen.
  *
  * Mermaid is imported dynamically, and only when a diagram is actually present, so a ~2MB

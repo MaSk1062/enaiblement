@@ -3,7 +3,7 @@
  *
  * The Firebase client SDK does the SSO popup and holds the ID token; the browser sends it
  * as `Authorization: Bearer <token>` and this verifies it with the Admin SDK. There is no
- * session cookie scheme — that is an evening of work for no demo value.
+ * session cookie scheme - that is an evening of work for no demo value.
  *
  * The uid ALWAYS comes from the verified token. docs/FIRESTORE_SCHEMA.md's reference
  * implementation reads `userId` out of the request body, which lets any caller open a
@@ -19,7 +19,7 @@ const WINDOW_MS = 60_000;
 
 // ponytail: per-instance counter, not global. Each turn is a paid model call and an
 // unthrottled client loop is a billing incident; this stops that. It does NOT stop an
-// attacker spreading calls across instances — move to Firestore or Redis if that matters.
+// attacker spreading calls across instances - move to Firestore or Redis if that matters.
 const hits = new Map<string, { count: number; resetAt: number }>();
 
 export function json(body: unknown, status = 200) {
@@ -53,7 +53,7 @@ export function rateLimit(uid: string) {
     return;
   }
   if (++entry.count > MAX_TURNS_PER_MINUTE) {
-    throw errorResponse(429, "Too many messages — give it a moment.");
+    throw errorResponse(429, "Too many messages - give it a moment.");
   }
 }
 
