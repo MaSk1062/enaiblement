@@ -1,0 +1,178 @@
+{
+  "_comment": [
+    "The Delivery Lead computes every figure from this file and is told it may not recall a",
+    "price from training data. That is the same rule the seed corpus follows: the model may",
+    "reason, it may not supply the numbers.",
+    "",
+    "EVERY ENTRY IS UNVERIFIED. These are plausible list prices, not checked ones, and the",
+    "estimate surfaces `pricesVerified: false` until someone sets `verified` to true here. Check",
+    "against the source URL, set the date, flip the flag. Until then the estimate is shaped",
+    "correctly and priced approximately, and it says so."
+  ],
+  "currency": "USD",
+  "checkedOn": null,
+  "cloud": [
+    {
+      "component": "Gemini 3.5 Flash input",
+      "unit": "per 1M input tokens",
+      "unitCost": 0.3,
+      "verified": false,
+      "source": "https://cloud.google.com/vertex-ai/generative-ai/pricing"
+    },
+    {
+      "component": "Gemini 3.5 Flash output",
+      "unit": "per 1M output tokens",
+      "unitCost": 2.5,
+      "verified": false,
+      "source": "https://cloud.google.com/vertex-ai/generative-ai/pricing"
+    },
+    {
+      "component": "Text embeddings",
+      "unit": "per 1M input tokens",
+      "unitCost": 0.15,
+      "verified": false,
+      "source": "https://cloud.google.com/vertex-ai/generative-ai/pricing"
+    },
+    {
+      "component": "Cloud Run vCPU",
+      "unit": "per vCPU-second",
+      "unitCost": 2.4e-05,
+      "verified": false,
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "component": "Cloud Run memory",
+      "unit": "per GiB-second",
+      "unitCost": 2.5e-06,
+      "verified": false,
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "component": "Cloud Run requests",
+      "unit": "per 1M requests",
+      "unitCost": 0.4,
+      "verified": false,
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    {
+      "component": "Firestore document reads",
+      "unit": "per 100k reads",
+      "unitCost": 0.03,
+      "verified": false,
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    {
+      "component": "Firestore document writes",
+      "unit": "per 100k writes",
+      "unitCost": 0.09,
+      "verified": false,
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    {
+      "component": "Firestore storage",
+      "unit": "per GiB-month",
+      "unitCost": 0.15,
+      "verified": false,
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    {
+      "component": "GKE Autopilot pod vCPU",
+      "unit": "per vCPU-hour",
+      "unitCost": 0.0445,
+      "verified": false,
+      "source": "https://cloud.google.com/kubernetes-engine/pricing"
+    },
+    {
+      "component": "GKE cluster management",
+      "unit": "per cluster-hour",
+      "unitCost": 0.1,
+      "verified": false,
+      "source": "https://cloud.google.com/kubernetes-engine/pricing"
+    },
+    {
+      "component": "Cloud Storage standard",
+      "unit": "per GiB-month",
+      "unitCost": 0.02,
+      "verified": false,
+      "source": "https://cloud.google.com/storage/pricing"
+    },
+    {
+      "component": "Internet egress",
+      "unit": "per GiB",
+      "unitCost": 0.12,
+      "verified": false,
+      "source": "https://cloud.google.com/vpc/network-pricing"
+    },
+    {
+      "component": "Cloud Logging ingestion",
+      "unit": "per GiB beyond the free tier",
+      "unitCost": 0.5,
+      "verified": false,
+      "source": "https://cloud.google.com/stackdriver/pricing"
+    },
+    {
+      "component": "Gemini 2.5 Pro input",
+      "unit": "per 1M input tokens",
+      "unitCost": 1.25,
+      "verified": false,
+      "source": "https://cloud.google.com/vertex-ai/generative-ai/pricing"
+    },
+    {
+      "component": "Gemini 2.5 Pro output",
+      "unit": "per 1M output tokens",
+      "unitCost": 10.0,
+      "verified": false,
+      "source": "https://cloud.google.com/vertex-ai/generative-ai/pricing"
+    }
+  ],
+  "rateCard": [
+    {
+      "role": "Solution architect",
+      "unit": "per day",
+      "dayRate": 1400,
+      "verified": false
+    },
+    {
+      "role": "ML engineer",
+      "unit": "per day",
+      "dayRate": 1200,
+      "verified": false
+    },
+    {
+      "role": "Backend engineer",
+      "unit": "per day",
+      "dayRate": 1000,
+      "verified": false
+    },
+    {
+      "role": "Platform / DevOps engineer",
+      "unit": "per day",
+      "dayRate": 1100,
+      "verified": false
+    },
+    {
+      "role": "Data engineer",
+      "unit": "per day",
+      "dayRate": 1100,
+      "verified": false
+    },
+    {
+      "role": "Project manager",
+      "unit": "per day",
+      "dayRate": 900,
+      "verified": false
+    },
+    {
+      "role": "Change / enablement lead",
+      "unit": "per day",
+      "dayRate": 900,
+      "verified": false
+    },
+    {
+      "role": "QA engineer",
+      "unit": "per day",
+      "dayRate": 800,
+      "verified": false
+    }
+  ]
+}
