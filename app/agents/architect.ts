@@ -7,23 +7,21 @@
 import template from "./prompts/architecture.md?raw";
 import { fillPrompt } from "./prompt.ts";
 import { AGENT_NAMES } from "./names.ts";
-import { generateStructured } from "../services/gemini.ts";
+import { generateStructured, searchGrounded } from "../services/gemini.ts";
 import { ArchitectureOutput } from "../services/schemas.ts";
 import type { ArchitectureStack, Role, UseCase } from "../types.ts";
 
 export const AGENT_NAME = AGENT_NAMES.architect;
 
 /**
- * The menu the Architect may recommend from.
+ * The fallback menu the Architect may recommend from.
  *
  * docs/AGENT_PROMPTS.md §3 hardcoded "Gemini 1.5 Pro, Llama 3, Claude 3" as examples inside
  * the prompt, which steers the agent to recommend a superseded stack to a CTO on stage.
- * The list lives here instead so it is one edit, not a prompt rewrite.
- *
- * VERIFY THIS AT KICKOFF. It is the one value in the codebase that goes stale by itself.
+ * This list is the same trap one level up: it is the one value in the codebase that goes
+ * stale by itself, which is exactly why `modelMenu()` below looks it up instead.
  */
 export const CURRENT_MODELS =
-  process.env.ARCHITECT_MODEL_MENU ??
   [
     "- Google: Gemini 2.5 Flash, Gemini 2.5 Pro (via Vertex AI)",
     "- Anthropic: Claude Sonnet, Claude Opus (via Vertex AI Model Garden or AWS Bedrock)",
@@ -36,12 +34,43 @@ export interface ArchitectInput {
   approvedUseCases: UseCase[];
 }
 
+// ponytail: process-lifetime cache, no TTL. The menu changes on the scale of months and the
+// container does not live that long. Add an expiry if this ever runs on a long-lived host.
+//
+// The PROMISE is cached, not the string: the route warms this in the background the moment a
+// session reaches `architecture`, so a caller arriving before that search resolves would
+// otherwise start a second one. Observed in the logs as two searches for one turn.
+let menu: Promise<string> | undefined;
+
+/**
+ * The list of models the Architect is allowed to name, looked up rather than remembered.
+ * Falls back to CURRENT_MODELS on any failure — an Architect with no menu recommends nothing.
+ */
+export async function modelMenu(): Promise<string> {
+  // An explicit menu wins over the search. An operator pinning the list — or an eval pinning a
+  // deliberately narrow one to test whether the prompt obeys it — must not be overruled by
+  // whatever the web says today.
+  if (process.env.ARCHITECT_MODEL_MENU) return process.env.ARCHITECT_MODEL_MENU;
+
+  menu ??= searchGrounded(
+    "Which foundational large language models are generally available for production use " +
+      "today, and on which cloud can an enterprise access each one?",
+    "Answer as a bullet list and nothing else, one line per provider, in the form " +
+      "'- Provider: Model A, Model B (via access path)'. Only models that are generally " +
+      "available right now. No preamble, no commentary.",
+  )
+    .then(({ text }) => text.trim() || CURRENT_MODELS)
+    .catch(() => CURRENT_MODELS);
+
+  return menu;
+}
+
 export async function run(input: ArchitectInput): Promise<ArchitectureStack> {
   const payload = `User role: ${input.role}
 Approved use cases: ${JSON.stringify(input.approvedUseCases, null, 2)}`;
 
   return generateStructured(
-    fillPrompt(template, { CURRENT_MODELS }),
+    fillPrompt(template, { CURRENT_MODELS: await modelMenu() }),
     payload,
     ArchitectureOutput,
   );

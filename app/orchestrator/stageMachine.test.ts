@@ -88,7 +88,7 @@ test("research: an ungrounded retrieval is marked and disclosed, never hidden", 
     session("research", { needsAssessment: { identifiedBottleneck: "Manual claims triage" } }),
     "go on",
     deps({
-      retrieve: async () => ({ documents: [], grounded: false }),
+      retrieve: async () => ({ documents: [], sources: [], grounded: false, source: "none" }),
       analyst: async () => [useCase("uc-1", "suggested")],
     }),
   );

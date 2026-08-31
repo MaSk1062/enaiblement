@@ -98,10 +98,14 @@ export async function runTurn(
           retrieval,
         });
 
-        const caveat = retrieval.grounded
-          ? `, grounded in ${retrieval.documents.length} ${userProfile.industry} case studies`
-          : ". Note: the knowledge base returned no matches, so these are reasoned from your " +
-            "bottleneck rather than from retrieved case studies";
+        // Where the evidence came from changes what we are allowed to claim about it.
+        const caveat = {
+          knowledge_base: `, grounded in ${retrieval.documents.length} ${userProfile.industry} case studies from our knowledge base`,
+          web: `, grounded in ${retrieval.sources.length} sources I found on the web — they are cited on the Canvas`,
+          none:
+            ". Note: our knowledge base and a web search both returned no matches, so these are " +
+            "reasoned from your bottleneck rather than from retrieved case studies",
+        }[retrieval.source];
 
         return {
           reply: agentMessage(
@@ -113,6 +117,7 @@ export async function runTurn(
             ...state,
             useCases,
             ungrounded: !retrieval.grounded,
+            sources: retrieval.sources,
             currentStage: "architecture",
           },
         };

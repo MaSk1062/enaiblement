@@ -62,6 +62,14 @@ export async function action({ request }: { request: Request }) {
         // is pure and the before/after comparison is exact.
         if (state.currentStage !== stage) {
           event("stage.advance", { from: stage, to: state.currentStage });
+
+          // The Architect's model menu is a live search — measured at 12-22s on a cold process,
+          // and it would land on the user's next message. Warm it now instead, while they are
+          // reading the Analyst's reply and approving use cases on the Canvas. Fire and forget:
+          // modelMenu() already falls back to a constant, so there is nothing to fail.
+          if (state.currentStage === "architecture") {
+            void import("../agents/architect.ts").then((m) => m.modelMenu());
+          }
         }
         event("turn.end", {
           stage,

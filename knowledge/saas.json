@@ -1,0 +1,107 @@
+[
+  {
+    "id": "saas-support-ticket-deflection-and-first-resp",
+    "industry": "SaaS",
+    "category": "case_study",
+    "title": "AssemblyAI — Pylon AI support agent for ticket deflection",
+    "content": "AssemblyAI, a developer platform offering speech AI APIs, struggled to scale customer support for its highly technical user base of engineers and product managers. Support engineers were bogged down by repetitive, level-1 questions across fragmented channels like email, live chat, and Slack, which limited their ability to resolve complex technical issues. To address this, the company migrated off Zendesk and deployed an AI-powered support agent named Sonny on the Pylon customer support platform. Sonny was grounded in AssemblyAI's public knowledge base and trained on historical support interactions. The technical implementation utilized Pylon's automated Runbooks to systematically handle unpredictable user behaviors, such as unstructured queries or context-free links, and guide users through troubleshooting steps. This deployment led to a 97% reduction in first response time for in-app chat issues, dropping from 15 minutes to just 23 seconds. Additionally, the AI agent doubled its resolution accuracy to autonomously resolve 50% of eligible incoming support inquiries without human intervention. This automation also enabled 24/7 live chat coverage through off-hours and weekends without the need for additional staffing.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQErDBVdBJIpKnTD9NubK0F4SA0vCa5IZsSXcQPyne80YAZV6USqUuZSR2IjCX7SZBFIRVJnziPjkWjJDfDQoLMYSB5-3blmvNde0V3uwXm6vMgogoRuBEdnTvE0msqInzXvTp9X_PRF5HhS",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "saas",
+        "support-ticket-deflection",
+        "first-response-time"
+      ]
+    }
+  },
+  {
+    "id": "saas-customer-churn-prediction-and-retention",
+    "industry": "SaaS",
+    "category": "case_study",
+    "title": "Shopify — an AI merchant churn prediction model",
+    "content": "Shopify, a leading e-commerce Software-as-a-Service (SaaS) platform, faced the critical challenge of proactively identifying and preventing churn among its global merchant customer base. To systematically address merchant attrition before cancellations occurred, the company’s internal data science team developed and deployed a dedicated churn prediction system in 2023. This predictive system was built using the XGBoost machine learning algorithm, which was trained on key historical merchant behavioral metrics and platform engagement indicators. Specifically, the machine learning model processed and analyzed a wide range of variables, including merchant app uninstall rates, customer support ticket escalations, and sudden drops in product listing updates, in order to generate precise, individual churn-risk assessments. These predictive scores enabled Shopify's support teams to trigger timely customer success interventions and targeted outreach to at-risk merchants. The deployment yielded substantial improvements in customer retention, with Shopify publishing a measured outcome of a 12% decrease in monthly merchant churn within just six months of the system's integration. The company's data science team subsequently presented these positive outcomes and the underlying technical architecture at the Re:Work AI in Business Summit in 2024.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFpkocn0UgSi5LMIEPmPx7fEbeWX5bxRwmtVk5diHklDNKxywtJdoDvQun34qoMPS6Dx87Fo7gK1ivoAscDZlQz1G39cJFMUQnLbvY8pSXBmCk2Kg8yd43uNOZ9Uo7QHI5gQ9C6uT2j65ZJo8tTILZpLZo=",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "saas",
+        "customer-churn-prediction",
+        "retention"
+      ]
+    }
+  },
+  {
+    "id": "saas-engineering-productivity-and-code-review",
+    "industry": "SaaS",
+    "category": "case_study",
+    "title": "Freshworks — Hivel's software engineering intelligence platform",
+    "content": "Freshworks, a SaaS company with over 1,500 engineers, struggled to measure engineering productivity and verify the business impact of their AI coding tools across globally distributed teams. To solve this, they deployed Hivel, an AI-powered software engineering intelligence platform, as their single pane of glass. Freshworks used Hivel to analyze Git repository activity, track developer work patterns, and monitor code review metrics. This included leveraging AI-assisted code reviews and identifying code review bottlenecks, such as slow turnaround times for large pull requests. By implementing Hivel's insights, the company optimized its review workflows and encouraged smaller, tighter pull requests (resulting in 55% of all pull requests staying under 50 lines of code). The implementation of Hivel yielded significant published outcomes for the organization's delivery lifecycle. Freshworks achieved a 40% increase in overall engineering throughput and improved their time-to-market by 10%. Additionally, the company reduced costly rework and maintenance by up to 50% and saw code review times decrease by 8% to 10% while maintaining software quality.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLhnrMaJGDdgd4NregN4-YKlM-Lq6KgXje1LmUBWKgdDkhLIWYJ5qZu6cxOFVfuvuPmTDlG4m_HE9e56W84_o0c9Ro4LeLAh59kn029s5M0JXCqQP96IkIH9M93RPRkQVi9DL0",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "saas",
+        "engineering-productivity",
+        "code-review-throughput"
+      ]
+    }
+  },
+  {
+    "id": "saas-sales-lead-qualification-and-pipeline-co",
+    "industry": "SaaS",
+    "category": "case_study",
+    "title": "SalesHoney — An AI-powered lead qualification and routing pipeline",
+    "content": "SalesHoney, a B2B SaaS sales-intelligence platform, struggled to efficiently manage and qualify roughly 1,800 monthly inbound leads. The company faced significant leaks in its sales pipeline, driven by manual and inconsistent enrichment processes and a sluggish average speed-to-lead response time of four hours and 12 minutes. To capture these lost opportunities, SalesHoney built and deployed a top-of-funnel automated AI pipeline. The technique utilized four narrow, interconnected AI agents—Enrichment, Qualification, Routing, and Follow-up—all wired directly into their CRM. These agents automatically enrich lead profiles with complete firmographics, score them for qualification, assign them to the right sales development representative, and draft tailored follow-up messages. Following the deployment, SalesHoney published an outcome showing a 40% lift in sales-qualified leads in just one quarter, achieved without adding any headcount or increasing advertising spend. Additionally, their median speed-to-lead plummeted from over four hours to under 90 seconds, and overall lead data enrichment coverage climbed from 51% to 98% of incoming leads.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGeAR985DxF3wMraUU9QiVH3as47FbUZCguiWHfCo9bWqRXflZyZ7b3vQKo3ARFq0SX46E1CAWOh5Xf1z1fl8de67TZUd8spbYgrRRRco-8SPIs4pwupK00PnLpwbmuuOQfH2AEdTg9orA8yyUv2Ucw1wEdLrgyg875_mu14fc=",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "saas",
+        "sales-lead-qualification",
+        "pipeline-coverage"
+      ]
+    }
+  },
+  {
+    "id": "saas-user-onboarding-and-time-to-first-value",
+    "industry": "SaaS",
+    "category": "case_study",
+    "title": "Loomwave — Cutting B2B SaaS onboarding time by 73% with AI agents",
+    "content": "Loomwave, a Series A SaaS company with about 80 employees, faced a major operational challenge. Their customer success team was overwhelmed by manual onboarding, with each new customer requiring approximately six hours of setup across billing, CRM, internal tools, and a four-touch onboarding sequence. Consequently, customer success managers spent 60% of their time on onboarding rather than account expansion, causing activation rates to decline. To resolve this, Loomwave implemented workflow automation and an AI agent. The AI agent, built using a large language model and integrated tools, automatically ingested new customer signals, drafted configuration plans, and scheduled kickoff meetings. The system connected automations across HubSpot, Stripe, Notion, and Loomwave’s own product API, with evaluations and guardrails keeping the agent on script and escalating edge cases to humans. Following the deployment, Loomwave's onboarding time-to-value dropped 73%, falling from 14 days to 3.7 days. Additionally, customer success managers reclaimed approximately 40 hours per week, and the company’s net revenue retention improved by 11 points over the subsequent two quarters.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGVc4Crcv7v-139KiRhK_VJuYgQQTcKxAJVZ_epkZaK2l3iWTI8VBoTS0Ckc7it2coOpcQB5aqjrwqtuPwZi9ifU7XOGoDV3B2yhgmkxywmKCiXgoQJpyFi2EI6zfJDqG-PiMHciIPj-5_nLnyW0XMMlUDDckU=",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "saas",
+        "user-onboarding",
+        "time-to-first-value"
+      ]
+    }
+  }
+]

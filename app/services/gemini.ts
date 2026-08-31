@@ -37,13 +37,13 @@ function genai(): GoogleGenAI {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Retries transient API failures. Does not retry schema failures — those get one repair. */
-async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = MAX_ATTEMPTS): Promise<T> {
   let backoff = FIRST_BACKOFF_MS;
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
     } catch (err) {
-      if (attempt >= MAX_ATTEMPTS) throw err;
+      if (attempt >= maxAttempts) throw err;
       await sleep(backoff);
       backoff *= 2;
     }
@@ -156,6 +156,63 @@ function safeJson(text: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+export interface GroundedAnswer {
+  text: string;
+  /**
+   * Only chunks that carry both a title and a URI. A citation without a link is not a citation.
+   *
+   * ponytail: the URI is Vertex's grounding redirect, and on Vertex the title is the publisher's
+   * domain rather than the page title. Good enough to click and to attribute; the redirect
+   * expires after a few weeks, so resolve these to final URLs if the corpus outlives the sprint.
+   */
+  sources: { title: string; url: string }[];
+}
+
+/**
+ * A Google Search-grounded answer, with its citations.
+ *
+ * Separate from generateStructured because the search tool and `responseMimeType:
+ * "application/json"` are mutually exclusive on Vertex — you get grounding or you get JSON
+ * mode, never both. So this returns prose, and the caller feeds that prose to the structured
+ * call as retrieved context (see services/rag.ts).
+ *
+ * ponytail: two attempts, not five. This is best-effort enrichment on a user-facing turn —
+ * a full 31s backoff ladder before giving up costs more than the grounding is worth.
+ */
+export async function searchGrounded(
+  query: string,
+  systemInstruction: string,
+): Promise<GroundedAnswer> {
+  const started = Date.now();
+  const res = await withRetry(
+    () =>
+      genai().models.generateContent({
+        model: TEXT_MODEL,
+        contents: query,
+        config: { systemInstruction, tools: [{ googleSearch: {} }] },
+      }),
+    2,
+  );
+
+  const sources = (res.candidates?.[0]?.groundingMetadata?.groundingChunks ?? []).flatMap((c) =>
+    c.web?.title && c.web.uri ? [{ title: c.web.title, url: c.web.uri }] : [],
+  );
+
+  countTokens(res.usageMetadata?.totalTokenCount);
+  event("search.grounded", {
+    model: TEXT_MODEL,
+    durationMs: Date.now() - started,
+    queryChars: query.length,
+    sources: sources.length,
+    totalTokens: res.usageMetadata?.totalTokenCount,
+    // Zero sources means the model answered from its own weights instead of searching. That is
+    // the difference between a citation and a plausible sentence, so it is worth seeing.
+    ok: sources.length > 0,
+  });
+
+  return { text: res.text ?? "", sources };
 }
 
 /**

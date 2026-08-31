@@ -118,6 +118,8 @@ export interface AgentState {
   changeManagementPlan?: ChangeManagementPlan;
   /** True when the Analyst ran with no retrieved documents (ARCHITECTURE.md §7.2). */
   ungrounded?: boolean;
+  /** What the use cases were grounded in. Shown on the Canvas so the claim is checkable. */
+  sources?: { title: string; url: string }[];
 }
 
 /** Denormalised onto the session: a consultation reflects the profile as it was at start. */

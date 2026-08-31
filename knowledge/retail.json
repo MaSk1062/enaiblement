@@ -1,0 +1,107 @@
+[
+  {
+    "id": "retail-demand-forecasting-and-stockouts",
+    "industry": "Retail",
+    "category": "case_study",
+    "title": "Morrisons — Blue Yonder AI-driven demand forecasting system",
+    "content": "Morrisons, a leading UK supermarket chain, struggled with traditional inventory management methods, which failed to predict localized, store-level demand variations and resulted in costly shelf gaps and food waste. To resolve these operational inefficiencies, Morrisons partnered with supply chain AI specialist Blue Yonder to deploy an automated, AI-powered demand forecasting and replenishment system across its 491 retail stores. The deployed solution is built on the NeuroBayes machine learning algorithm, a technique originally developed at CERN to predict quark collisions. The algorithm forecasts localized consumer demand down to the individual store and SKU level. It achieves this high precision by automatically analyzing hundreds of variables, including historical point-of-sale data, promotional schedules, delivery lead times, and external signals such as real-time weather patterns. By adopting this machine learning system, Morrisons automated ordering decisions and significantly minimized over-ordering. Following the deployment of this predictive AI platform, Morrisons achieved a measured 30% reduction in shelf gaps, ensuring products are consistently available on shelves for shoppers.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEVTCoIie-jkDdHEnwEAH6-GphQ6UoQa93uyB-TwNdJHyygUyaeA_a74YQTwHX1cq8wXvIJ2vroKwrj_QYshmKdrwxBulobEJ_tEMiE5KIq3pgX7S2yLAK6l--YdE8avelKg54ZJ74_Xo36mSwc6Uj2tccxlT7CsHfJWihmb1sxn3s-UoNg640Rc-6p7UTWgo3eBzpNKhWvIQm3ab3Ji4DNtgdx87g5iQ3rJQim5uH0_TB37SJpB-vJRWq8QZ-j3435q6vqOKarSDioMibC9yysAqPgRSi4okOL5tICbURo30gj0LvIkZsZg-ZwuH0FtJBmF9TR",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "retail",
+        "demand-forecasting",
+        "stockouts"
+      ]
+    }
+  },
+  {
+    "id": "retail-personalised-recommendations-and-convers",
+    "industry": "Retail",
+    "category": "case_study",
+    "title": "Decathlon Singapore — Algolia AI Search Personalization Deployment",
+    "content": "Decathlon Singapore, a major sporting goods retailer, struggled to maintain high customer engagement and conversions across its online channel, where mobile devices accounted for 80% of all traffic. With a massive product inventory containing more than 25,000 sports items, delivering highly relevant search results and recommendations in real time was a severe challenge. Shoppers frequently bounced when they encountered out-of-stock items, generic product lists, or irrelevant suggestions. To resolve these friction points, Decathlon Singapore implemented Algolia's AI-powered search personalization and discovery platform. The system employs machine learning algorithms and real-time customer data tracking to analyze user clicks, page views, and purchases. It then weights these actions dynamically against specific product attributes, such as individual sport practices, to tailor results and recommendations to each consumer's exact intent. Additionally, they utilized a visual editing tool to curate search rankings and automatically filter out out-of-stock items. This deployment allowed Decathlon Singapore to successfully optimize its online experience. The published results show that the retailer decreased its search no-result rate from 5% to 1.8%, while generating a 36% increase in click-through rate and a substantial 50% increase in its digital conversion rate.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHyN7AXlgKSCk4SetJPn31PbfCRyWVyOxE7ab5PXHufLqkX2-mOFk6bS2UyRxU3iupAzikvEGp0W6zqLi4Z3mDxlfn1vmk_oHc_3k8waowLGzkTbRs3GBPefbgTQXQeMBNtcKkr5ylK3WoF28qmEe75Ma360G5w6qTfxnn5kWNXERwpoLMA3IIE2TJ7JPRPIh6rQnQ3eP2UulnzdZ672wtimHlld2w=",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "retail",
+        "personalised-recommendations",
+        "conversion-rate"
+      ]
+    }
+  },
+  {
+    "id": "retail-customer-service-ticket-volume-and-respo",
+    "industry": "Retail",
+    "category": "case_study",
+    "title": "Jigsaw — Zendesk AI agents",
+    "content": "Jigsaw, a UK-based premium fashion retailer operating 43 stores, was struggling with a rising volume of over 1,000 weekly customer support inquiries. To optimize its customer experience, improve response times, and reduce agent workload, the company integrated Zendesk AI into its support operations. Jigsaw built an AI-powered conversational agent and optimized its self-service support center. The automated system was configured to resolve common repetitive queries autonomously, such as questions regarding order status, QR code scanning, and account information, freeing human staff to focus on complex cases. The deployment dramatically shifted customer engagement, with chat usage growing from 8 percent to 35 percent of all interactions. Following the AI rollout, Jigsaw published highly successful outcomes, including a 35 percent overall reduction in support ticket volume, which rose to a 50 percent reduction in volume during peak sales events and promotional periods. Furthermore, the retailer decreased its overall customer response times by 20 percent, reduced ticket handling times by 18 percent, and cut its first ticket assignment times by 26 percent.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEQ0aZCr6BHUEHFY1-QKddee5-yN-LBAn2S1SdnCptVpW08NeGc6uKKS51N5Kz8yeXXztCeUynhZyqiBy6SvALupAnY-zJeTlVZ9plzxfjSaKo4sJnfuSHWvxJgGDnQ3ZaldRY=",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "retail",
+        "customer-service-ticket-volume",
+        "response-time"
+      ]
+    }
+  },
+  {
+    "id": "retail-inventory-shrinkage-and-loss-prevention",
+    "industry": "Retail",
+    "category": "case_study",
+    "title": "Iceland Foods — AI-Powered Video Analytics for Loss Prevention",
+    "content": "British frozen-food retailer Iceland Foods faced rising inventory shrinkage and shoplifting across its estate of over 1,000 UK stores, previously estimating annual theft losses at approximately £20 million. To combat this, the retailer deployed the SAI One platform, an AI-powered active store intelligence solution, across its store network. The system utilizes existing in-store CCTV camera infrastructure to analyze live video feeds in real time across checkouts, aisles, and entrances. By combining computer vision with generative AI, the platform detects suspicious behavioral patterns associated with shrinkage, such as missed scans, partial payments, walkouts, shelf sweeping, and in-store concealment. When the software confirms suspicious activity, it automatically generates a real-time alert and routes it to employees' handheld terminals within eight seconds, accompanied by supporting images and video clips. Following the rollout, Iceland Foods published that the system achieved an 80 percent reduction in losses from theft and shrinkage. Additionally, the technology decreased false alarms by almost 50 percent, driving employee confidence in the system and prompting store staff to actively respond to 90 percent of the generated crime alerts.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHkgZYiUNR2pdCThAJ0oaj4R9xxncWtxGfGQG_Y0UVqNPTAvnh2-4epAJWr3X6TG3q5tOw_GoSOHxOmFLYNwEIjFzLrAhtkbC08hwAfqP8LOaq9-L0NFIBOLvWBUtSaNnurU2fQLU6DDnm52Pa0YQ_whQUyRs6T8OEDvuOR7CAG_-N-VjRNyIP17D5UOW8dZ7RdeNpyuWfwMXUlh48=",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "retail",
+        "inventory-shrinkage",
+        "loss-prevention"
+      ]
+    }
+  },
+  {
+    "id": "retail-pricing-and-markdown-optimisation",
+    "industry": "Retail",
+    "category": "case_study",
+    "title": "ASOS — Deployed machine learning systems to optimize pricing markdowns",
+    "content": "Online fashion retailer ASOS sought to overcome inefficiencies in managing discount promotional events, known as markdowns. Traditionally, these relied on rule-based methods or manual adjustments by operations teams, which hampered profitability. To address this, the company's AI team built and deployed two end-to-end machine learning markdown management systems named Ithax and Promotheus. Ithax acts as a \"cold start\" solution using a supply-side optimization algorithm inspired by binary search to allocate discount depths without initial demand estimation, maintaining revenue control. Promotheus represents a full framework that integrates price elasticity modeling and forecasting to directly optimize for expected sales and profit. In randomized, controlled online tests, both systems significantly outperformed manual strategies. The automated systems delivered measured improvements in profitability of 86% for the Promotheus engine and 79% for the Ithax engine compared to decisions made by the experienced operations teams. These systems have been fully deployed across ASOS.com to manage markdowns robustly in a live production environment.",
+    "sourceUrl": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEQ4AtpgEggrL1nXYAeOMFHZqw9yN2YJ9a55vPNg2-Hy0kD7jypdKDvXdFBP26srEP633tfJZYi8NqWGXC8IVkn1ObE42kKWPsdvikKrFeynLQIRD1wBZO8jLAoYdIBA-Irj0Kpdc4NsWoObhA9fA==",
+    "metadata": {
+      "targetRoles": [
+        "CEO/Founder",
+        "CTO/CIO",
+        "Department Head"
+      ],
+      "impactScore": 0.8,
+      "tags": [
+        "retail",
+        "pricing",
+        "markdown-optimisation"
+      ]
+    }
+  }
+]
