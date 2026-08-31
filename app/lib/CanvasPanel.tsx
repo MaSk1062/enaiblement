@@ -52,7 +52,7 @@ export function CanvasPanel() {
       </header>
 
       {needs.identifiedBottleneck && (
-        <Section title="The bottleneck">
+        <Section id="section-bottleneck" title="The bottleneck">
           <p className="text-sm leading-relaxed text-slate-700">{needs.summary}</p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-3">
             <Fact label="Bottleneck" value={needs.identifiedBottleneck} />
@@ -63,6 +63,7 @@ export function CanvasPanel() {
       )}
 
       <Section
+        id="section-use-cases"
         title="Use cases"
         aside={
           pending > 0 ? (
@@ -101,7 +102,7 @@ export function CanvasPanel() {
 
       {architectureStack && (
         <div className="animate-section-enter">
-          <Section title="Recommended stack">
+          <Section id="section-stack" title="Recommended stack">
             <dl className="grid gap-4 sm:grid-cols-3">
               <Fact label="Models" value={architectureStack.models.join(", ")} />
               <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
@@ -117,7 +118,7 @@ export function CanvasPanel() {
 
       {roadmapPhases && roadmapPhases.length > 0 && (
         <div className="animate-section-enter">
-          <Section title="Roadmap">
+          <Section id="section-roadmap" title="Roadmap">
             <RoadmapTimeline phases={roadmapPhases} />
 
             {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
@@ -148,7 +149,7 @@ export function CanvasPanel() {
 
       {plan && (
         <div className="animate-section-enter">
-          <Section title="People and change">
+          <Section id="section-people" title="People and change">
             <div className="space-y-3">
               {plan.upskillingPaths.map((path) => (
                 <div
@@ -425,16 +426,19 @@ function Provenance({
 }
 
 function Section({
+  id,
   title,
   aside,
   children,
 }: {
+  /** Anchor the chat rail deep-links to when a reply is attributed to this section's agent. */
+  id?: string;
   title: string;
   aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section id={id} className="scroll-mt-4">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 className="text-xs font-medium tracking-wide text-slate-500 uppercase">{title}</h2>
         {aside}

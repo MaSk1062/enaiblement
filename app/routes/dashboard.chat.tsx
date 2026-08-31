@@ -1,22 +1,32 @@
 /**
- * The consultation. One route, two shapes.
+ * The consultation. One route, and this is the only place the strategy is read or revised —
+ * /dashboard/canvas is a separate, chat-free destination for export only (UI-4).
  *
- * While the strategy is being built, this is a conversation, and the Canvas appears in it only
- * at the one moment the user has to act — the approval gate, inline under the Analyst's handoff.
- * Anything else on the Canvas is read-only and would be furniture.
- *
- * Once `currentStage` is "complete", the artefact IS the point: the Canvas takes the page and
- * the conversation becomes a rail for interrogating and revising it. Both shapes give each pane
- * its own scroll container, which is why the dashboard shell is a fixed height.
+ * Three shapes, not two. Before the gate, this is a conversation and the Canvas appears in it
+ * only at the one moment the user has to act — inline under the Analyst's handoff. Once at
+ * least one use case is approved, the pipeline is building against a real decision, so the
+ * Canvas moves beside the chat and fills in live as each specialist hands off (UI-2). Once
+ * `currentStage` is "complete", that same two-pane layout is the artefact plus a rail for
+ * interrogating and revising it. All three shapes give each pane its own scroll container,
+ * which is why the dashboard shell is a fixed height.
  */
 
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import { agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
-import { DownloadIcon } from "../lib/icons.tsx";
 import { formatElapsed } from "../lib/pipelineView.ts";
-import type { ChatMessage, Stage } from "../types.ts";
+import type { AgentName, ChatMessage, Stage } from "../types.ts";
+
+/** Where a specialist's work lands on the Canvas — for the deep link on their name (UI-4). */
+const AGENT_SECTION: Partial<Record<AgentName, string>> = {
+  "Discovery Consultant": "section-bottleneck",
+  "Industry Analyst": "section-use-cases",
+  "Technical Architect": "section-stack",
+  "Project Manager": "section-roadmap",
+  "Change Coach": "section-people",
+};
 
 export function meta() {
   return [{ title: "Consultation · enaible" }];
@@ -43,19 +53,16 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto px-6 py-8 lg:px-10 print:overflow-visible print:p-0">
         <div className="mx-auto max-w-3xl">
           {done && (
-            // ponytail: duplicates the button on /dashboard/canvas — that route isn't linked
-            // from anywhere yet (UI-4), and this is the completed view people actually land on.
-            // Once UI-4 picks one canvas, one of these two copies goes away.
             <div className="mb-6 flex items-center justify-between print:hidden">
               <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              {/* The one download button lives on /dashboard/canvas (UI-4) — this page is for
+                  reading and revising it, not a second place the export action can drift from. */}
+              <Link
+                to="/dashboard/canvas"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
               >
-                <DownloadIcon className="h-4 w-4" />
-                Download strategy (PDF)
-              </button>
+                Export as PDF →
+              </Link>
             </div>
           )}
           <CanvasPanel />
@@ -247,13 +254,28 @@ function Bubble({ message, compact }: { message: ChatMessage; compact?: boolean 
     );
   }
 
+  // Only the rail sits next to a visible Canvas — the single-pane, pre-gate conversation has
+  // nothing on the page yet for the name to point at.
+  const sectionId = compact && message.agentName ? AGENT_SECTION[message.agentName] : undefined;
+
   return (
     <div className={compact ? "" : "max-w-[85%]"}>
-      {message.agentName && (
-        <p className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
-          {message.agentName}
-        </p>
-      )}
+      {message.agentName &&
+        (sectionId ? (
+          <button
+            type="button"
+            onClick={() =>
+              document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+            className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase underline decoration-slate-300 underline-offset-2 transition hover:text-slate-900"
+          >
+            {message.agentName}
+          </button>
+        ) : (
+          <p className="mb-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
+            {message.agentName}
+          </p>
+        ))}
       <p className="rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-800">
         {message.text}
       </p>
