@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
-import type { ChatMessage } from "../types.ts";
+import type { ChatMessage, Stage } from "../types.ts";
 
 export function meta() {
   return [{ title: "Consultation · enaible" }];
@@ -50,11 +50,55 @@ export default function Chat() {
   );
 }
 
-/** The gate, inline. Rendered only while there is a decision to make. */
+/**
+ * The one moment the user has to act, inline under the handoff that created it.
+ *
+ * Some stages need a real answer (`discovery`) or a real decision (`architecture`, before
+ * anything is approved). The rest — `research`, `architecture` once approved, `roadmap`,
+ * `training` — only need *a* message to run the next specialist; the content is thrown away
+ * (`stageMachine.ts` never reads it there). Those get a CTA instead of leaving the composer's
+ * placeholder as the only way to discover that.
+ */
 function Decisions() {
   const { state } = useConsultation();
-  if (state.currentStage !== "architecture" || state.useCases.length === 0) return null;
-  return <UseCaseDecisions />;
+  if (state.currentStage === "architecture" && state.useCases.length > 0) {
+    return <UseCaseDecisions />;
+  }
+  return <StageContinue />;
+}
+
+const CONTINUE: Partial<Record<Stage, { label: string; message: string }>> = {
+  research: {
+    label: "Find matching use cases →",
+    message: "Go ahead and find matching use cases.",
+  },
+  roadmap: {
+    label: "Plan the rollout →",
+    message: "Go ahead and plan the rollout.",
+  },
+  training: {
+    label: "Plan the people side →",
+    message: "Go ahead and plan the people side.",
+  },
+};
+
+function StageContinue() {
+  const { state, sending, send } = useConsultation();
+  const cta = CONTINUE[state.currentStage];
+  if (!cta) return null;
+
+  return (
+    <div className="flex justify-start">
+      <button
+        type="button"
+        disabled={sending}
+        onClick={() => send(cta.message)}
+        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:opacity-40"
+      >
+        {cta.label}
+      </button>
+    </div>
+  );
 }
 
 function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?: boolean }) {
