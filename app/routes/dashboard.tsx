@@ -4,8 +4,11 @@ import { planDeepDive } from "../capabilities.ts";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
+import { ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
+import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
+import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
 import type { AgentState, Artifact, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
 
 export default function Dashboard() {
@@ -87,6 +90,9 @@ export default function Dashboard() {
     [sessionId, sending],
   );
 
+  // Approving releases the rest of the pipeline, so this call can take as long as a chat turn
+  // and comes back with several replies. `sending` drives the same typing indicator, because
+  // from the user's side it is the same thing: the specialists are working.
   // A capability is not a turn: it adds a reply and may add files, but never moves the stage.
   // Throws, so the deep dive can decide whether one failure should stop the rest. It does not.
   const runCapability = useCallback(
@@ -152,15 +158,20 @@ export default function Dashboard() {
 
   const decide = useCallback(
     async (decisions: Record<string, "approved" | "rejected">) => {
-      if (!sessionId) return;
+      if (!sessionId || sending) return;
+      setSending(true);
+      setError(null);
       try {
-        const { state: next } = await api.decideUseCases(sessionId, decisions);
+        const { replies, state: next } = await api.decideUseCases(sessionId, decisions);
+        setMessages((m) => [...m, ...replies]);
         setState(next);
       } catch (err) {
         setError((err as Error).message);
+      } finally {
+        setSending(false);
       }
     },
-    [sessionId],
+    [sessionId, sending],
   );
 
   if (authLoading || booting) {
@@ -192,24 +203,29 @@ export default function Dashboard() {
 
   return (
     <ConsultationContext.Provider value={consultation}>
-      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50">
-        <header className="border-b border-slate-200 bg-white">
+      {/* Fixed height with internal scroll containers on screen; print needs the opposite —
+          nothing clipped, everything flowing across pages — hence the print: overrides below. */}
+      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50 print:h-auto print:overflow-visible">
+        <header className="border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
               <span className="text-sm font-semibold tracking-tight text-slate-900">enaible</span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 {profile.industry} · {profile.role}
               </span>
             </div>
             <div className="flex items-center gap-5">
-              <Nav pending={state.useCases.filter((uc) => uc.status === "suggested").length} />
+              <Nav
+                pending={state.useCases.filter((uc) => uc.status === "suggested").length}
+                exportReady={state.currentStage === "complete"}
+              />
               <SignOutButton />
             </div>
           </div>
-          <ProgressRail current={state.currentStage} />
+          <ProgressRail state={state} sending={sending} />
         </header>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden print:overflow-visible">
           <Outlet />
         </div>
       </div>
@@ -218,10 +234,14 @@ export default function Dashboard() {
 }
 
 /**
- * Chat and Canvas, plus the count of use cases still waiting on a decision — which is the
- * only signal pointing at the approval gate while the gate is what is blocking the stage.
+ * Chat, plus Export once there is something to export (UI-4 — one canvas, not two: the
+ * strategy itself lives only in the chat route now; /dashboard/canvas is the distraction-free
+ * print destination that route points at, never a second place to see the same thing).
+ *
+ * The pending-count badge sits on Chat, not Export, because Chat is where the gate that badge
+ * describes actually lives — the only signal pointing at the decision blocking the pipeline.
  */
-function Nav({ pending }: { pending: number }) {
+function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }) {
   const style = ({ isActive }: { isActive: boolean }) =>
     [
       "text-xs transition",
@@ -231,39 +251,53 @@ function Nav({ pending }: { pending: number }) {
   return (
     <nav className="flex items-center gap-4">
       <NavLink to="/dashboard/chat" className={style}>
-        Chat
+        <span className="flex items-center gap-1.5">
+          <ChatIcon className="h-3.5 w-3.5" />
+          Chat
+          {pending > 0 && (
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+              {pending}
+            </span>
+          )}
+        </span>
       </NavLink>
-      <NavLink to="/dashboard/canvas" className={style}>
-        Canvas
-        {pending > 0 && (
-          <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-            {pending}
+      {exportReady && (
+        <NavLink to="/dashboard/canvas" className={style}>
+          <span className="flex items-center gap-1.5">
+            <DownloadIcon className="h-3.5 w-3.5" />
+            Export
           </span>
-        )}
-      </NavLink>
+        </NavLink>
+      )}
     </nav>
   );
 }
 
 /**
- * The five specialists, and which one has the file. This plus the typing indicator is what
+ * The five specialists, and which one has the file — live, not decorative (UI-2). A finished
+ * chip says what it produced (`pipelineView.ts`), the active one spins and says what it's
+ * doing, so the rail plus the chat's typing indicator (dashboard.chat.tsx) are what
  * IMPLEMENTATION_PLAN §7 calls the single highest-leverage piece of UI in the build.
  */
-function ProgressRail({ current }: { current: Stage }) {
-  const currentIndex = STAGES.indexOf(current);
+function ProgressRail({ state, sending }: { state: AgentState; sending: boolean }) {
+  const currentIndex = STAGES.indexOf(state.currentStage);
 
   return (
     <div className="overflow-x-auto px-6 pb-3">
       <ol className="flex min-w-max items-center gap-2">
-        {STAGES.slice(0, 5).map((stage, i) => {
+        {/* Every stage but `complete`, which is a conversation rather than a step. Derived
+            rather than sliced to a count, so adding a stage does not silently drop one. */}
+        {STAGES.filter((s) => s !== "complete").map((stage, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
+          const working = active && sending;
+          const summary = done ? stageSummary(stage, state) : null;
           return (
             <li key={stage} className="flex items-center gap-2">
               {i > 0 && <span aria-hidden className="h-px w-5 bg-slate-200" />}
               <span
                 className={[
-                  "rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
+                  "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
                   active
                     ? "bg-slate-900 font-medium text-white"
                     : done
@@ -271,8 +305,11 @@ function ProgressRail({ current }: { current: Stage }) {
                       : "text-slate-400",
                 ].join(" ")}
               >
-                {done && <span aria-hidden>✓ </span>}
+                {working && <SpinnerIcon className="h-3 w-3 animate-spin" />}
+                {done && <span aria-hidden>✓</span>}
                 {agentStatus(stage).name}
+                {done && summary && <span className="text-slate-600">· {summary}</span>}
+                {working && <span className="text-slate-300">· {agentStatus(stage).working}</span>}
               </span>
             </li>
           );
@@ -296,7 +333,7 @@ function Centered({
           {children}
         </p>
         <div className="mt-4">
-          <SignOutButton className="text-xs text-slate-400 underline transition hover:text-slate-900" />
+          <SignOutButton className="text-xs text-slate-500 underline transition hover:text-slate-900" />
         </div>
       </div>
     </main>

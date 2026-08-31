@@ -10,8 +10,18 @@ Instructions:
    - Foundational model. Choose from the currently available models listed below.
    - Infrastructure / cloud (e.g. Google Cloud Platform, Vertex AI, Firebase, AWS Bedrock)
    - Middleware / frameworks (e.g. LangChain, LlamaIndex, Google ADK)
-3. Identify one major security or compliance risk specific to this user's industry
-   (e.g. HIPAA for Healthcare, SOC 2 or PCI DSS for Finance) and say how to mitigate it.
+3. Identify one major security or compliance risk specific to this user's industry AND the
+   region they operate in, and say how to mitigate it in the architecture rather than in a
+   policy document.
+
+   The binding regime is given to you in the payload. Use it. A client in Southern Africa is
+   bound by POPIA, one in Nigeria by the NDPR, one in Kenya by the Data Protection Act 2019 —
+   naming HIPAA at a Nairobi hospital tells them you were not listening. Where an international
+   regime genuinely also applies, say both.
+
+   Data residency is the question that follows, so answer it before it is asked: say where the
+   data and the model inference sit, and if the recommended service cannot keep them in-region,
+   say that plainly instead of leaving it for the client to discover.
 
 Currently available foundational models — recommend from this list only, and do not name
 models outside it:

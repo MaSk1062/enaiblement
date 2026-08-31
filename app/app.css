@@ -13,3 +13,35 @@ body {
     color-scheme: dark;
   }
 }
+
+/* The strategy document should read the same on paper regardless of the viewer's OS theme. */
+@media print {
+  html,
+  body {
+    background: #fff;
+    color-scheme: light;
+  }
+}
+
+/* A Canvas section that appears mid-run (UI-2) says so once, on mount — not a loop, not a
+   distraction, just enough motion that a field landing doesn't look like nothing happened. */
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-section-enter {
+  animation: section-enter 400ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-section-enter {
+    animation: none;
+  }
+}

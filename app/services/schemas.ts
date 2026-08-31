@@ -12,6 +12,8 @@
 import { z } from "zod";
 import type {
   AgentState,
+  Partner,
+  Proposal,
   Estimate,
   Reliability,
   ArchitectureStack,
@@ -239,6 +241,61 @@ export const ReviseOutput = ReviseRaw.transform((r): ReviseResult => {
   return { action: "revise", reply: r.reply, patch };
 });
 
+// --- sourcing -----------------------------------------------------------------
+// The only agent whose output names real organisations, so the schema carries the rule: a
+// partner without a URL is not a partner. `.min(1).url()` is doing real work here — it turns a
+// fabricated firm into a validation failure, which the repair re-prompt then has to answer for.
+
+export const SourcingOutput = z
+  .object({
+    reply: z.string().min(1),
+    partners: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          country: z.string().min(1),
+          delivered: z.string().min(1),
+          fit: z.string().min(1),
+          source_url: z.string().min(1).url(),
+        }),
+      )
+      .default([]),
+    proposal: z.object({
+      scope: z.string().min(1),
+      phases: z
+        .array(
+          z.object({
+            phase_name: z.string().min(1),
+            person_weeks: z.number().positive(),
+            partner_role: z.string().min(1),
+          }),
+        )
+        .min(1),
+      budget_range: z.string().min(1),
+      currency: z.string().min(1),
+      next_step: z.string().min(1),
+    }),
+  })
+  .transform((r) => ({
+    reply: r.reply,
+    partners: r.partners.map((p): Partner => ({
+      name: p.name,
+      country: p.country,
+      delivered: p.delivered,
+      fit: p.fit,
+      sourceUrl: p.source_url,
+    })),
+    proposal: {
+      scope: r.proposal.scope,
+      phases: r.proposal.phases.map((p) => ({
+        phaseName: p.phase_name,
+        personWeeks: p.person_weeks,
+        partnerRole: p.partner_role,
+      })),
+      budgetRange: r.proposal.budget_range,
+      currency: r.proposal.currency,
+      nextStep: r.proposal.next_step,
+    } satisfies Proposal,
 // --- generated files ----------------------------------------------------------
 // Shared by every capability that hands over a file: diagrams, platform, code, the runbook.
 // One schema, so the artifact plumbing and the Canvas never learn what produced a file.

@@ -23,6 +23,32 @@ export type Industry =
 
 export type CompanySize = "1-50" | "51-200" | "201-1000" | "1000+";
 
+/**
+ * Where the client operates. Not decoration: it decides which data-protection regime the
+ * Architect must design against, which currency a budget is quoted in, and which partners are
+ * actually reachable. Optional so existing sessions keep working — every prompt treats an
+ * absent region as "unspecified" rather than assuming the United States.
+ */
+export type Region =
+  | "West Africa"
+  | "East Africa"
+  | "Southern Africa"
+  | "North Africa"
+  | "Europe"
+  | "North America"
+  | "Other";
+
+/** The regime that binds a workload in each region, and the currency a budget belongs in. */
+export const REGION_CONTEXT: Record<Region, { regimes: string; currency: string }> = {
+  "West Africa": { regimes: "NDPR (Nigeria), Ghana Data Protection Act 2012", currency: "NGN or GHS" },
+  "East Africa": { regimes: "Kenya Data Protection Act 2019, Rwanda Law No. 058/2021", currency: "KES" },
+  "Southern Africa": { regimes: "POPIA (South Africa)", currency: "ZAR" },
+  "North Africa": { regimes: "Egypt PDPL 2020, Morocco Law 09-08", currency: "EGP or MAD" },
+  Europe: { regimes: "GDPR", currency: "EUR" },
+  "North America": { regimes: "HIPAA, SOC 2, state privacy law", currency: "USD" },
+  Other: { regimes: "the local data-protection regime", currency: "the local currency" },
+};
+
 export type Level = "High" | "Medium" | "Low";
 
 export type AgentName =
@@ -31,6 +57,7 @@ export type AgentName =
   | "Technical Architect"
   | "Project Manager"
   | "Change Coach"
+  | "Sourcing Lead";
   // The deep bench, reached on demand rather than by working through the pipeline.
   | "Platform Engineer"
   | "Delivery Lead"
@@ -105,6 +132,7 @@ export type Stage =
   | "architecture"
   | "roadmap"
   | "training"
+  | "sourcing"
   | "complete";
 
 export interface NeedsAssessment {
@@ -176,6 +204,35 @@ export interface Reliability {
   alerts: { name: string; condition: string; severity: "page" | "ticket" }[];
 }
 
+/** A real firm, with a link. A partner without a citation does not get stored — see sourcing.ts. */
+export interface Partner {
+  name: string;
+  country: string;
+  /** What they have actually delivered, per the source. Not what they claim to offer. */
+  delivered: string;
+  fit: string;
+  sourceUrl: string;
+}
+
+export interface Proposal {
+  scope: string;
+  phases: { phaseName: string; personWeeks: number; partnerRole: string }[];
+  budgetRange: string;
+  /** The currency the budget is quoted in, from the client's region. */
+  currency: string;
+  nextStep: string;
+}
+
+export interface Sourcing {
+  partners: Partner[];
+  proposal: Proposal;
+  /**
+   * False when the search returned no citable firms. The reply says so and `partners` is empty
+   * — the one thing this feature must never do is invent a consultancy.
+   */
+  grounded: boolean;
+}
+
 export interface AgentState {
   currentStage: Stage;
   needsAssessment: NeedsAssessment;
@@ -187,6 +244,7 @@ export interface AgentState {
   ungrounded?: boolean;
   /** What the use cases were grounded in. Shown on the Canvas so the claim is checkable. */
   sources?: { title: string; url: string }[];
+  sourcing?: Sourcing;
   /** Produced on demand, not by the pipeline. */
   estimate?: Estimate;
   reliability?: Reliability;
@@ -197,6 +255,7 @@ export interface SessionUserProfile {
   name: string;
   role: Role;
   industry: Industry;
+  region?: Region;
 }
 
 export interface SessionDocument {

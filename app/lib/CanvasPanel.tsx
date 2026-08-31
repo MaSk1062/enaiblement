@@ -14,6 +14,13 @@ import { useState } from "react";
 import { planDeepDive } from "../capabilities.ts";
 import { Artifacts } from "./Artifacts.tsx";
 import { useConsultation } from "./consultation.ts";
+import { selectExportUseCases } from "./exportView.ts";
+import { CheckIcon } from "./icons.tsx";
+import { buildTimeline } from "./timeline.ts";
+import type { Level, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
+
+export function CanvasPanel() {
+  const { state, profile, decide, error } = useConsultation();
 import type { Estimate, Level, Reliability, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
@@ -21,6 +28,7 @@ export function CanvasPanel() {
   const { needsAssessment: needs, useCases, architectureStack, roadmapPhases } = state;
   const plan = state.changeManagementPlan;
   const pending = useCases.filter((uc) => uc.status === "suggested").length;
+  const approvedIds = new Set(selectExportUseCases(useCases).approved.map((uc) => uc.id));
 
   if (useCases.length === 0) {
     return (
@@ -33,10 +41,34 @@ export function CanvasPanel() {
 
   return (
     <div className="space-y-10">
+      {/* A failed decide() sets this same error the chat's banner reads — but /dashboard/canvas
+          has no chat next to it, so without this an approve/reject click that failed here
+          would fail silently (UI-6). */}
+      {error && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 print:hidden">
+          {error}
+        </p>
+      )}
+
+      {/* Screen never needs to know who is looking — the export does, since it leaves the
+          product. Invisible until @media print picks it up. */}
+      <header className="hidden border-b border-slate-300 pb-4 print:block">
+        <p className="text-lg font-semibold text-slate-900">AI Enablement Strategy</p>
+        <p className="mt-1 text-sm text-slate-600">
+          {profile.name} · {profile.role} · {profile.industry}
+        </p>
+        <p className="text-xs text-slate-400">
+          {new Date().toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
+      </header>
       <DeepDiveCallToAction />
 
       {needs.identifiedBottleneck && (
-        <Section title="The bottleneck">
+        <Section id="section-bottleneck" title="The bottleneck">
           <p className="text-sm leading-relaxed text-slate-700">{needs.summary}</p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-3">
             <Fact label="Bottleneck" value={needs.identifiedBottleneck} />
@@ -47,6 +79,7 @@ export function CanvasPanel() {
       )}
 
       <Section
+        id="section-use-cases"
         title="Use cases"
         aside={
           pending > 0 ? (
@@ -54,7 +87,7 @@ export function CanvasPanel() {
               {pending} awaiting your decision
             </span>
           ) : (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               {useCases.filter((uc) => uc.status === "approved").length} approved
             </span>
           )
@@ -62,9 +95,16 @@ export function CanvasPanel() {
       >
         <Provenance ungrounded={state.ungrounded} sources={state.sources} />
 
+        {/* The screen keeps every use case, at whatever status, revisable. The export is the
+            artifact, not the audit log: only what shipped gets a page (exportView.ts). */}
         <div className="mt-4 space-y-3">
           {useCases.map((uc) => (
-            <UseCaseCard key={uc.id} useCase={uc} decide={decide} />
+            <UseCaseCard
+              key={uc.id}
+              useCase={uc}
+              decide={decide}
+              printHidden={!approvedIds.has(uc.id)}
+            />
           ))}
         </div>
 
@@ -77,69 +117,93 @@ export function CanvasPanel() {
       </Section>
 
       {architectureStack && (
-        <Section title="Recommended stack">
-          <dl className="grid gap-4 sm:grid-cols-3">
-            <Fact label="Models" value={architectureStack.models.join(", ")} />
-            <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
-            <Fact label="Frameworks" value={architectureStack.frameworks.join(", ") || "—"} />
-          </dl>
-          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900">
-            <span className="font-medium">Compliance risk · </span>
-            {architectureStack.securityConsiderations}
-          </p>
-        </Section>
+        <div className="animate-section-enter">
+          <Section id="section-stack" title="Recommended stack">
+            <dl className="grid gap-4 sm:grid-cols-3">
+              <Fact label="Models" value={architectureStack.models.join(", ")} />
+              <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
+              <Fact label="Frameworks" value={architectureStack.frameworks.join(", ") || "—"} />
+            </dl>
+            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900">
+              <span className="font-medium">Compliance risk · </span>
+              {architectureStack.securityConsiderations}
+            </p>
+          </Section>
+        </div>
       )}
 
       {roadmapPhases && roadmapPhases.length > 0 && (
-        <Section title="Roadmap">
-          <ol className="space-y-3">
-            {roadmapPhases.map((phase, i) => (
-              <li
-                key={phase.phaseName}
-                className="rounded-xl border border-slate-200 bg-white p-4"
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-sm font-medium text-slate-900">
-                    <span className="text-slate-400">{i + 1}. </span>
-                    {phase.phaseName}
-                  </h3>
-                  <span className="text-xs whitespace-nowrap text-slate-500">{phase.duration}</span>
-                </div>
-                <Bullets label="Deliverables" items={phase.keyDeliverables} />
-                <Bullets label="Resources" items={phase.resourcesRequired} />
-              </li>
-            ))}
-          </ol>
-        </Section>
+        <div className="animate-section-enter">
+          <Section id="section-roadmap" title="Roadmap">
+            <RoadmapTimeline phases={roadmapPhases} />
+
+            {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
+                same phases as a plain list, nothing hidden behind a click. */}
+            <ol className="space-y-3 sm:hidden print:block!">
+              {roadmapPhases.map((phase, i) => (
+                <li
+                  key={phase.phaseName}
+                  className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-sm font-medium text-slate-900">
+                      <span className="text-slate-400">{i + 1}. </span>
+                      {phase.phaseName}
+                    </h3>
+                    <span className="text-xs whitespace-nowrap text-slate-500">
+                      {phase.duration}
+                    </span>
+                  </div>
+                  <Bullets label="Deliverables" items={phase.keyDeliverables} />
+                  <Bullets label="Resources" items={phase.resourcesRequired} />
+                </li>
+              ))}
+            </ol>
+          </Section>
+        </div>
       )}
 
       {plan && (
-        <Section title="People and change">
-          <div className="space-y-3">
-            {plan.upskillingPaths.map((path) => (
-              <div key={path.role} className="rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-sm font-medium text-slate-900">{path.role}</h3>
-                  <span className="text-xs whitespace-nowrap text-slate-500">
-                    {path.timeCommitment}
-                  </span>
+        <div className="animate-section-enter">
+          <Section id="section-people" title="People and change">
+            <div className="space-y-3">
+              {plan.upskillingPaths.map((path) => (
+                <div
+                  key={path.role}
+                  className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-sm font-medium text-slate-900">{path.role}</h3>
+                    <span className="text-xs whitespace-nowrap text-slate-500">
+                      {path.timeCommitment}
+                    </span>
+                  </div>
+                  <Bullets label="Skills" items={path.skillsRequired} />
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                    {path.recommendedTraining}
+                  </p>
                 </div>
-                <Bullets label="Skills" items={path.skillsRequired} />
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  {path.recommendedTraining}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-sm leading-relaxed text-slate-700">
-              {plan.communicationStrategy.leadershipNarrative}
-            </p>
-            <Bullets label="Concerns to address" items={plan.communicationStrategy.mitigatingConcerns} />
-            <Bullets label="Adoption KPIs" items={plan.adoptionKpis} />
-          </div>
-        </Section>
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
+              <p className="text-sm leading-relaxed text-slate-700">
+                {plan.communicationStrategy.leadershipNarrative}
+              </p>
+              <Bullets
+                label="Concerns to address"
+                items={plan.communicationStrategy.mitigatingConcerns}
+              />
+              <Bullets label="Adoption KPIs" items={plan.adoptionKpis} />
+            </div>
+          </Section>
+        </div>
+      )}
+
+      {state.sourcing && (
+        <div className="animate-section-enter">
+          <PartnersAndProposal sourcing={state.sourcing} />
+        </div>
       )}
 
       {state.estimate && <EstimateSection estimate={state.estimate} />}
@@ -155,6 +219,77 @@ export function CanvasPanel() {
 }
 
 /**
+ * Who could build it, and what it would take.
+ *
+ * Every firm carries a clickable citation, for the same reason the use cases do: this is the
+ * one section naming real organisations, and a name without a source is indistinguishable from
+ * an invented one. When the search found nothing the list is empty and says so — the proposal
+ * still stands, because it derives from the approved roadmap rather than from any partner.
+ */
+function PartnersAndProposal({ sourcing }: { sourcing: Sourcing }) {
+  const { partners, proposal } = sourcing;
+
+  return (
+    <Section
+      id="section-partners"
+      title="Partners and proposal"
+      aside={
+        <span className="text-xs text-slate-400">
+          {partners.length > 0 ? `${partners.length} shortlisted` : "no verified partners"}
+        </span>
+      }
+    >
+      {partners.length === 0 ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
+          The search returned no implementation partners we could verify, so none are listed. An
+          unverified shortlist would be worse than an empty one — the proposal below is derived
+          from your approved roadmap and does not depend on a partner being named.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {partners.map((partner) => (
+            <div
+              key={partner.sourceUrl}
+              className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium text-slate-900">{partner.name}</h3>
+                <span className="text-xs whitespace-nowrap text-slate-500">{partner.country}</span>
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{partner.delivered}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{partner.fit}</p>
+              <a
+                href={partner.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block truncate text-xs text-slate-500 underline decoration-slate-300 hover:text-slate-900"
+              >
+                {partner.sourceUrl}
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
+        <p className="text-sm leading-relaxed text-slate-700">{proposal.scope}</p>
+
+        <dl className="mt-3 space-y-1.5">
+          {proposal.phases.map((phase) => (
+            <div key={phase.phaseName} className="flex items-baseline justify-between gap-3">
+              <dt className="text-sm text-slate-800">{phase.phaseName}</dt>
+              <dd className="text-xs whitespace-nowrap text-slate-500">
+                {phase.personWeeks} person-weeks · {phase.partnerRole}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="mt-3 text-sm font-medium text-slate-900">{proposal.budgetRange}</p>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          <span className="font-medium">Next · </span>
+          {proposal.nextStep}
+        </p>
  * Offered, not started. Completion is the moment the depth is worth having, but three minutes
  * and ~50k tokens should not begin because a consultation happened to finish. Disappears once
  * the bench has produced anything, so it is a prompt rather than furniture.
@@ -334,8 +469,9 @@ function ReliabilitySection({ reliability }: { reliability: Reliability }) {
  * is read-only and would be furniture here.
  */
 export function UseCaseDecisions() {
-  const { state, decide } = useConsultation();
+  const { state, decide, send, sending } = useConsultation();
   const pending = state.useCases.filter((uc) => uc.status === "suggested").length;
+  const approved = state.useCases.filter((uc) => uc.status === "approved").length;
 
   return (
     <div className="rounded-2xl border border-amber-300 bg-amber-50/40 p-4">
@@ -356,11 +492,21 @@ export function UseCaseDecisions() {
         ))}
       </div>
 
-      <p className="mt-3 text-xs text-amber-900">
-        {pending > 0
-          ? "Approve the ones worth pursuing, then reply below — the Architect designs around what you pick."
-          : "Reviewed. Reply below and the Architect will design around the ones you approved."}
-      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={approved === 0 || sending}
+          onClick={() => send("Design my stack around the use cases I approved.")}
+          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+        >
+          Design my stack →
+        </button>
+        <p className="text-xs text-amber-900">
+          {approved === 0
+            ? "Approve at least one to continue."
+            : "The Architect designs around what you approved."}
+        </p>
+      </div>
     </div>
   );
 }
@@ -368,9 +514,12 @@ export function UseCaseDecisions() {
 function UseCaseCard({
   useCase: uc,
   decide,
+  printHidden = false,
 }: {
   useCase: UseCase;
   decide: (d: Record<string, "approved" | "rejected">) => Promise<void>;
+  /** Not part of the exported artifact — the case wasn't approved (exportView.ts). */
+  printHidden?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -386,7 +535,8 @@ function UseCaseCard({
   return (
     <article
       className={[
-        "rounded-xl border bg-white p-4 transition",
+        "rounded-xl border bg-white p-4 break-inside-avoid transition",
+        printHidden ? "print:hidden" : "",
         uc.status === "approved"
           ? "border-emerald-300 bg-emerald-50/40"
           : uc.status === "rejected"
@@ -405,26 +555,33 @@ function UseCaseCard({
       <p className="mt-2 text-sm leading-relaxed text-slate-600">{uc.description}</p>
       <p className="mt-2 text-sm font-medium text-slate-900">{uc.businessValue}</p>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2 print:hidden">
         <button
           type="button"
           disabled={busy}
           onClick={() => set("approved")}
           className={[
-            "rounded-lg px-3 py-1.5 text-xs font-medium transition disabled:opacity-40",
+            "rounded-lg px-3 py-1.5 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40",
             uc.status === "approved"
               ? "bg-emerald-600 text-white"
               : "border border-slate-300 text-slate-700 hover:border-emerald-500 hover:text-emerald-700",
           ].join(" ")}
         >
-          {uc.status === "approved" ? "✓ Approved" : "Approve"}
+          {uc.status === "approved" ? (
+            <span className="flex items-center gap-1">
+              <CheckIcon className="h-3 w-3" />
+              Approved
+            </span>
+          ) : (
+            "Approve"
+          )}
         </button>
         <button
           type="button"
           disabled={busy}
           onClick={() => set("rejected")}
           className={[
-            "rounded-lg px-3 py-1.5 text-xs transition disabled:opacity-40",
+            "rounded-lg px-3 py-1.5 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40",
             uc.status === "rejected"
               ? "bg-slate-700 font-medium text-white"
               : "border border-slate-300 text-slate-500 hover:border-slate-500 hover:text-slate-800",
@@ -434,6 +591,69 @@ function UseCaseCard({
         </button>
       </div>
     </article>
+  );
+}
+
+/**
+ * The roadmap as a week-ruled CSS grid — the "Gantt" the pitch promised, downgraded on
+ * purpose to a grid (IMPLEMENTATION_PLAN.md §7): one bar per phase, positioned by
+ * `timeline.ts`, expandable to the same detail the list shows. sm and up only; below that
+ * and for print, `CanvasPanel` falls back to the plain list right below this component.
+ */
+function RoadmapTimeline({ phases }: { phases: RoadmapPhase[] }) {
+  const { lanes, totalWeeks } = buildTimeline(phases);
+  const [expandedPhase, setExpandedPhase] = useState<string | null>(null);
+  const columns = { gridTemplateColumns: `repeat(${totalWeeks}, minmax(0, 1fr))` };
+
+  return (
+    <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 sm:block print:hidden!">
+      <div className="min-w-xl">
+        <div className="grid border-b border-slate-200 pb-2" style={columns}>
+          {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((week) => (
+            <div key={week} className="text-[10px] text-slate-500">
+              {week === 1 || week % 4 === 1 ? `Wk ${week}` : ""}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 space-y-2">
+          {lanes.map((lane, i) => {
+            const phase = phases[i];
+            const expanded = expandedPhase === phase.phaseName;
+            return (
+              <div key={phase.phaseName}>
+                <div className="grid" style={columns}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedPhase(expanded ? null : phase.phaseName)}
+                    style={{ gridColumn: `${lane.startWeek} / ${lane.endWeek + 1}` }}
+                    aria-expanded={expanded}
+                    className={[
+                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900",
+                      expanded ? "bg-slate-700" : "bg-slate-900 hover:bg-slate-800",
+                      lane.open ? "bg-linear-to-r from-slate-900 to-slate-900/50" : "",
+                    ].join(" ")}
+                  >
+                    <span className="truncate">{phase.phaseName}</span>
+                    <span className="shrink-0 text-[10px] whitespace-nowrap text-slate-300">
+                      {phase.keyDeliverables.length}d · {phase.resourcesRequired.length}r
+                    </span>
+                  </button>
+                </div>
+
+                {expanded && (
+                  <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">{phase.duration}</p>
+                    <Bullets label="Deliverables" items={phase.keyDeliverables} />
+                    <Bullets label="Resources" items={phase.resourcesRequired} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -480,16 +700,19 @@ function Provenance({
 }
 
 function Section({
+  id,
   title,
   aside,
   children,
 }: {
+  /** Anchor the chat rail deep-links to when a reply is attributed to this section's agent. */
+  id?: string;
   title: string;
   aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section id={id} className="scroll-mt-4">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 className="text-xs font-medium tracking-wide text-slate-500 uppercase">{title}</h2>
         {aside}
@@ -502,7 +725,7 @@ function Section({
 function Fact({ label, value }: { label: string; value?: string }) {
   return (
     <div>
-      <dt className="text-xs text-slate-400">{label}</dt>
+      <dt className="text-xs text-slate-500">{label}</dt>
       <dd className="mt-0.5 text-sm text-slate-800">{value ?? "—"}</dd>
     </div>
   );
@@ -512,7 +735,7 @@ function Bullets({ label, items }: { label: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div className="mt-2">
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500">{label}</p>
       <ul className="mt-1 space-y-0.5">
         {items.map((item) => (
           <li key={item} className="text-sm leading-relaxed text-slate-700">
