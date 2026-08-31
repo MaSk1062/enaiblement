@@ -39,8 +39,16 @@ export default function Chat() {
   // the Architect (and whoever runs after) is building against it, so the Canvas earns the
   // page instead of waiting for the whole pipeline to finish (UI-2 — the build-out shape).
   const buildingOut = state.useCases.some((uc) => uc.status === "approved");
+  const showCanvas = done || buildingOut;
 
-  if (!done && !buildingOut) {
+  // The page just changed shape under the user — a mouse user sees it, but a keyboard or
+  // screen-reader user is still wherever the composer left them unless focus moves too.
+  const canvasHeadingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (showCanvas) canvasHeadingRef.current?.focus();
+  }, [showCanvas]);
+
+  if (!showCanvas) {
     return (
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden px-6">
         <Conversation inline={<Decisions />} />
@@ -52,6 +60,9 @@ export default function Chat() {
     <main className="flex flex-1 flex-col overflow-hidden lg:flex-row print:block print:overflow-visible">
       <div className="flex-1 overflow-y-auto px-6 py-8 lg:px-10 print:overflow-visible print:p-0">
         <div className="mx-auto max-w-3xl">
+          <h1 ref={canvasHeadingRef} tabIndex={-1} className="sr-only">
+            {done ? "Your finished strategy" : "Your strategy, building"}
+          </h1>
           {done && (
             <div className="mb-6 flex items-center justify-between print:hidden">
               <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
@@ -59,7 +70,7 @@ export default function Chat() {
                   reading and revising it, not a second place the export action can drift from. */}
               <Link
                 to="/dashboard/canvas"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
               >
                 Export as PDF →
               </Link>
@@ -124,7 +135,7 @@ function StageContinue() {
         type="button"
         disabled={sending}
         onClick={() => send(cta.message)}
-        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:opacity-40"
+        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
       >
         {cta.label}
       </button>
@@ -232,12 +243,12 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
           <button
             type="submit"
             disabled={sending || !draft.trim()}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-30"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-30"
           >
             Send
           </button>
         </div>
-        {!compact && <p className="mt-2 px-1 text-xs text-slate-400">{status.blurb}</p>}
+        {!compact && <p className="mt-2 px-1 text-xs text-slate-500">{status.blurb}</p>}
       </form>
     </>
   );

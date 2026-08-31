@@ -18,7 +18,7 @@ import { buildTimeline } from "./timeline.ts";
 import type { Level, RoadmapPhase, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
-  const { state, profile, decide } = useConsultation();
+  const { state, profile, decide, error } = useConsultation();
   const { needsAssessment: needs, useCases, architectureStack, roadmapPhases } = state;
   const plan = state.changeManagementPlan;
   const pending = useCases.filter((uc) => uc.status === "suggested").length;
@@ -35,6 +35,15 @@ export function CanvasPanel() {
 
   return (
     <div className="space-y-10">
+      {/* A failed decide() sets this same error the chat's banner reads — but /dashboard/canvas
+          has no chat next to it, so without this an approve/reject click that failed here
+          would fail silently (UI-6). */}
+      {error && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 print:hidden">
+          {error}
+        </p>
+      )}
+
       {/* Screen never needs to know who is looking — the export does, since it leaves the
           product. Invisible until @media print picks it up. */}
       <header className="hidden border-b border-slate-300 pb-4 print:block">
@@ -71,7 +80,7 @@ export function CanvasPanel() {
               {pending} awaiting your decision
             </span>
           ) : (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               {useCases.filter((uc) => uc.status === "approved").length} approved
             </span>
           )
@@ -218,12 +227,12 @@ export function UseCaseDecisions() {
         ))}
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
           disabled={approved === 0 || sending}
           onClick={() => send("Design my stack around the use cases I approved.")}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:opacity-40"
+          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
         >
           Design my stack →
         </button>
@@ -287,7 +296,7 @@ function UseCaseCard({
           disabled={busy}
           onClick={() => set("approved")}
           className={[
-            "rounded-lg px-3 py-1.5 text-xs font-medium transition disabled:opacity-40",
+            "rounded-lg px-3 py-1.5 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40",
             uc.status === "approved"
               ? "bg-emerald-600 text-white"
               : "border border-slate-300 text-slate-700 hover:border-emerald-500 hover:text-emerald-700",
@@ -307,7 +316,7 @@ function UseCaseCard({
           disabled={busy}
           onClick={() => set("rejected")}
           className={[
-            "rounded-lg px-3 py-1.5 text-xs transition disabled:opacity-40",
+            "rounded-lg px-3 py-1.5 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40",
             uc.status === "rejected"
               ? "bg-slate-700 font-medium text-white"
               : "border border-slate-300 text-slate-500 hover:border-slate-500 hover:text-slate-800",
@@ -336,7 +345,7 @@ function RoadmapTimeline({ phases }: { phases: RoadmapPhase[] }) {
       <div className="min-w-xl">
         <div className="grid border-b border-slate-200 pb-2" style={columns}>
           {Array.from({ length: totalWeeks }, (_, i) => i + 1).map((week) => (
-            <div key={week} className="text-[10px] text-slate-400">
+            <div key={week} className="text-[10px] text-slate-500">
               {week === 1 || week % 4 === 1 ? `Wk ${week}` : ""}
             </div>
           ))}
@@ -355,7 +364,7 @@ function RoadmapTimeline({ phases }: { phases: RoadmapPhase[] }) {
                     style={{ gridColumn: `${lane.startWeek} / ${lane.endWeek + 1}` }}
                     aria-expanded={expanded}
                     className={[
-                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition",
+                      "flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900",
                       expanded ? "bg-slate-700" : "bg-slate-900 hover:bg-slate-800",
                       lane.open ? "bg-linear-to-r from-slate-900 to-slate-900/50" : "",
                     ].join(" ")}
@@ -451,7 +460,7 @@ function Section({
 function Fact({ label, value }: { label: string; value?: string }) {
   return (
     <div>
-      <dt className="text-xs text-slate-400">{label}</dt>
+      <dt className="text-xs text-slate-500">{label}</dt>
       <dd className="mt-0.5 text-sm text-slate-800">{value ?? "—"}</dd>
     </div>
   );
@@ -461,7 +470,7 @@ function Bullets({ label, items }: { label: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div className="mt-2">
-      <p className="text-xs text-slate-400">{label}</p>
+      <p className="text-xs text-slate-500">{label}</p>
       <ul className="mt-1 space-y-0.5">
         {items.map((item) => (
           <li key={item} className="text-sm leading-relaxed text-slate-700">

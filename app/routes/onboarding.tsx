@@ -117,7 +117,7 @@ export default function Onboarding() {
         <button
           type="submit"
           disabled={busy || !name || !role || !industry}
-          className="mt-8 w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-40"
+          className="mt-8 w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
         >
           {busy
             ? "Setting up your consultation…"

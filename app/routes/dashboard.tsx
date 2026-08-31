@@ -130,7 +130,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
               <span className="text-sm font-semibold tracking-tight text-slate-900">enaible</span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 {profile.industry} · {profile.role}
               </span>
             </div>
@@ -226,7 +226,7 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
                 {working && <SpinnerIcon className="h-3 w-3 animate-spin" />}
                 {done && <span aria-hidden>✓</span>}
                 {agentStatus(stage).name}
-                {done && summary && <span className="text-slate-400">· {summary}</span>}
+                {done && summary && <span className="text-slate-600">· {summary}</span>}
                 {working && <span className="text-slate-300">· {agentStatus(stage).working}</span>}
               </span>
             </li>
@@ -251,7 +251,7 @@ function Centered({
           {children}
         </p>
         <div className="mt-4">
-          <SignOutButton className="text-xs text-slate-400 underline transition hover:text-slate-900" />
+          <SignOutButton className="text-xs text-slate-500 underline transition hover:text-slate-900" />
         </div>
       </div>
     </main>
