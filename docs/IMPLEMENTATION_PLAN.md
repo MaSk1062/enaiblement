@@ -38,7 +38,7 @@ Do these first, in parallel, before any feature work. Each has a long lead time 
 
 1. **Fix the Dockerfile.** As committed it runs `npm ci` against `package-lock.json`, but the repo ships `pnpm-lock.yaml`. The build fails today. Switch to `corepack enable && pnpm install --frozen-lockfile`, or generate a `package-lock.json` — then delete the other lockfile.
 2. **Create the Firestore vector index.** It takes minutes to build and every RAG query fails until it exists. Run the `gcloud alpha firestore indexes composite create` command from the schema spec now, so it is ready when the Analyst agent is.
-3. **Confirm the Gemini model id.** The PRD says "Gemini 3.5", which does not exist; the reference code names a dated preview build. Call the API once with `gemini-2.5-flash` and `text-embedding-004` and confirm both respond before anyone writes a prompt against them.
+3. **Confirm the Gemini model id.** *(Amended 2026-08-31: `gemini-3.5-flash` now exists and is the model this project uses. It is available only from the `global` endpoint — a 404 in any region — and there is no `gemini-3.5-pro`.)* Run `node --env-file=.env scripts/verify-kickoff.mjs`, which probes the configured model at the configured `GCP_LOCATION` and so catches a model/endpoint mismatch before anyone writes a prompt against it.
 4. **Deploy the empty scaffold to Cloud Run.** Get one URL serving the untouched starter page. Every deployment problem you will have — build, secrets, service account, region — is cheaper to find now than at T+40h.
 
 If all four are green by T+3h the sprint is on rails.

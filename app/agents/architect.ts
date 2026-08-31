@@ -23,7 +23,10 @@ export const AGENT_NAME = AGENT_NAMES.architect;
  */
 export const CURRENT_MODELS =
   [
-    "- Google: Gemini 2.5 Flash, Gemini 2.5 Pro (via Vertex AI)",
+    // Gemini 3.5 Flash is what this project itself runs on. There is deliberately no "Gemini
+    // 3.5 Pro" here — probed 2026-08-31, it 404s, and a menu that offers a model which does not
+    // exist is the §3.4 failure one level up: the Architect would recommend it to a CTO on stage.
+    "- Google: Gemini 3.5 Flash, Gemini 2.5 Pro (via Vertex AI)",
     "- Anthropic: Claude Sonnet, Claude Opus (via Vertex AI Model Garden or AWS Bedrock)",
     "- OpenAI: GPT-5 class models (via Azure OpenAI)",
     "- Open weight: Llama 4, Mistral Large (self-hosted or via Vertex AI Model Garden)",

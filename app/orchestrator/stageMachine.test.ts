@@ -46,7 +46,7 @@ const useCase = (id: string, status: UseCase["status"]): UseCase => ({
 });
 
 const stack = {
-  models: ["Gemini 2.5 Flash"],
+  models: ["Gemini 3.5 Flash"],
   infrastructure: ["Vertex AI"],
   frameworks: [],
   securityConsiderations: "HIPAA",

@@ -47,11 +47,20 @@ gcloud builds submit \
 # Runtime config only. No credentials: the service account supplies ADC for both Gemini and
 # Firestore, so there is no key to set here and no Secret Manager entry to mount.
 ENV_VARS="GCP_PROJECT_ID=${PROJECT}"
-ENV_VARS="${ENV_VARS},GCP_LOCATION=${GCP_LOCATION:-us-central1}"
 ENV_VARS="${ENV_VARS},FIRESTORE_DATABASE_ID=${FIRESTORE_DATABASE_ID:-(default)}"
 ENV_VARS="${ENV_VARS},FIREBASE_AUTH_PROJECT_ID=${FIREBASE_AUTH_PROJECT_ID:-${PROJECT}}"
-ENV_VARS="${ENV_VARS},GEMINI_TEXT_MODEL=${GEMINI_TEXT_MODEL:-gemini-2.5-flash}"
 ENV_VARS="${ENV_VARS},GEMINI_EMBEDDING_MODEL=${GEMINI_EMBEDDING_MODEL:-gemini-embedding-001}"
+
+# The model and its endpoint are a pair (gemini-3.5-flash is global-only) and their defaults
+# live in app/services/gemini.ts. Passed through only when .env sets them — a second copy of a
+# default here is a second place for it to drift, and it is the place it drifted last time.
+# `if`, not `[ … ] && …`: under `set -e` a false test is a failing command and would abort here.
+if [ -n "${GEMINI_TEXT_MODEL:-}" ]; then
+  ENV_VARS="${ENV_VARS},GEMINI_TEXT_MODEL=${GEMINI_TEXT_MODEL}"
+fi
+if [ -n "${GCP_LOCATION:-}" ]; then
+  ENV_VARS="${ENV_VARS},GCP_LOCATION=${GCP_LOCATION}"
+fi
 ENV_VARS="${ENV_VARS},EMBEDDING_DIMENSIONS=${EMBEDDING_DIMENSIONS:-768}"
 ENV_VARS="${ENV_VARS},RAG_TOP_K=${RAG_TOP_K:-3}"
 ENV_VARS="${ENV_VARS},MAX_TURNS_PER_MINUTE=${MAX_TURNS_PER_MINUTE:-20}"

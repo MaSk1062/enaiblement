@@ -16,9 +16,21 @@ import type { z } from "zod";
 import { countTokens, event } from "./telemetry.ts";
 
 const PROJECT = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
-const LOCATION = process.env.GCP_LOCATION ?? "us-central1";
 
-export const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL ?? "gemini-2.5-flash";
+/**
+ * These two defaults are a pair and must move together.
+ *
+ * `gemini-3.5-flash` serves ONLY from the `global` endpoint — probed 2026-08-31, it is a plain
+ * 404 ("publisher model not found") in `us-central1`. Defaulting the model here while leaving
+ * the location regional would 404 every agent call for anyone who has not set GCP_LOCATION by
+ * hand. This file is the single source of both defaults; scripts/deploy.sh passes the env vars
+ * through only when they are set rather than carrying its own copy.
+ *
+ * `global` means requests may be served from any region — a data-residency ceiling, not a
+ * problem for this build. If residency ever matters, the model has to change, not the config.
+ */
+export const LOCATION = process.env.GCP_LOCATION ?? "global";
+export const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL ?? "gemini-3.5-flash";
 export const EMBEDDING_MODEL = process.env.GEMINI_EMBEDDING_MODEL ?? "gemini-embedding-001";
 export const EMBEDDING_DIMENSIONS = Number(process.env.EMBEDDING_DIMENSIONS ?? 768);
 

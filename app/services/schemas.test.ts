@@ -56,14 +56,14 @@ test("research: business_value becomes businessValue and status defaults to sugg
 test("architecture: security_considerations is flattened onto the stack", () => {
   const s = ArchitectureOutput.parse({
     architecture_stack: {
-      models: ["Gemini 2.5 Flash"],
+      models: ["Gemini 3.5 Flash"],
       infrastructure: ["Vertex AI"],
       frameworks: ["LangChain"],
     },
     security_considerations: "HIPAA: de-identify PHI before inference.",
   });
   assert.equal(s.securityConsiderations, "HIPAA: de-identify PHI before inference.");
-  assert.deepEqual(s.models, ["Gemini 2.5 Flash"]);
+  assert.deepEqual(s.models, ["Gemini 3.5 Flash"]);
 });
 
 test("roadmap and change plan translate their nested keys", () => {

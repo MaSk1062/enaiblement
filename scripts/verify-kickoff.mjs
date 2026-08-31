@@ -17,9 +17,11 @@ import * as adminFirestore from "firebase-admin/firestore";
 const { FieldValue } = adminFirestore;
 
 const PROJECT = process.env.GCP_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
-const LOCATION = process.env.GCP_LOCATION || "us-central1";
+const LOCATION = process.env.GCP_LOCATION || "global";
 
-const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3-flash"];
+// gemini-3.5-flash first: it is the model this project runs on, and it is global-only, so
+// probing it at the CONFIGURED location is what catches a model/endpoint mismatch.
+const TEXT_MODELS = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"];
 const EMBED_MODELS = ["gemini-embedding-001", "text-embedding-005", "text-embedding-004"];
 const WANT_DIMS = 768; // must match the declared vector index
 

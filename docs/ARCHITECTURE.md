@@ -103,9 +103,16 @@ A browser sends a chat turn with a Firebase ID token; the Cloud Run container ve
 
 ### 4.5 ADR-05 — Model selection
 
-The PRD/FRD say "Gemini 3.5". **No such model exists** — this looks like a conflation of Gemini 2.5 and Claude 3.5. The reference code names `gemini-2.5-flash-preview-09-2025`.
+The PRD/FRD say "Gemini 3.5". At the time this ADR was written no such model existed, and it read like a conflation of Gemini 2.5 and Claude 3.5; the reference code named `gemini-2.5-flash-preview-09-2025`.
 
-**Decision.** Pin `gemini-2.5-flash` for all five agents and `text-embedding-004` for embeddings (768 dimensions, matching the declared index). Flash is the right default: the agents produce short structured JSON, not long prose, and latency is on the critical path. Read the model id from an environment variable so it can be swapped to Pro for the Architect agent without a redeploy if output quality demands it.
+> **Amended 2026-08-31 — the FRD was early, not wrong.** `gemini-3.5-flash` is now generally available on Vertex AI and is the model this project runs on. Two constraints, both probed rather than assumed:
+>
+> - **It serves only from the `global` endpoint.** `gemini-3.5-flash` in `us-central1` is a plain 404. `GCP_LOCATION` therefore defaults to `global`, and the model and the endpoint are a pair — changing one without the other breaks every agent call. The cost is data residency: `global` may serve from any region.
+> - **There is no `gemini-3.5-pro`.** It 404s. Nothing may offer it, least of all the Architect's fallback model menu.
+>
+> Both defaults now live in one place, `app/services/gemini.ts`; `scripts/deploy.sh` passes the env vars through only when set rather than carrying its own copy, which is how the defaults drifted apart in the first place. `GET /health` reports the pair in production.
+
+**Decision.** Pin one Flash-class model for all five agents — `gemini-3.5-flash` as of the amendment above, `gemini-2.5-flash` as originally written — and `gemini-embedding-001` at 768 output dimensions for embeddings, pinned via `outputDimensionality` to match the declared index (the model is natively 3072-d; `text-embedding-004` as originally specified was superseded). Flash is the right default: the agents produce short structured JSON, not long prose, and latency is on the critical path. Read the model id from an environment variable so it can be swapped to Pro for the Architect agent without a redeploy if output quality demands it.
 
 **Verify before building:** model availability and exact ids change frequently. Confirm the current id in the Gemini API docs at kickoff rather than trusting this document.
 
@@ -322,9 +329,9 @@ Stated plainly so nobody discovers it late:
 | Name | Source | Notes |
 |---|---|---|
 | `GCP_PROJECT_ID` | env | Vertex, Firestore, and Auth project |
-| `GCP_LOCATION` | env | Default `us-central1`; embedding models are region-bound |
-| `GEMINI_TEXT_MODEL` | env | Default `gemini-2.5-flash`; verify id at kickoff |
-| `GEMINI_EMBEDDING_MODEL` | env | `text-embedding-004`, 768 dimensions |
+| `GCP_LOCATION` | env | Default `global` — required by `gemini-3.5-flash`, which 404s in a region |
+| `GEMINI_TEXT_MODEL` | env | Default `gemini-3.5-flash`; `GET /health` reports the live value |
+| `GEMINI_EMBEDDING_MODEL` | env | `gemini-embedding-001`, pinned to 768 dimensions |
 | `GCP_PROJECT_ID` | env | Firestore + Auth project |
 | `EMBEDDING_DIMENSIONS` | env | `768`; pinned via `outputDimensionality` so it always matches the index |
 | `RAG_TOP_K` | env | Default 3 |
