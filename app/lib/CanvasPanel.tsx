@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { ArchitectureDiagram, FIXTURE_DIAGRAM } from "./ArchitectureDiagram.tsx";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
@@ -121,6 +122,16 @@ export function CanvasPanel() {
               <span className="font-medium">Compliance risk · </span>
               {architectureStack.securityConsiderations}
             </p>
+            {/* UI-8, held: ArchitectureStack has no diagram field yet, so this renders
+                FIXTURE_DIAGRAM. Swap to architectureStack.diagram (or whatever he names it)
+                once app/agents/architect.ts actually emits one — that's the only change this
+                needs before it can merge. */}
+            <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
+              <p className="mb-2 text-xs font-medium tracking-wide text-slate-500 uppercase">
+                Architecture diagram
+              </p>
+              <ArchitectureDiagram diagram={FIXTURE_DIAGRAM} />
+            </div>
           </Section>
         </div>
       )}
