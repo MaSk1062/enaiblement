@@ -218,7 +218,7 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
                 className={[
                   "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
                   active
-                    ? `${accent.solid} font-medium text-white`
+                    ? `${accent.solid} font-medium text-white ${working ? "shadow-sm" : ""}`
                     : done
                       ? `${accent.light} ${accent.lightText}`
                       : "text-slate-400",

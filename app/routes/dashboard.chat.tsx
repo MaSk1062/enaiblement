@@ -76,7 +76,17 @@ export default function Chat() {
               </Link>
             </div>
           )}
-          <CanvasPanel />
+          {/* Finished, it's the artifact, not a form — a document deserves to look lifted off
+              the page (UI-12). Mid-build-out it's still in progress, so it stays flat. */}
+          <div
+            className={
+              done
+                ? "rounded-xl bg-white p-8 shadow-sm print:rounded-none print:bg-transparent print:p-0 print:shadow-none"
+                : ""
+            }
+          >
+            <CanvasPanel />
+          </div>
         </div>
       </div>
 
