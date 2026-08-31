@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
@@ -130,7 +130,10 @@ export default function Dashboard() {
                 {profile.industry} · {profile.role}
               </span>
             </div>
-            <SignOutButton />
+            <div className="flex items-center gap-5">
+              <Nav pending={state.useCases.filter((uc) => uc.status === "suggested").length} />
+              <SignOutButton />
+            </div>
           </div>
           <ProgressRail current={state.currentStage} />
         </header>
@@ -138,6 +141,34 @@ export default function Dashboard() {
         <Outlet />
       </div>
     </ConsultationContext.Provider>
+  );
+}
+
+/**
+ * Chat and Canvas, plus the count of use cases still waiting on a decision — which is the
+ * only signal pointing at the approval gate while the gate is what is blocking the stage.
+ */
+function Nav({ pending }: { pending: number }) {
+  const style = ({ isActive }: { isActive: boolean }) =>
+    [
+      "text-xs transition",
+      isActive ? "font-medium text-slate-900" : "text-slate-500 hover:text-slate-900",
+    ].join(" ");
+
+  return (
+    <nav className="flex items-center gap-4">
+      <NavLink to="/dashboard/chat" className={style}>
+        Chat
+      </NavLink>
+      <NavLink to="/dashboard/canvas" className={style}>
+        Canvas
+        {pending > 0 && (
+          <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+            {pending}
+          </span>
+        )}
+      </NavLink>
+    </nav>
   );
 }
 

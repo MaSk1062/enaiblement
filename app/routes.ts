@@ -4,7 +4,10 @@ export default [
   index("routes/home.tsx"),
   route("login", "routes/login.tsx"),
   route("onboarding", "routes/onboarding.tsx"),
-  layout("routes/dashboard.tsx", [route("dashboard/chat", "routes/dashboard.chat.tsx")]),
+  layout("routes/dashboard.tsx", [
+    route("dashboard/chat", "routes/dashboard.chat.tsx"),
+    route("dashboard/canvas", "routes/dashboard.canvas.tsx"),
+  ]),
 
   // Resource routes — ARCHITECTURE.md Appendix A. One container serves these and the UI
   // (ADR-01), so the orchestrator is an in-process import rather than a network hop.
