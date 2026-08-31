@@ -22,3 +22,26 @@ body {
     color-scheme: light;
   }
 }
+
+/* A Canvas section that appears mid-run (UI-2) says so once, on mount — not a loop, not a
+   distraction, just enough motion that a field landing doesn't look like nothing happened. */
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-section-enter {
+  animation: section-enter 400ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-section-enter {
+    animation: none;
+  }
+}

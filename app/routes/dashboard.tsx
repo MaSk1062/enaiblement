@@ -3,10 +3,11 @@ import { NavLink, Outlet, useNavigate } from "react-router";
 import * as api from "../lib/api.ts";
 import { agentStatus, STAGES } from "../lib/agentStatus.ts";
 import { ConsultationContext, type Consultation } from "../lib/consultation.ts";
-import { CanvasIcon, ChatIcon } from "../lib/icons.tsx";
+import { CanvasIcon, ChatIcon, SpinnerIcon } from "../lib/icons.tsx";
+import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
-import type { AgentState, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
+import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -138,7 +139,7 @@ export default function Dashboard() {
               <SignOutButton />
             </div>
           </div>
-          <ProgressRail current={state.currentStage} />
+          <ProgressRail state={state} sending={sending} />
         </header>
 
         <div className="flex flex-1 overflow-hidden print:overflow-visible">
@@ -184,11 +185,13 @@ function Nav({ pending }: { pending: number }) {
 }
 
 /**
- * The five specialists, and which one has the file. This plus the typing indicator is what
+ * The five specialists, and which one has the file — live, not decorative (UI-2). A finished
+ * chip says what it produced (`pipelineView.ts`), the active one spins and says what it's
+ * doing, so the rail plus the chat's typing indicator (dashboard.chat.tsx) are what
  * IMPLEMENTATION_PLAN §7 calls the single highest-leverage piece of UI in the build.
  */
-function ProgressRail({ current }: { current: Stage }) {
-  const currentIndex = STAGES.indexOf(current);
+function ProgressRail({ state, sending }: { state: AgentState; sending: boolean }) {
+  const currentIndex = STAGES.indexOf(state.currentStage);
 
   return (
     <div className="overflow-x-auto px-6 pb-3">
@@ -196,12 +199,14 @@ function ProgressRail({ current }: { current: Stage }) {
         {STAGES.slice(0, 5).map((stage, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
+          const working = active && sending;
+          const summary = done ? stageSummary(stage, state) : null;
           return (
             <li key={stage} className="flex items-center gap-2">
               {i > 0 && <span aria-hidden className="h-px w-5 bg-slate-200" />}
               <span
                 className={[
-                  "rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
+                  "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
                   active
                     ? "bg-slate-900 font-medium text-white"
                     : done
@@ -209,8 +214,11 @@ function ProgressRail({ current }: { current: Stage }) {
                       : "text-slate-400",
                 ].join(" ")}
               >
-                {done && <span aria-hidden>✓ </span>}
+                {working && <SpinnerIcon className="h-3 w-3 animate-spin" />}
+                {done && <span aria-hidden>✓</span>}
                 {agentStatus(stage).name}
+                {done && summary && <span className="text-slate-400">· {summary}</span>}
+                {working && <span className="text-slate-300">· {agentStatus(stage).working}</span>}
               </span>
             </li>
           );

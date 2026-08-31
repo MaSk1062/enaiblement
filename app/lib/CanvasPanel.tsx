@@ -100,76 +100,87 @@ export function CanvasPanel() {
       </Section>
 
       {architectureStack && (
-        <Section title="Recommended stack">
-          <dl className="grid gap-4 sm:grid-cols-3">
-            <Fact label="Models" value={architectureStack.models.join(", ")} />
-            <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
-            <Fact label="Frameworks" value={architectureStack.frameworks.join(", ") || "—"} />
-          </dl>
-          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900">
-            <span className="font-medium">Compliance risk · </span>
-            {architectureStack.securityConsiderations}
-          </p>
-        </Section>
+        <div className="animate-section-enter">
+          <Section title="Recommended stack">
+            <dl className="grid gap-4 sm:grid-cols-3">
+              <Fact label="Models" value={architectureStack.models.join(", ")} />
+              <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
+              <Fact label="Frameworks" value={architectureStack.frameworks.join(", ") || "—"} />
+            </dl>
+            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900">
+              <span className="font-medium">Compliance risk · </span>
+              {architectureStack.securityConsiderations}
+            </p>
+          </Section>
+        </div>
       )}
 
       {roadmapPhases && roadmapPhases.length > 0 && (
-        <Section title="Roadmap">
-          <RoadmapTimeline phases={roadmapPhases} />
+        <div className="animate-section-enter">
+          <Section title="Roadmap">
+            <RoadmapTimeline phases={roadmapPhases} />
 
-          {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
-              same phases as a plain list, nothing hidden behind a click. */}
-          <ol className="space-y-3 sm:hidden print:block!">
-            {roadmapPhases.map((phase, i) => (
-              <li
-                key={phase.phaseName}
-                className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-sm font-medium text-slate-900">
-                    <span className="text-slate-400">{i + 1}. </span>
-                    {phase.phaseName}
-                  </h3>
-                  <span className="text-xs whitespace-nowrap text-slate-500">{phase.duration}</span>
-                </div>
-                <Bullets label="Deliverables" items={phase.keyDeliverables} />
-                <Bullets label="Resources" items={phase.resourcesRequired} />
-              </li>
-            ))}
-          </ol>
-        </Section>
+            {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
+                same phases as a plain list, nothing hidden behind a click. */}
+            <ol className="space-y-3 sm:hidden print:block!">
+              {roadmapPhases.map((phase, i) => (
+                <li
+                  key={phase.phaseName}
+                  className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-sm font-medium text-slate-900">
+                      <span className="text-slate-400">{i + 1}. </span>
+                      {phase.phaseName}
+                    </h3>
+                    <span className="text-xs whitespace-nowrap text-slate-500">
+                      {phase.duration}
+                    </span>
+                  </div>
+                  <Bullets label="Deliverables" items={phase.keyDeliverables} />
+                  <Bullets label="Resources" items={phase.resourcesRequired} />
+                </li>
+              ))}
+            </ol>
+          </Section>
+        </div>
       )}
 
       {plan && (
-        <Section title="People and change">
-          <div className="space-y-3">
-            {plan.upskillingPaths.map((path) => (
-              <div
-                key={path.role}
-                className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-sm font-medium text-slate-900">{path.role}</h3>
-                  <span className="text-xs whitespace-nowrap text-slate-500">
-                    {path.timeCommitment}
-                  </span>
+        <div className="animate-section-enter">
+          <Section title="People and change">
+            <div className="space-y-3">
+              {plan.upskillingPaths.map((path) => (
+                <div
+                  key={path.role}
+                  className="rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-sm font-medium text-slate-900">{path.role}</h3>
+                    <span className="text-xs whitespace-nowrap text-slate-500">
+                      {path.timeCommitment}
+                    </span>
+                  </div>
+                  <Bullets label="Skills" items={path.skillsRequired} />
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                    {path.recommendedTraining}
+                  </p>
                 </div>
-                <Bullets label="Skills" items={path.skillsRequired} />
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  {path.recommendedTraining}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
-            <p className="text-sm leading-relaxed text-slate-700">
-              {plan.communicationStrategy.leadershipNarrative}
-            </p>
-            <Bullets label="Concerns to address" items={plan.communicationStrategy.mitigatingConcerns} />
-            <Bullets label="Adoption KPIs" items={plan.adoptionKpis} />
-          </div>
-        </Section>
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 break-inside-avoid">
+              <p className="text-sm leading-relaxed text-slate-700">
+                {plan.communicationStrategy.leadershipNarrative}
+              </p>
+              <Bullets
+                label="Concerns to address"
+                items={plan.communicationStrategy.mitigatingConcerns}
+              />
+              <Bullets label="Adoption KPIs" items={plan.adoptionKpis} />
+            </div>
+          </Section>
+        </div>
       )}
     </div>
   );
