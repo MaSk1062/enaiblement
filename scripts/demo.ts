@@ -164,6 +164,15 @@ const state: AgentState = {
       complexity: "Medium",
       businessValue: "Avoids an estimated 200 avoidable resubmissions a year",
       status: "rejected",
+      feedback: "Payer relations owns this and will not hand it over",
+    },
+  ],
+  // The copy that outlives a rewind, and the one `summarise()` reads when this consultation
+  // becomes a memory. Without it a seeded demo would remember an approval and forget a refusal.
+  declined: [
+    {
+      title: "Payer policy change monitoring",
+      reason: "Payer relations owns this and will not hand it over",
     },
   ],
   sources: [

@@ -5,12 +5,12 @@
  */
 
 import template from "./prompts/architecture.md?raw";
-import { fillPrompt } from "./prompt.ts";
+import { declinedBlock, fillPrompt } from "./prompt.ts";
 import { AGENT_NAMES } from "./names.ts";
 import { generateStructured, searchGrounded } from "../services/gemini.ts";
 import { ArchitectureOutput } from "../services/schemas.ts";
 import { REGION_CONTEXT } from "../types.ts";
-import type { ArchitectureStack, Region, Role, UseCase } from "../types.ts";
+import type { ArchitectureStack, Declined, Region, Role, UseCase } from "../types.ts";
 
 export const AGENT_NAME = AGENT_NAMES.architect;
 
@@ -37,6 +37,10 @@ export interface ArchitectInput {
   role: Role;
   approvedUseCases: UseCase[];
   region?: Region;
+  /** Prose from services/memory.ts — what this client always wants in a recommendation. */
+  memory?: string;
+  /** What they turned down, and why. A stack must not be designed around a refusal. */
+  declined?: Declined[];
 }
 
 // ponytail: process-lifetime cache, no TTL. The menu changes on the scale of months and the
@@ -75,10 +79,10 @@ export async function run(input: ArchitectInput): Promise<ArchitectureStack> {
   // the prompt ask rather than quietly defaulting to HIPAA.
   const context = input.region ? REGION_CONTEXT[input.region] : undefined;
 
-  const payload = `User role: ${input.role}
+  const payload = `${input.memory ? `${input.memory}\n\n` : ""}User role: ${input.role}
 Region: ${input.region ?? "unspecified"}
 Binding data-protection regime: ${context?.regimes ?? "unspecified — say so rather than assuming one"}
-Approved use cases: ${JSON.stringify(input.approvedUseCases, null, 2)}`;
+Approved use cases: ${JSON.stringify(input.approvedUseCases, null, 2)}${declinedBlock(input.declined)}`;
 
   return generateStructured(
     fillPrompt(template, { CURRENT_MODELS: await modelMenu() }),

@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [producing, setProducing] = useState<Consultation["producing"]>(null);
   const [error, setError] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
+  const [consultations, setConsultations] = useState<api.Me["consultations"]>([]);
 
   // Bootstrap: who is this, have they onboarded, is there a session to resume?
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function Dashboard() {
           navigate("/onboarding", { replace: true });
           return;
         }
+        setConsultations(me.consultations ?? []);
         const session = await api.getSession(me.activeSessionId);
         if (cancelled) return;
         setSessionId(session.sessionId);
@@ -156,7 +158,7 @@ export default function Dashboard() {
   // and comes back with several replies. `sending` drives the same typing indicator, because
   // from the user's side it is the same thing: the specialists are working.
   const decide = useCallback(
-    async (decisions: Record<string, "approved" | "rejected">) => {
+    async (decisions: Record<string, api.Decision>) => {
       if (!sessionId || sending) return;
       setSending(true);
       setError(null);
@@ -172,6 +174,47 @@ export default function Dashboard() {
     },
     [sessionId, sending],
   );
+
+  /**
+   * A new consultation is what turns the current one into history: the server folds it into
+   * the client's memory before it moves the pointer, which is the only place memory
+   * accumulates.
+   *
+   * A full reload rather than re-deriving state by hand — every piece of local state above
+   * belongs to the session being left, and rebuilding it here would be the bootstrap effect
+   * written a second time.
+   */
+  const newConsultation = useCallback(async () => {
+    if (!profile) return;
+    // Only a FINISHED consultation becomes a reopenable memory, so leaving an unfinished one
+    // really does bury it. Say so rather than discovering it afterwards.
+    if (
+      state?.currentStage !== "complete" &&
+      !window.confirm(
+        "This consultation is not finished, so it will not appear in your history and you " +
+          "will not be able to reopen it. Start a new one anyway?",
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    try {
+      await api.startSession(profile);
+      window.location.assign("/dashboard/chat");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }, [profile, state]);
+
+  const openConsultation = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      await api.setActiveSession(id);
+      window.location.assign("/dashboard/chat");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }, []);
 
   if (authLoading || booting) {
     return <Centered tone="loading">Loading your consultation…</Centered>;
@@ -198,6 +241,9 @@ export default function Dashboard() {
     decide,
     produce,
     deepDive,
+    consultations,
+    newConsultation,
+    openConsultation,
   };
 
   return (
@@ -217,6 +263,11 @@ export default function Dashboard() {
               <Nav
                 pending={state.useCases.filter((uc) => uc.status === "suggested").length}
                 exportReady={state.currentStage === "complete"}
+              />
+              <Consultations
+                consultations={consultations}
+                onNew={newConsultation}
+                onOpen={openConsultation}
               />
               <SignOutButton />
             </div>
@@ -246,6 +297,66 @@ export default function Dashboard() {
  * The pending-count badge stays on Chat, not Export, because Chat is where the gate that badge
  * describes actually lives — the only signal pointing at the decision blocking the pipeline.
  */
+/**
+ * Start a new engagement, or reopen a finished one.
+ *
+ * This exists because `activeSessionId` is a single field: without a way back, beginning a
+ * second consultation would make the first one's finished strategy unreachable forever. It is
+ * navigation only. What the product *remembers* about the client — how they budget, what they
+ * refuse, what they scoped last time — is deliberately not shown here; it shows up in how the
+ * agents behave, which is the point of it.
+ *
+ * ponytail: a native <details>, so there is no open state, no click-outside listener and no
+ * menu library. Two viewport caveats that come with that: it does not close on outside click,
+ * and a long history scrolls inside its own box rather than flipping above the header.
+ */
+function Consultations({
+  consultations,
+  onNew,
+  onOpen,
+}: {
+  consultations: { sessionId: string; completedAt: string; bottleneck: string }[];
+  onNew: () => void;
+  onOpen: (sessionId: string) => void;
+}) {
+  const item =
+    "block w-full rounded px-3 py-2 text-left text-xs text-slate-600 transition hover:bg-slate-50 hover:text-slate-900";
+
+  return (
+    <details className="relative">
+      <summary className="cursor-pointer list-none text-xs text-slate-500 transition hover:text-slate-900">
+        Consultations
+      </summary>
+      <div className="absolute right-0 z-20 mt-2 max-h-80 w-72 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+        <button type="button" onClick={onNew} className={`${item} font-medium text-slate-900`}>
+          New consultation
+        </button>
+
+        {consultations.length > 0 && (
+          <>
+            <p className="px-3 pt-2 pb-1 text-[11px] tracking-wide text-slate-400 uppercase">
+              Earlier
+            </p>
+            {consultations.map((c) => (
+              <button
+                key={c.sessionId}
+                type="button"
+                onClick={() => onOpen(c.sessionId)}
+                className={item}
+              >
+                <span className="block truncate">{c.bottleneck}</span>
+                <span className="block text-[11px] text-slate-400">
+                  {c.completedAt.slice(0, 10)}
+                </span>
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+    </details>
+  );
+}
+
 function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }) {
   const style = ({ isActive }: { isActive: boolean }) =>
     [

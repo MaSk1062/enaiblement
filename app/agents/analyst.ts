@@ -4,12 +4,12 @@
  */
 
 import template from "./prompts/research.md?raw";
-import { fillPrompt } from "./prompt.ts";
+import { declinedBlock, fillPrompt } from "./prompt.ts";
 import { AGENT_NAMES } from "./names.ts";
 import { generateStructured } from "../services/gemini.ts";
 import { UseCasesOutput } from "../services/schemas.ts";
 import { toContextBlock, type RagResult } from "../services/rag.ts";
-import type { Industry, Role, UseCase } from "../types.ts";
+import type { Declined, Industry, Role, UseCase } from "../types.ts";
 
 export const AGENT_NAME = AGENT_NAMES.analyst;
 
@@ -18,6 +18,12 @@ export interface AnalystInput {
   role: Role;
   bottleneck: string;
   retrieval: RagResult;
+  /**
+   * What the client already refused. Empty on a first pass and populated on a rerun, which is
+   * the case that matters: rebuilding the list after "drop that one" must not put it straight
+   * back. `AgentState.declined` survives the rewind that clears `useCases` for exactly this.
+   */
+  declined?: Declined[];
 }
 
 export async function run(input: AnalystInput): Promise<UseCase[]> {
@@ -25,7 +31,7 @@ export async function run(input: AnalystInput): Promise<UseCase[]> {
 Role: ${input.role}
 Identified bottleneck: ${input.bottleneck}
 
-${toContextBlock(input.retrieval)}
+${toContextBlock(input.retrieval)}${declinedBlock(input.declined)}
 
 Generate exactly 3 use cases.`;
 

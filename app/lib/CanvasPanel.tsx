@@ -15,6 +15,7 @@ import { AGENT_NAMES } from "../agents/names.ts";
 import { planDeepDive } from "../capabilities.ts";
 import { agentPersona } from "./agentStatus.ts";
 import { Artifacts } from "./Artifacts.tsx";
+import type { Decision } from "./api.ts";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
@@ -522,19 +523,35 @@ function UseCaseCard({
   printHidden = false,
 }: {
   useCase: UseCase;
-  decide: (d: Record<string, "approved" | "rejected">) => Promise<void>;
+  decide: (d: Record<string, Decision>) => Promise<void>;
   /** Not part of the exported artifact — the case wasn't approved (exportView.ts). */
   printHidden?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [reason, setReason] = useState("");
 
-  async function set(status: "approved" | "rejected") {
+  async function set(status: "approved" | "rejected", why?: string) {
     setBusy(true);
     try {
-      await decide({ [uc.id]: status });
+      await decide({ [uc.id]: { status, ...(why ? { reason: why } : {}) } });
     } finally {
       setBusy(false);
     }
+  }
+
+  // The rejection lands on the first click; the reason is asked for afterwards and is always
+  // skippable. Gating a rejection behind typing would make the fast path slower for everyone
+  // to collect a field most people will leave empty.
+  async function reject() {
+    await set("rejected");
+    setAsking(true);
+  }
+
+  async function submitReason() {
+    const why = reason.trim();
+    setAsking(false);
+    if (why) await set("rejected", why);
   }
 
   return (
@@ -584,7 +601,7 @@ function UseCaseCard({
         <button
           type="button"
           disabled={busy}
-          onClick={() => set("rejected")}
+          onClick={reject}
           className={[
             "rounded-lg px-3 py-1.5 text-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40",
             uc.status === "rejected"
@@ -595,6 +612,38 @@ function UseCaseCard({
           {uc.status === "rejected" ? "Rejected" : "Reject"}
         </button>
       </div>
+
+      {/* The only feedback in the product that says more than yes or no. It reaches the
+          Architect, and it survives a rebuild — so the same idea does not come back. */}
+      {asking && (
+        <form
+          className="mt-2 flex items-center gap-2 print:hidden"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submitReason();
+          }}
+        >
+          <input
+            autoFocus
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={300}
+            placeholder="Why not? Optional — it stops this coming back."
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          />
+          <button
+            type="submit"
+            disabled={busy}
+            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs text-slate-600 transition hover:border-slate-500 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          >
+            {reason.trim() ? "Save" : "Skip"}
+          </button>
+        </form>
+      )}
+
+      {!asking && uc.feedback && (
+        <p className="mt-2 text-xs text-slate-500 italic">Your note: {uc.feedback}</p>
+      )}
     </article>
   );
 }
