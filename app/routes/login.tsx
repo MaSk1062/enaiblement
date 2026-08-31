@@ -177,7 +177,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <p className="text-2xl font-semibold tracking-tight text-slate-900">enaible</p>
+          <p className="text-3xl font-semibold tracking-tight text-slate-900">enaible</p>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
             A consulting team of five AI specialists that turns your bottleneck into a funded,
             phased adoption plan.
