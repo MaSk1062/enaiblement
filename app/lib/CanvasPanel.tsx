@@ -149,8 +149,9 @@ export function CanvasPanel() {
  * is read-only and would be furniture here.
  */
 export function UseCaseDecisions() {
-  const { state, decide } = useConsultation();
+  const { state, decide, send, sending } = useConsultation();
   const pending = state.useCases.filter((uc) => uc.status === "suggested").length;
+  const approved = state.useCases.filter((uc) => uc.status === "approved").length;
 
   return (
     <div className="rounded-2xl border border-amber-300 bg-amber-50/40 p-4">
@@ -171,11 +172,21 @@ export function UseCaseDecisions() {
         ))}
       </div>
 
-      <p className="mt-3 text-xs text-amber-900">
-        {pending > 0
-          ? "Approve the ones worth pursuing, then reply below — the Architect designs around what you pick."
-          : "Reviewed. Reply below and the Architect will design around the ones you approved."}
-      </p>
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          disabled={approved === 0 || sending}
+          onClick={() => send("Design my stack around the use cases I approved.")}
+          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:opacity-40"
+        >
+          Design my stack →
+        </button>
+        <p className="text-xs text-amber-900">
+          {approved === 0
+            ? "Approve at least one to continue."
+            : "The Architect designs around what you approved."}
+        </p>
+      </div>
     </div>
   );
 }
