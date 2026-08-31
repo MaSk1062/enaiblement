@@ -125,7 +125,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={disabled || !email || !password}
-          className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+          className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
         >
           {busy === "email"
             ? mode === "signin"
@@ -177,7 +177,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <p className="text-3xl font-semibold tracking-tight text-slate-900">enaible</p>
+          <p className="text-3xl font-semibold tracking-tight text-indigo-600">enaible</p>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">
             A consulting team of five AI specialists that turns your bottleneck into a funded,
             phased adoption plan.

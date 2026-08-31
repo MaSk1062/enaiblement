@@ -145,7 +145,7 @@ function StageContinue() {
         type="button"
         disabled={sending}
         onClick={() => send(cta.message)}
-        className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-40"
+        className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-40"
       >
         {cta.label}
       </button>
@@ -253,7 +253,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
           <button
             type="submit"
             disabled={sending || !draft.trim()}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-30"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-30"
           >
             Send
           </button>
@@ -268,7 +268,7 @@ function Bubble({ message, compact }: { message: ChatMessage; compact?: boolean 
   if (message.sender === "user") {
     return (
       <div className="flex justify-end">
-        <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-slate-900 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-white">
+        <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap text-white">
           {message.text}
         </p>
       </div>
