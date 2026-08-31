@@ -11,11 +11,13 @@
  */
 
 import { useState } from "react";
+import { AGENT_NAMES } from "../agents/names.ts";
+import { agentPersona } from "./agentStatus.ts";
 import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
 import { buildTimeline } from "./timeline.ts";
-import type { Level, RoadmapPhase, UseCase } from "../types.ts";
+import type { AgentName, Level, RoadmapPhase, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
   const { state, profile, decide, error } = useConsultation();
@@ -61,7 +63,7 @@ export function CanvasPanel() {
       </header>
 
       {needs.identifiedBottleneck && (
-        <Section id="section-bottleneck" title="The bottleneck">
+        <Section id="section-bottleneck" title="The bottleneck" agent={AGENT_NAMES.discovery}>
           <p className="text-sm leading-relaxed text-slate-700">{needs.summary}</p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-3">
             <Fact label="Bottleneck" value={needs.identifiedBottleneck} />
@@ -74,6 +76,7 @@ export function CanvasPanel() {
       <Section
         id="section-use-cases"
         title="Use cases"
+        agent={AGENT_NAMES.analyst}
         aside={
           pending > 0 ? (
             <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
@@ -111,7 +114,7 @@ export function CanvasPanel() {
 
       {architectureStack && (
         <div className="animate-section-enter">
-          <Section id="section-stack" title="Recommended stack">
+          <Section id="section-stack" title="Recommended stack" agent={AGENT_NAMES.architect}>
             <dl className="grid gap-4 sm:grid-cols-3">
               <Fact label="Models" value={architectureStack.models.join(", ")} />
               <Fact label="Infrastructure" value={architectureStack.infrastructure.join(", ")} />
@@ -127,7 +130,7 @@ export function CanvasPanel() {
 
       {roadmapPhases && roadmapPhases.length > 0 && (
         <div className="animate-section-enter">
-          <Section id="section-roadmap" title="Roadmap">
+          <Section id="section-roadmap" title="Roadmap" agent={AGENT_NAMES.projectManager}>
             <RoadmapTimeline phases={roadmapPhases} />
 
             {/* Below sm, and always for print (a collapsed bar means nothing on paper): the
@@ -158,7 +161,7 @@ export function CanvasPanel() {
 
       {plan && (
         <div className="animate-section-enter">
-          <Section id="section-people" title="People and change">
+          <Section id="section-people" title="People and change" agent={AGENT_NAMES.changeCoach}>
             <div className="space-y-3">
               {plan.upskillingPaths.map((path) => (
                 <div
@@ -437,19 +440,26 @@ function Provenance({
 function Section({
   id,
   title,
+  agent,
   aside,
   children,
 }: {
   /** Anchor the chat rail deep-links to when a reply is attributed to this section's agent. */
   id?: string;
   title: string;
+  /** Whose section this is (UI-10) — renders that agent's icon in their color next to the title. */
+  agent?: AgentName;
   aside?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const persona = agent ? agentPersona(agent) : null;
   return (
     <section id={id} className="scroll-mt-4">
       <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="text-xs font-medium tracking-wide text-slate-500 uppercase">{title}</h2>
+        <h2 className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
+          {persona && <persona.Icon className={`h-3.5 w-3.5 ${persona.accent.text}`} />}
+          {title}
+        </h2>
         {aside}
       </div>
       {children}

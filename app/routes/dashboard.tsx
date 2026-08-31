@@ -210,6 +210,7 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
           const active = i === currentIndex;
           const working = active && sending;
           const summary = done ? stageSummary(stage, state) : null;
+          const { Icon, accent } = agentStatus(stage);
           return (
             <li key={stage} className="flex items-center gap-2">
               {i > 0 && <span aria-hidden className="h-px w-5 bg-slate-200" />}
@@ -217,17 +218,21 @@ function ProgressRail({ state, sending }: { state: AgentState; sending: boolean 
                 className={[
                   "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition",
                   active
-                    ? "bg-slate-900 font-medium text-white"
+                    ? `${accent.solid} font-medium text-white`
                     : done
-                      ? "bg-slate-100 text-slate-500"
+                      ? `${accent.light} ${accent.lightText}`
                       : "text-slate-400",
                 ].join(" ")}
               >
-                {working && <SpinnerIcon className="h-3 w-3 animate-spin" />}
+                {working ? (
+                  <SpinnerIcon className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Icon className={`h-3.5 w-3.5 ${active || done ? "" : "opacity-50"}`} />
+                )}
                 {done && <span aria-hidden>✓</span>}
                 {agentStatus(stage).name}
-                {done && summary && <span className="text-slate-600">· {summary}</span>}
-                {working && <span className="text-slate-300">· {agentStatus(stage).working}</span>}
+                {done && summary && <span className="opacity-70">· {summary}</span>}
+                {working && <span className="text-white/80">· {agentStatus(stage).working}</span>}
               </span>
             </li>
           );
