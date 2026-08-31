@@ -15,6 +15,7 @@ import { agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
 import { DownloadIcon } from "../lib/icons.tsx";
+import { formatElapsed } from "../lib/pipelineView.ts";
 import type { ChatMessage, Stage } from "../types.ts";
 
 export function meta() {
@@ -24,8 +25,12 @@ export function meta() {
 export default function Chat() {
   const { state } = useConsultation();
   const done = state.currentStage === "complete";
+  // The gate is the moment there is an artefact worth looking at: once something is approved,
+  // the Architect (and whoever runs after) is building against it, so the Canvas earns the
+  // page instead of waiting for the whole pipeline to finish (UI-2 — the build-out shape).
+  const buildingOut = state.useCases.some((uc) => uc.status === "approved");
 
-  if (!done) {
+  if (!done && !buildingOut) {
     return (
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden px-6">
         <Conversation inline={<Decisions />} />
@@ -37,29 +42,33 @@ export default function Chat() {
     <main className="flex flex-1 flex-col overflow-hidden lg:flex-row print:block print:overflow-visible">
       <div className="flex-1 overflow-y-auto px-6 py-8 lg:px-10 print:overflow-visible print:p-0">
         <div className="mx-auto max-w-3xl">
-          {/* ponytail: duplicates the button on /dashboard/canvas — that route isn't linked
-              from anywhere yet (UI-4), and this is the completed view people actually land on.
-              Once UI-4 picks one canvas, one of these two copies goes away. */}
-          <div className="mb-6 flex items-center justify-between print:hidden">
-            <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-            >
-              <DownloadIcon className="h-4 w-4" />
-              Download strategy (PDF)
-            </button>
-          </div>
+          {done && (
+            // ponytail: duplicates the button on /dashboard/canvas — that route isn't linked
+            // from anywhere yet (UI-4), and this is the completed view people actually land on.
+            // Once UI-4 picks one canvas, one of these two copies goes away.
+            <div className="mb-6 flex items-center justify-between print:hidden">
+              <p className="text-sm text-slate-500">Your finished AI enablement strategy.</p>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              >
+                <DownloadIcon className="h-4 w-4" />
+                Download strategy (PDF)
+              </button>
+            </div>
+          )}
           <CanvasPanel />
         </div>
       </div>
 
       <aside className="flex shrink-0 flex-col overflow-hidden border-slate-200 lg:w-96 lg:border-l print:hidden">
         <p className="border-y border-slate-200 bg-white px-5 py-2.5 text-xs text-slate-500 lg:border-t-0">
-          Ask about the strategy, or tell me what to change.
+          {done
+            ? "Ask about the strategy, or tell me what to change."
+            : "Watch your specialists build out the rest of the strategy on the left."}
         </p>
-        <Conversation compact />
+        <Conversation compact inline={<Decisions />} />
       </aside>
     </main>
   );
@@ -116,10 +125,31 @@ function StageContinue() {
   );
 }
 
+/** Milliseconds since `active` last became true — resets to 0 the moment it goes false. */
+function useElapsed(active: boolean): number {
+  const [elapsed, setElapsed] = useState(0);
+  const startedAt = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!active) {
+      startedAt.current = null;
+      setElapsed(0);
+      return;
+    }
+    startedAt.current = Date.now();
+    setElapsed(0);
+    const id = setInterval(() => setElapsed(Date.now() - startedAt.current!), 1_000);
+    return () => clearInterval(id);
+  }, [active]);
+
+  return elapsed;
+}
+
 function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?: boolean }) {
   const { messages, state, sending, error, send } = useConsultation();
   const [draft, setDraft] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
+  const elapsedMs = useElapsed(sending);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
@@ -145,10 +175,14 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
         {inline}
 
         {sending && (
-          <div className="flex items-center gap-2.5 text-sm text-slate-500">
+          // aria-live covers who's working and on what, so a screen reader hears it once (and
+          // again on a real stage change) — the ticking clock inside is aria-hidden on purpose,
+          // or "polite" would re-announce the whole line every second.
+          <div aria-live="polite" className="flex items-center gap-2.5 text-sm text-slate-500">
             <Dots />
             <span>
               <span className="font-medium text-slate-700">{status.name}</span> {status.working}…
+              {elapsedMs >= 5_000 && <span aria-hidden> ({formatElapsed(elapsedMs)})</span>}
             </span>
           </div>
         )}
