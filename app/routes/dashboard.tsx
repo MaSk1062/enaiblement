@@ -8,7 +8,6 @@ import { ChatIcon, DownloadIcon, SpinnerIcon } from "../lib/icons.tsx";
 import { stageSummary } from "../lib/pipelineView.ts";
 import { SignOutButton } from "../lib/SignOutButton.tsx";
 import { useAuth } from "../lib/useAuth.ts";
-import type { AgentState, ChatMessage, SessionUserProfile } from "../types.ts";
 import type { AgentState, Artifact, ChatMessage, SessionUserProfile, Stage } from "../types.ts";
 
 export default function Dashboard() {
@@ -90,9 +89,6 @@ export default function Dashboard() {
     [sessionId, sending],
   );
 
-  // Approving releases the rest of the pipeline, so this call can take as long as a chat turn
-  // and comes back with several replies. `sending` drives the same typing indicator, because
-  // from the user's side it is the same thing: the specialists are working.
   // A capability is not a turn: it adds a reply and may add files, but never moves the stage.
   // Throws, so the deep dive can decide whether one failure should stop the rest. It does not.
   const runCapability = useCallback(
@@ -156,6 +152,9 @@ export default function Dashboard() {
     if (notes.length) setError(notes.join(" "));
   }, [sessionId, producing, state, runCapability]);
 
+  // Approving releases the rest of the pipeline, so this call can take as long as a chat turn
+  // and comes back with several replies. `sending` drives the same typing indicator, because
+  // from the user's side it is the same thing: the specialists are working.
   const decide = useCallback(
     async (decisions: Record<string, "approved" | "rejected">) => {
       if (!sessionId || sending) return;

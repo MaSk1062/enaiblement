@@ -12,9 +12,9 @@
 import { z } from "zod";
 import type {
   AgentState,
+  Estimate,
   Partner,
   Proposal,
-  Estimate,
   Reliability,
   ArchitectureStack,
   ChangeManagementPlan,
@@ -296,6 +296,8 @@ export const SourcingOutput = z
       currency: r.proposal.currency,
       nextStep: r.proposal.next_step,
     } satisfies Proposal,
+  }));
+
 // --- generated files ----------------------------------------------------------
 // Shared by every capability that hands over a file: diagrams, platform, code, the runbook.
 // One schema, so the artifact plumbing and the Canvas never learn what produced a file.

@@ -12,8 +12,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
 import { CAPABILITIES, capability, planDeepDive } from "../capabilities.ts";
+import { Link } from "react-router";
 import { agentStatus } from "../lib/agentStatus.ts";
 import { CanvasPanel, UseCaseDecisions } from "../lib/CanvasPanel.tsx";
 import { useConsultation } from "../lib/consultation.ts";
@@ -201,7 +201,7 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
 
         {inline}
 
-        {sending && (
+        {busy && (
           // aria-live covers who's working and on what, so a screen reader hears it once (and
           // again on a real stage change) — the ticking clock inside is aria-hidden on purpose,
           // or "polite" would re-announce the whole line every second.
@@ -209,13 +209,8 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
             <Dots />
             <span>
               <span className="font-medium text-slate-700">{status.name}</span> {status.working}…
-              {elapsedMs >= 5_000 && <span aria-hidden> ({formatElapsed(elapsedMs)})</span>}
-        {busy && (
-          <div className="flex items-center gap-2.5 text-sm text-slate-500">
-            <Dots />
-            <span>
-              <span className="font-medium text-slate-700">{status.name}</span> {status.working}…
               {step}
+              {elapsedMs >= 5_000 && <span aria-hidden> ({formatElapsed(elapsedMs)})</span>}
             </span>
           </div>
         )}
@@ -258,10 +253,8 @@ function Conversation({ inline, compact }: { inline?: React.ReactNode; compact?:
           />
           <button
             type="submit"
-            disabled={sending || !draft.trim()}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-30"
             disabled={busy || !draft.trim()}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-30"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-30"
           >
             Send
           </button>

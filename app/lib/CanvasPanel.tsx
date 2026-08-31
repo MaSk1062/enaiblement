@@ -17,14 +17,10 @@ import { useConsultation } from "./consultation.ts";
 import { selectExportUseCases } from "./exportView.ts";
 import { CheckIcon } from "./icons.tsx";
 import { buildTimeline } from "./timeline.ts";
-import type { Level, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
+import type { Estimate, Level, Reliability, RoadmapPhase, Sourcing, UseCase } from "../types.ts";
 
 export function CanvasPanel() {
-  const { state, profile, decide, error } = useConsultation();
-import type { Estimate, Level, Reliability, UseCase } from "../types.ts";
-
-export function CanvasPanel() {
-  const { state, artifacts, decide } = useConsultation();
+  const { state, profile, artifacts, decide, error } = useConsultation();
   const { needsAssessment: needs, useCases, architectureStack, roadmapPhases } = state;
   const plan = state.changeManagementPlan;
   const pending = useCases.filter((uc) => uc.status === "suggested").length;
@@ -290,6 +286,12 @@ function PartnersAndProposal({ sourcing }: { sourcing: Sourcing }) {
           <span className="font-medium">Next · </span>
           {proposal.nextStep}
         </p>
+      </div>
+    </Section>
+  );
+}
+
+/**
  * Offered, not started. Completion is the moment the depth is worth having, but three minutes
  * and ~50k tokens should not begin because a consultation happened to finish. Disappears once
  * the bench has produced anything, so it is a prompt rather than furniture.

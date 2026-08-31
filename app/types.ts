@@ -57,7 +57,7 @@ export type AgentName =
   | "Technical Architect"
   | "Project Manager"
   | "Change Coach"
-  | "Sourcing Lead";
+  | "Sourcing Lead"
   // The deep bench, reached on demand rather than by working through the pipeline.
   | "Platform Engineer"
   | "Delivery Lead"
