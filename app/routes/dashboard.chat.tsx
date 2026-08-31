@@ -29,7 +29,7 @@ const AGENT_SECTION: Partial<Record<AgentName, string>> = {
 };
 
 export function meta() {
-  return [{ title: "Consultation · enaible" }];
+  return [{ title: "Consultation · Enaible" }];
 }
 
 export default function Chat() {
