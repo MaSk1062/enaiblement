@@ -14,7 +14,7 @@ import { useConsultation } from "../lib/consultation.ts";
 import { DownloadIcon } from "../lib/icons.tsx";
 
 export function meta() {
-  return [{ title: "Strategy Canvas · enaible" }];
+  return [{ title: "Strategy Canvas · Enaible" }];
 }
 
 export default function Canvas() {

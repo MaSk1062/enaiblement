@@ -129,7 +129,7 @@ export default function Dashboard() {
         <header className="border-b border-slate-200 bg-white print:hidden">
           <div className="flex items-center justify-between px-6 py-3.5">
             <div className="flex items-baseline gap-3">
-              <span className="text-sm font-semibold tracking-tight text-indigo-600">enaible</span>
+              <span className="text-lg font-bold tracking-tight text-indigo-600">Enaible</span>
               <span className="text-xs text-slate-500">
                 {profile.industry} · {profile.role}
               </span>
@@ -154,11 +154,17 @@ export default function Dashboard() {
 }
 
 /**
- * Chat, plus Export once there is something to export (UI-4 — one canvas, not two: the
- * strategy itself lives only in the chat route now; /dashboard/canvas is the distraction-free
- * print destination that route points at, never a second place to see the same thing).
+ * Chat, plus Export (UI-4 — one canvas, not two: the strategy itself lives only in the chat
+ * route now; /dashboard/canvas is the distraction-free print destination that route points at,
+ * never a second place to see the same thing).
  *
- * The pending-count badge sits on Chat, not Export, because Chat is where the gate that badge
+ * Export used to disappear from the nav entirely until the strategy was complete, which made a
+ * one-item "nav" pre-completion — it always showed as active, went nowhere else, and read as
+ * broken rather than as navigation. It's always present now; before it's ready it's a disabled,
+ * titled placeholder that tells you what unlocks it, the same pattern as a locked step in a
+ * wizard — present and legible, not just absent.
+ *
+ * The pending-count badge stays on Chat, not Export, because Chat is where the gate that badge
  * describes actually lives — the only signal pointing at the decision blocking the pipeline.
  */
 function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }) {
@@ -181,13 +187,21 @@ function Nav({ pending, exportReady }: { pending: number; exportReady: boolean }
           )}
         </span>
       </NavLink>
-      {exportReady && (
+      {exportReady ? (
         <NavLink to="/dashboard/canvas" className={style}>
           <span className="flex items-center gap-1.5">
             <DownloadIcon className="h-3.5 w-3.5" />
             Export
           </span>
         </NavLink>
+      ) : (
+        <span
+          className="flex cursor-not-allowed items-center gap-1.5 text-xs text-slate-300"
+          title="Unlocks once your strategy is complete"
+        >
+          <DownloadIcon className="h-3.5 w-3.5" />
+          Export
+        </span>
       )}
     </nav>
   );
@@ -262,7 +276,7 @@ function Centered({
   return (
     <main className="grid min-h-dvh place-items-center bg-slate-50 px-6">
       <div className="text-center">
-        <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">enaible</p>
+        <p className="mb-6 text-lg font-semibold tracking-tight text-indigo-600">Enaible</p>
         {tone === "loading" && (
           <SpinnerIcon className="mx-auto mb-3 h-5 w-5 animate-spin text-slate-400" />
         )}

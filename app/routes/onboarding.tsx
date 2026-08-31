@@ -9,7 +9,7 @@ const ROLES: Role[] = ["CEO/Founder", "CTO/CIO", "Department Head", "Developer"]
 const INDUSTRIES: Industry[] = ["Healthcare", "Finance", "Manufacturing", "Retail", "SaaS"];
 
 export function meta() {
-  return [{ title: "Set up · enaible" }];
+  return [{ title: "Set up · Enaible" }];
 }
 
 // ponytail: one form, not the three-step wizard in FRD §2.1. Three fields do not need three
@@ -51,7 +51,7 @@ export default function Onboarding() {
       <form onSubmit={onSubmit} className="w-full max-w-md">
         {/* Same wordmark and voice as /login — nothing here should feel like a second product. */}
         <div className="flex items-start justify-between">
-          <p className="text-3xl font-semibold tracking-tight text-indigo-600">enaible</p>
+          <p className="text-3xl font-semibold tracking-tight text-indigo-600">Enaible</p>
           {/* Signed in but no profile yet — without this there is no way back to /login. */}
           <SignOutButton />
         </div>
