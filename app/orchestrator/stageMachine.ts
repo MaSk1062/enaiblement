@@ -183,6 +183,7 @@ async function runStage(
         const phases = await deps.projectManager({
           approvedUseCases: approvedOf(state),
           stack: requireStack(state),
+          memory: session.memoryBlock,
         });
         return {
           reply: agentMessage(
@@ -199,6 +200,7 @@ async function runStage(
         const plan = await deps.changeCoach({
           approvedUseCases: approvedOf(state),
           stack: requireStack(state),
+          memory: session.memoryBlock,
         });
         return {
           reply: agentMessage(
