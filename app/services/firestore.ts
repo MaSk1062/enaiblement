@@ -19,19 +19,19 @@ import type {
   SessionUserProfile,
 } from "../types.ts";
 
-const projectId = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
+const projectId = "eliza-501500";
 
 // A project can hold several Firestore databases and the Admin SDK talks to "(default)"
 // unless told otherwise. Pointing at a database that does not exist fails as `5 NOT_FOUND`,
 // which reads like a permissions problem and is not one.
-const databaseId = process.env.FIRESTORE_DATABASE_ID ?? "(default)";
+const databaseId = process.env.FIRESTORE_DATABASE_ID ?? "hack";
 
 // Auth can live in a different project from Firestore, and here it does: tokens are minted by
 // the Firebase project, Firestore and Vertex run in the GCP project. verifyIdToken rejects any
 // token whose `aud` is not the app's own projectId, so verifying with GCP_PROJECT_ID fails every
 // real token and reports it as "Invalid or expired token". Defaults to the same project when
 // there is only one.
-const authProjectId = process.env.FIREBASE_AUTH_PROJECT_ID ?? projectId;
+const authProjectId = projectId;
 
 // Look apps up by name, not getApps()[0] - whichever is initialised first would otherwise be
 // handed to both.

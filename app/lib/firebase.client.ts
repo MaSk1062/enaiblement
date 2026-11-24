@@ -24,9 +24,9 @@ import {
 } from "firebase/auth";
 
 const config = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  apiKey: "AIzaSyDNPey4mQXR1r0YSG7Jm4cm0-grpe8-YEk",
+  authDomain: "eliza-501500.firebaseapp.com",
+  projectId: "eliza-501500",
 };
 
 export const isConfigured = Boolean(config.apiKey && config.authDomain && config.projectId);

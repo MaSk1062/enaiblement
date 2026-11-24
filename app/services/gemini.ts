@@ -15,7 +15,7 @@ import { GoogleGenAI } from "@google/genai";
 import type { z } from "zod";
 import { countTokens, event } from "./telemetry.ts";
 
-const PROJECT = process.env.GCP_PROJECT_ID ?? process.env.GOOGLE_CLOUD_PROJECT;
+const PROJECT = "eliza-501500";
 
 /**
  * These two defaults are a pair and must move together.
